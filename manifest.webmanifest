@@ -1,0 +1,63 @@
+{
+  "name": "健康家計アプリ",
+  "short_name": "健康家計",
+  "description": "食事記録、カロリー管理、家計簿、在庫管理を統合したPWAアプリ",
+  "start_url": "/life-pwa-react/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/life-pwa-react/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/life-pwa-react/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "食事記録",
+      "short_name": "食事",
+      "description": "食事を記録する",
+      "url": "/life-pwa-react/?screen=meals",
+      "icons": [
+        {
+          "src": "/life-pwa-react/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "バーコードスキャン",
+      "short_name": "スキャン",
+      "description": "バーコードをスキャンする",
+      "url": "/life-pwa-react/?screen=barcode",
+      "icons": [
+        {
+          "src": "/life-pwa-react/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "在庫管理",
+      "short_name": "在庫",
+      "description": "在庫を管理する",
+      "url": "/life-pwa-react/?screen=stock",
+      "icons": [
+        {
+          "src": "/life-pwa-react/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

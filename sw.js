@@ -3,7 +3,7 @@
  * オフライン対応とキャッシュ管理
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `life-pwa-react-${CACHE_VERSION}`;
 
 // キャッシュするリソース

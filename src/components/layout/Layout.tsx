@@ -13,6 +13,7 @@ import { ShoppingScreen } from '../shopping/ShoppingScreen';
 import { RecipeScreen } from '../recipe/RecipeScreen';
 import { BarcodeScreen } from '../barcode/BarcodeScreen';
 import { ReportScreen } from '../report/ReportScreen';
+import { ExpenseScreen } from '../expense/ExpenseScreen';
 
 export const Layout: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -27,6 +28,7 @@ export const Layout: React.FC = () => {
       stock: '在庫管理',
       shopping: '買い物リスト',
       recipe: 'AIレシピ',
+      expense: '家計簿',
     };
     return titles[screen];
   };
@@ -49,6 +51,8 @@ export const Layout: React.FC = () => {
         return <ShoppingScreen />;
       case 'recipe':
         return <RecipeScreen />;
+      case 'expense':
+        return <ExpenseScreen />;
       default:
         return <Dashboard onNavigate={setCurrentScreen} />;
     }

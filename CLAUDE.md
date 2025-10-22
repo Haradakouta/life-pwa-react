@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-12 (シームレスな体験+AI健康アドバイザー完成！)**
+**最終更新: 2025-10-22 (家計簿機能+カレンダーUI実装完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -20,7 +20,9 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 1. ✅ **UIのモダン化** - React Icons、カードシャドウ、ホバーエフェクト
 2. ✅ **シームレスな機能連携** - 画面間の自動遷移、ワンタップ操作
 3. ✅ **AI健康アドバイザー** - 買い物リストの健康チェック
-4. ✅ **GitHub Pagesデプロイ問題** - すべて解決
+4. ✅ **家計簿機能** - 支出管理、カテゴリ別集計、予算管理
+5. ✅ **カレンダーUI** - 直感的な日付・月選択
+6. ✅ **GitHub Pagesデプロイ問題** - すべて解決
 
 ### ~~GitHub Pages デプロイ問題~~ ✅ **完全解決！**
 
@@ -50,7 +52,7 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 
 ## ✅ 完了した実装
 
-### 全9画面 実装完了
+### 全10画面 実装完了
 
 1. **Dashboard（ホーム）** - `src/components/dashboard/`
 2. **食事記録** - `src/components/meals/`
@@ -60,7 +62,8 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 6. **AIレシピ** - `src/components/recipe/` ✅
 7. **バーコードスキャン** - `src/components/barcode/`
 8. **レポート** - `src/components/report/`
-9. **PWA対応** - Service Worker + Manifest
+9. **家計簿** - `src/components/expense/` ✅ **NEW!**
+10. **PWA対応** - Service Worker + Manifest
 
 ### 主要機能
 
@@ -77,6 +80,8 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 - ✅ **モダンなUI（カードシャドウ、ホバーエフェクト、トグルスイッチ）**
 - ✅ **シームレスな機能連携**（画面間の自動遷移、ワンタップ操作）
 - ✅ **AI健康アドバイザー**（買い物リストの健康チェック）
+- ✅ **家計簿機能**（支出入力、カテゴリ別集計、予算管理）
+- ✅ **カレンダーUI**（日付・月選択の直感的な操作）
 
 ---
 
@@ -98,14 +103,16 @@ life-pwa-react/
 │   ├── components/
 │   │   ├── layout/
 │   │   │   └── Layout.tsx      # メインレイアウト・画面遷移
+│   │   ├── common/             # 共通コンポーネント（Calendar等）
 │   │   ├── dashboard/          # ホーム画面
 │   │   ├── meals/              # 食事記録
-│   │   ├── settings/           # 設定 ⚠️
+│   │   ├── settings/           # 設定
 │   │   ├── stock/              # 在庫管理
 │   │   ├── shopping/           # 買い物リスト
-│   │   ├── recipe/             # AIレシピ ⚠️
+│   │   ├── recipe/             # AIレシピ
 │   │   ├── barcode/            # バーコードスキャン
-│   │   └── report/             # レポート
+│   │   ├── report/             # レポート
+│   │   └── expense/            # 家計簿 ✅ NEW!
 │   │
 │   ├── store/
 │   │   ├── useIntakeStore.ts   # 食事記録
@@ -260,9 +267,10 @@ dist/assets/index-XXX.js   977.78 kB │ gzip: 281.71 kB
    - [ ] スクリーンリーダー対応
 
 6. **機能追加**
-   - [ ] 家計簿画面の実装（現在はアラートのみ）
+   - [x] 家計簿画面の実装（現在はアラートのみ） ✅ **完了！**
    - [ ] データのインポート機能
    - [ ] グラフの種類を増やす
+   - [ ] 収入管理機能（現在は支出のみ）
 
 ---
 
@@ -351,6 +359,90 @@ git checkout main
 ---
 
 ## 📅 開発履歴
+
+### 2025-10-22 (セッション4) ✅ **家計簿機能+カレンダーUI実装完了！**
+
+**実装内容:**
+
+#### 1. 家計簿機能の完全実装
+
+**支出管理システム**
+- ExpenseForm: 支出入力フォーム（カテゴリ、金額、メモ、日付）
+- ExpenseList: 支出履歴一覧（月別表示、削除機能）
+- ExpenseSummary: カテゴリ別集計（円グラフ表示）
+- BudgetProgress: 月次予算管理（進捗バー、状態別アイコン）
+
+**カテゴリ（6種類）:**
+- 食費、交通費、光熱費、娯楽、医療、その他
+
+**機能:**
+- 支出の記録と履歴管理
+- カテゴリ別の視覚的な集計（Recharts円グラフ）
+- 月次予算との比較（進捗バー）
+- 予算達成率による状態表示（順調/予算残りわずか/予算超過）
+- Zustandによる状態管理とlocalStorage永続化
+
+#### 2. カレンダーUIの実装
+
+**共通コンポーネント:**
+- Calendar: 月表示カレンダーコンポーネント
+  - 日付選択モード（日付をタップ）
+  - 月選択モード（年月をタップ）
+  - 前月/次月ナビゲーション
+  - 今日の日付を強調表示
+  - 日曜日は赤色、土曜日は青色
+- DatePickerModal: 日付選択モーダル
+- MonthPickerModal: 月選択モーダル
+
+**適用箇所:**
+- ExpenseForm: 支出入力時の日付選択
+- ExpenseList: 月別履歴の月選択
+- ExpenseSummary: カテゴリ別集計の月選択
+- BudgetProgress: 予算管理の月選択
+
+**UI/UX改善:**
+- ドロップダウンからカレンダータップへ変更
+- 視覚的に分かりやすい日付・月の選択
+- カレンダーアイコン付きの選択ボタン
+- モーダルのフェードイン・スライドアップアニメーション
+
+#### 3. 型定義の更新
+
+**ExpenseFormData型の拡張:**
+```tsx
+export interface ExpenseFormData {
+  category: ExpenseCategory;
+  amount: number;
+  memo?: string;
+  date?: string; // ISO 8601形式 ← 追加
+}
+```
+
+**新規ファイル:**
+- `src/components/expense/ExpenseScreen.tsx` - メイン画面
+- `src/components/expense/ExpenseForm.tsx` - 入力フォーム
+- `src/components/expense/ExpenseList.tsx` - 履歴一覧
+- `src/components/expense/ExpenseSummary.tsx` - カテゴリ別集計
+- `src/components/expense/BudgetProgress.tsx` - 予算管理
+- `src/components/common/Calendar.tsx` - カレンダーコンポーネント
+- `src/components/common/DatePickerModal.tsx` - 日付選択モーダル
+- `src/components/common/MonthPickerModal.tsx` - 月選択モーダル
+
+**デプロイ:**
+```bash
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ 家計簿機能の完全実装
+- ✅ カレンダーUIによる直感的な操作
+- ✅ 予算管理機能で支出をコントロール
+- ✅ カテゴリ別集計で支出の内訳を可視化
+- ✅ 全10画面が完成
+
+---
 
 ### 2025-10-12 (セッション3) ✅ **シームレスな体験+AI健康アドバイザー完成！**
 
@@ -582,5 +674,6 @@ git checkout main      # 開発用
 **~~次回の目標: ReactらしいモダンなUIを実現する！~~** ✅ **達成！**
 **~~次回の目標: シームレスな機能連携を実現する！~~** ✅ **達成！**
 **~~次回の目標: AI健康アドバイザー機能を実装！~~** ✅ **達成！**
+**~~次回の目標: 家計簿機能を実装する！~~** ✅ **達成！**
 
-**次回の目標: パフォーマンス最適化とアクセシビリティ向上！**
+**次回の目標: 収入管理機能、パフォーマンス最適化、アクセシビリティ向上！**

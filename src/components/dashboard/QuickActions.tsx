@@ -42,10 +42,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
       color: '#8b5cf6',
     },
     {
+      screen: 'expense' as Screen,
       icon: <MdAttachMoney size={32} />,
       label: '家計簿',
       color: '#10b981',
-      onClick: () => alert('家計簿画面（実装予定）'),
     },
     {
       screen: 'stock' as Screen,

@@ -23,4 +23,5 @@ export interface ExpenseFormData {
   category: ExpenseCategory;
   amount: number;
   memo?: string;
+  date?: string; // ISO 8601形式
 }

@@ -5,7 +5,7 @@ import React from 'react';
 import { FiHome, FiCamera, FiBarChart2, FiSettings } from 'react-icons/fi';
 import { MdRestaurant } from 'react-icons/md';
 
-export type Screen = 'home' | 'meals' | 'barcode' | 'report' | 'settings' | 'stock' | 'shopping' | 'recipe';
+export type Screen = 'home' | 'meals' | 'barcode' | 'report' | 'settings' | 'stock' | 'shopping' | 'recipe' | 'expense';
 
 interface BottomNavProps {
   currentScreen: Screen;

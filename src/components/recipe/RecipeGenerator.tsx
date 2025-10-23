@@ -58,7 +58,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
     setIsLoading(true);
     try {
-      const ingredientArray = ingredients.split(',').map((item) => item.trim());
+      const ingredientArray = ingredients.split(/[,、]/).map((item) => item.trim()).filter((item) => item.length > 0);
       const recipeContent = await generateRecipe(
         ingredientArray,
         dietaryRestriction,

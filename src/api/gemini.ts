@@ -157,6 +157,14 @@ export async function generateRecipe(
 
     console.log('[Gemini] APIレスポンス受信', { status: response.status, ok: response.ok });
 
+    // レート制限情報をログ出力（開発者向け）
+    console.log('[Gemini] Rate Limit Info:', {
+      limit: response.headers.get('x-ratelimit-limit'),
+      remaining: response.headers.get('x-ratelimit-remaining'),
+      reset: response.headers.get('x-ratelimit-reset'),
+      retryAfter: response.headers.get('retry-after'),
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorData: GeminiError;
@@ -330,6 +338,14 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
     });
 
     console.log('[Gemini Receipt] APIレスポンス受信', { status: response.status });
+
+    // レート制限情報をログ出力（開発者向け）
+    console.log('[Gemini Receipt] Rate Limit Info:', {
+      limit: response.headers.get('x-ratelimit-limit'),
+      remaining: response.headers.get('x-ratelimit-remaining'),
+      reset: response.headers.get('x-ratelimit-reset'),
+      retryAfter: response.headers.get('retry-after'),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

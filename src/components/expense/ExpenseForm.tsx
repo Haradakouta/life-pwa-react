@@ -10,6 +10,7 @@ import { DatePickerModal } from '../common/DatePickerModal';
 export const ExpenseForm: React.FC = () => {
   const { addExpense } = useExpenseStore();
   const [category, setCategory] = useState<ExpenseCategory>('food');
+  const [customCategory, setCustomCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -30,8 +31,14 @@ export const ExpenseForm: React.FC = () => {
       return;
     }
 
+    if (category === 'other' && !customCategory.trim()) {
+      alert('カスタムカテゴリ名を入力してください');
+      return;
+    }
+
     addExpense({
       category,
+      customCategory: category === 'other' ? customCategory.trim() : undefined,
       amount: Number(amount),
       memo: memo || undefined,
       date: selectedDate.toISOString(),
@@ -40,6 +47,7 @@ export const ExpenseForm: React.FC = () => {
     // フォームをリセット
     setAmount('');
     setMemo('');
+    setCustomCategory('');
 
     alert('支出を記録しました！');
   };
@@ -83,6 +91,17 @@ export const ExpenseForm: React.FC = () => {
           </option>
         ))}
       </select>
+
+      {category === 'other' && (
+        <>
+          <label>カスタムカテゴリ名</label>
+          <input
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="例: 趣味、ペット、書籍"
+          />
+        </>
+      )}
 
       <label>金額(円)</label>
       <input

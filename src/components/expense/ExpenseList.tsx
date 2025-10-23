@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useExpenseStore } from '../../store';
 import { MdDelete, MdCalendarToday } from 'react-icons/md';
 import { MonthPickerModal } from '../common/MonthPickerModal';
+import { getPredefinedCategoryColor, getColorForCustomCategory } from '../../utils/categoryColors';
 
 export const ExpenseList: React.FC = () => {
   const { deleteExpense, getExpensesByMonth } = useExpenseStore();
@@ -21,6 +22,20 @@ export const ExpenseList: React.FC = () => {
     entertainment: '娯楽',
     health: '医療',
     other: 'その他',
+  };
+
+  const getCategoryDisplay = (expense: any) => {
+    if (expense.category === 'other' && expense.customCategory) {
+      return expense.customCategory;
+    }
+    return categoryLabels[expense.category];
+  };
+
+  const getCategoryColor = (expense: any) => {
+    if (expense.category === 'other' && expense.customCategory) {
+      return getColorForCustomCategory(expense.customCategory);
+    }
+    return getPredefinedCategoryColor(expense.category);
   };
 
   const handleDelete = (id: string) => {
@@ -80,14 +95,14 @@ export const ExpenseList: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                     <span
                       style={{
-                        background: 'var(--primary)',
+                        background: getCategoryColor(expense),
                         color: 'white',
                         padding: '2px 8px',
                         borderRadius: '4px',
                         fontSize: '12px',
                       }}
                     >
-                      {categoryLabels[expense.category]}
+                      {getCategoryDisplay(expense)}
                     </span>
                     <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                       {formatDate(expense.date)}

@@ -4,6 +4,7 @@
 export interface Expense {
   id: string;
   category: ExpenseCategory;
+  customCategory?: string; // カテゴリが'other'の時のカスタムカテゴリ名
   amount: number;
   date: string; // ISO 8601形式
   memo?: string;
@@ -21,6 +22,7 @@ export type ExpenseCategory =
 
 export interface ExpenseFormData {
   category: ExpenseCategory;
+  customCategory?: string; // カテゴリが'other'の時のカスタムカテゴリ名
   amount: number;
   memo?: string;
   date?: string; // ISO 8601形式

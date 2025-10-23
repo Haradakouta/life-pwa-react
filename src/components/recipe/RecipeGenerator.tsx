@@ -2,7 +2,7 @@
  * レシピ生成フォームコンポーネント
  */
 import React, { useState } from 'react';
-import { useStockStore } from '../../store';
+import { useStockStore, useRecipeStore } from '../../store';
 import { generateRecipe } from '../../api/gemini';
 import type { RecipeDifficulty, DietaryRestriction, Recipe } from '../../types';
 import { generateUUID } from '../../utils/uuid';
@@ -22,6 +22,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
   setIsLoading,
 }) => {
   const { stocks } = useStockStore();
+  const { addToHistory } = useRecipeStore();
   const [ingredients, setIngredients] = useState('');
   const [difficulty, setDifficulty] = useState<RecipeDifficulty>('none');
   const [dietaryRestriction, setDietaryRestriction] = useState<DietaryRestriction>('none');
@@ -78,6 +79,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         createdAt: new Date().toISOString(),
       };
 
+      addToHistory(newRecipe);
       onRecipeGenerated(newRecipe);
     } catch (error) {
       console.error('レシピ生成エラー:', error);

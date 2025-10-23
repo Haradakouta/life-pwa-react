@@ -336,7 +336,7 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
 6. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
 
     // リクエスト統計を記録
     logRequestStats('receipt');

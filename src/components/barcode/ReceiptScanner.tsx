@@ -2,7 +2,7 @@
  * レシートスキャナーコンポーネント
  */
 import React, { useRef, useState } from 'react';
-import { scanReceipt, type ReceiptOCRResult } from '../../api/vision';
+import { scanReceipt, type ReceiptOCRResult } from '../../api/gemini';
 import { MdCamera, MdClose, MdPhotoCamera } from 'react-icons/md';
 
 interface ReceiptScannerProps {

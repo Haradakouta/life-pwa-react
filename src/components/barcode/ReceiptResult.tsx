@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useExpenseStore } from '../../store';
-import type { ReceiptItem, ReceiptOCRResult } from '../../api/vision';
+import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
 import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt } from 'react-icons/md';
 
 interface ReceiptResultProps {

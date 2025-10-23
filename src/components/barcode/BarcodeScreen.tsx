@@ -7,7 +7,7 @@ import { ProductDisplay } from './ProductDisplay';
 import { ReceiptScanner } from './ReceiptScanner';
 import { ReceiptResult } from './ReceiptResult';
 import type { ProductInfo } from '../../types';
-import type { ReceiptOCRResult } from '../../api/vision';
+import type { ReceiptOCRResult } from '../../api/gemini';
 import { MdQrCodeScanner, MdCamera, MdReceipt } from 'react-icons/md';
 
 type ScanMode = 'select' | 'barcode' | 'receipt';

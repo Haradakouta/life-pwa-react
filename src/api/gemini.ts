@@ -7,6 +7,21 @@
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
 
+// レシートOCR用の型定義
+export interface ReceiptItem {
+  name: string;
+  price: number;
+  quantity?: number;
+}
+
+export interface ReceiptOCRResult {
+  items: ReceiptItem[];
+  total?: number;
+  storeName?: string;
+  date?: string;
+  rawText: string;
+}
+
 // Gemini APIキー（環境変数から取得、または直接設定）
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBSqmtDaNAqF09NTYYKQsTKm-3fLl1LMr0';
 
@@ -203,6 +218,155 @@ export async function generateRecipe(
  */
 export function isGeminiEnabled(): boolean {
   return API_ENABLED;
+}
+
+/**
+ * 画像をBase64エンコード
+ */
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      // "data:image/jpeg;base64," の部分を除去
+      const base64Data = base64.split(',')[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * レシート画像からOCRで商品情報を抽出
+ */
+export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
+  console.log('[Gemini Receipt] OCR処理開始', {
+    fileName: imageFile.name,
+    fileSize: imageFile.size,
+    API_ENABLED,
+  });
+
+  if (!API_ENABLED) {
+    throw new Error('Gemini APIキーが設定されていません');
+  }
+
+  try {
+    // 画像をBase64に変換
+    const base64Image = await fileToBase64(imageFile);
+
+    const prompt = `
+あなたは日本語のレシート解析の専門家です。
+このレシート画像から商品名と価格を正確に抽出してください。
+
+以下のJSON形式で出力してください：
+{
+  "storeName": "店舗名（わかれば）",
+  "date": "日付（YYYY-MM-DD形式、わかれば）",
+  "total": 合計金額（数値、わかれば）,
+  "items": [
+    {
+      "name": "商品名",
+      "price": 価格（数値）,
+      "quantity": 数量（数値、デフォルトは1）
+    }
+  ]
+}
+
+**重要な指示:**
+1. 商品名と価格は必ず正確に抽出してください
+2. 価格は数値のみ（円記号やカンマは除く）
+3. 同じ商品が複数ある場合はquantityで表現
+4. 合計金額や税金などの行は除外
+5. 不明な項目は省略してOK
+6. 必ずJSONのみを返してください（説明文は不要）
+`.trim();
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    console.log('[Gemini Receipt] APIリクエスト送信');
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+              {
+                inlineData: {
+                  mimeType: imageFile.type || 'image/jpeg',
+                  data: base64Image,
+                },
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1, // 低めにして正確性を重視
+          topK: 32,
+          topP: 1,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    console.log('[Gemini Receipt] APIレスポンス受信', { status: response.status });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Gemini Receipt] APIエラー', errorText);
+      throw new Error(`Gemini API エラー: ${response.status}`);
+    }
+
+    const data: GeminiResponse = await response.json();
+    console.log('[Gemini Receipt] レスポンスデータ', data);
+
+    // レスポンスからテキストを抽出
+    if (data.candidates && data.candidates.length > 0) {
+      const candidate = data.candidates[0];
+      if (candidate.content?.parts && candidate.content.parts.length > 0) {
+        const text = candidate.content.parts[0].text.trim();
+        console.log('[Gemini Receipt] 抽出テキスト:', text);
+
+        // JSONを抽出（マークダウンのコードブロックを除去）
+        let jsonText = text;
+        const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          jsonText = jsonMatch[1];
+        } else if (text.includes('```')) {
+          const codeMatch = text.match(/```\s*([\s\S]*?)\s*```/);
+          if (codeMatch) {
+            jsonText = codeMatch[1];
+          }
+        }
+
+        // JSONをパース
+        const parsedData = JSON.parse(jsonText);
+
+        const result: ReceiptOCRResult = {
+          items: parsedData.items || [],
+          total: parsedData.total,
+          storeName: parsedData.storeName,
+          date: parsedData.date,
+          rawText: text,
+        };
+
+        console.log('[Gemini Receipt] OCR成功', result);
+        return result;
+      }
+    }
+
+    throw new Error('レシートからテキストを抽出できませんでした');
+  } catch (error) {
+    console.error('[Gemini Receipt] エラー:', error);
+    throw error;
+  }
 }
 
 /**

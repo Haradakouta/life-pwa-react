@@ -237,6 +237,10 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// レート制限管理用
+let lastReceiptScanTime = 0;
+const MIN_INTERVAL_MS = 5000; // 5秒間隔
+
 /**
  * レシート画像からOCRで商品情報を抽出
  */
@@ -251,7 +255,16 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
     throw new Error('Gemini APIキーが設定されていません');
   }
 
+  // レート制限チェック
+  const now = Date.now();
+  const timeSinceLastScan = now - lastReceiptScanTime;
+  if (timeSinceLastScan < MIN_INTERVAL_MS) {
+    const waitTime = Math.ceil((MIN_INTERVAL_MS - timeSinceLastScan) / 1000);
+    throw new Error(`レート制限: ${waitTime}秒後に再試行してください`);
+  }
+
   try {
+    lastReceiptScanTime = now;
     // 画像をBase64に変換
     const base64Image = await fileToBase64(imageFile);
 
@@ -321,6 +334,12 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[Gemini Receipt] APIエラー', errorText);
+
+      // 429エラー（レート制限）の場合
+      if (response.status === 429) {
+        throw new Error('レート制限に達しました。数秒後に再試行してください。');
+      }
+
       throw new Error(`Gemini API エラー: ${response.status}`);
     }
 

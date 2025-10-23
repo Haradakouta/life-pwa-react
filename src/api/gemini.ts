@@ -45,6 +45,36 @@ interface GeminiError {
   rawError?: string;
 }
 
+// リクエスト追跡用
+interface RequestLog {
+  type: 'recipe' | 'receipt';
+  timestamp: number;
+}
+
+let requestLog: RequestLog[] = [];
+
+/**
+ * 直近1分間のリクエスト数を表示
+ */
+function logRequestStats(newRequestType: 'recipe' | 'receipt') {
+  const now = Date.now();
+
+  // 新しいリクエストを記録
+  requestLog.push({ type: newRequestType, timestamp: now });
+
+  // 1分以内のリクエストをフィルター
+  requestLog = requestLog.filter(r => now - r.timestamp < 60000);
+
+  const recipeCount = requestLog.filter(r => r.type === 'recipe').length;
+  const receiptCount = requestLog.filter(r => r.type === 'receipt').length;
+  const totalCount = requestLog.length;
+
+  console.log(`[API Usage] 直近1分間の合計リクエスト数: ${totalCount}回`);
+  console.log(`  - レシピ生成: ${recipeCount}回`);
+  console.log(`  - レシートOCR: ${receiptCount}回`);
+  console.log(`  - 残り制限枠: ${15 - totalCount}回 (Free Tier: 15回/分)`);
+}
+
 /**
  * 材料からレシピを生成
  */
@@ -128,6 +158,9 @@ export async function generateRecipe(
 `.trim();
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
+
+    // リクエスト統計を記録
+    logRequestStats('recipe');
 
     console.log('[Gemini] APIリクエスト送信', { url: url.replace(GEMINI_API_KEY, 'HIDDEN') });
 
@@ -304,6 +337,9 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
 `.trim();
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    // リクエスト統計を記録
+    logRequestStats('receipt');
 
     console.log('[Gemini Receipt] APIリクエスト送信');
 

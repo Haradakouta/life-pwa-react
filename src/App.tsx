@@ -1,23 +1,64 @@
 /**
  * メインアプリコンポーネント
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from './components/layout/Layout';
 import { LoginScreen } from './components/auth/LoginScreen';
-import { useSettingsStore } from './store';
+import {
+  useSettingsStore,
+  useIntakeStore,
+  useExpenseStore,
+  useStockStore,
+  useShoppingStore,
+} from './store';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
   const { settings } = useSettingsStore();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const [syncing, setSyncing] = useState(false);
+
+  const intakeStore = useIntakeStore();
+  const expenseStore = useExpenseStore();
+  const stockStore = useStockStore();
+  const shoppingStore = useShoppingStore();
 
   // ダークモードの初期化
   useEffect(() => {
     document.body.classList.toggle('dark-mode', settings.darkMode);
   }, [settings.darkMode]);
 
+  // ログイン時にFirestoreと同期
+  useEffect(() => {
+    const syncStores = async () => {
+      if (!user || syncing) return;
+
+      // すでに同期済みの場合はスキップ
+      if (intakeStore.initialized && expenseStore.initialized &&
+          stockStore.initialized && shoppingStore.initialized) {
+        return;
+      }
+
+      setSyncing(true);
+      try {
+        await Promise.all([
+          intakeStore.syncWithFirestore(),
+          expenseStore.syncWithFirestore(),
+          stockStore.syncWithFirestore(),
+          shoppingStore.syncWithFirestore(),
+        ]);
+      } catch (error) {
+        console.error('Failed to sync stores with Firestore:', error);
+      } finally {
+        setSyncing(false);
+      }
+    };
+
+    syncStores();
+  }, [user]);
+
   // ローディング中
-  if (loading) {
+  if (authLoading || syncing) {
     return (
       <div style={{
         display: 'flex',
@@ -26,8 +67,8 @@ function App() {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
       }}>
-        <div style={{ color: 'white', fontSize: '24px' }}>
-          ロード中...
+        <div style={{ color: 'white', fontSize: '24px', textAlign: 'center' }}>
+          {authLoading ? 'ロード中...' : 'データを同期中...'}
         </div>
       </div>
     );

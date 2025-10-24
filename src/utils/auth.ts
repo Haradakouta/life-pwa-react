@@ -5,6 +5,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
+  applyActionCode,
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { auth } from '../config/firebase';
@@ -19,13 +21,60 @@ export const loginWithEmail = async (email: string, password: string) => {
   }
 };
 
-// メールアドレスとパスワードで新規登録
+// メールアドレスとパスワードで新規登録（メール確認なし）
 export const registerWithEmail = async (email: string, password: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
     return { user: null, error: error.message };
+  }
+};
+
+// メールアドレスとパスワードで新規登録 + 確認メール送信
+export const registerWithEmailVerification = async (email: string, password: string) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // 確認メールを送信
+    await sendEmailVerification(user, {
+      url: window.location.origin + '/life-pwa-react/', // 確認後のリダイレクトURL
+      handleCodeInApp: false,
+    });
+
+    return { user, error: null };
+  } catch (error: any) {
+    return { user: null, error: error.message };
+  }
+};
+
+// メール確認コードを適用
+export const confirmEmailVerification = async (code: string) => {
+  try {
+    await applyActionCode(auth, code);
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
+
+// 確認メールを再送信
+export const resendVerificationEmail = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      return { error: 'ユーザーがログインしていません' };
+    }
+
+    await sendEmailVerification(user, {
+      url: window.location.origin + '/life-pwa-react/',
+      handleCodeInApp: false,
+    });
+
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
   }
 };
 

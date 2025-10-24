@@ -12,6 +12,7 @@ interface IntakeStore {
   intakes: Intake[];
   loading: boolean;
   initialized: boolean;
+  unsubscribe: (() => void) | null;
   setIntakes: (intakes: Intake[]) => void;
   setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
@@ -22,12 +23,15 @@ interface IntakeStore {
   getTotalCaloriesByDate: (date: string) => number;
   getTotalPriceByDate: (date: string) => number;
   syncWithFirestore: () => Promise<void>;
+  subscribeToFirestore: () => void;
+  unsubscribeFromFirestore: () => void;
 }
 
 export const useIntakeStore = create<IntakeStore>((set, get) => ({
   intakes: getFromStorage<Intake[]>(STORAGE_KEYS.INTAKES, []),
   loading: false,
   initialized: false,
+  unsubscribe: null,
 
   setIntakes: (intakes) => set({ intakes }),
   setLoading: (loading) => set({ loading }),
@@ -132,6 +136,37 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to sync intakes with Firestore:', error);
       set({ loading: false });
+    }
+  },
+
+  // Firestoreのリアルタイム監視を開始
+  subscribeToFirestore: () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // 既存の監視を解除
+    const currentUnsubscribe = get().unsubscribe;
+    if (currentUnsubscribe) {
+      currentUnsubscribe();
+    }
+
+    console.log(`[IntakeStore] Starting realtime sync for user: ${user.uid}`);
+    const unsubscribeFn = intakeOperations.subscribe(user.uid, (intakes) => {
+      console.log(`[IntakeStore] Realtime update: ${intakes.length} intakes`);
+      set({ intakes });
+      saveToStorage(STORAGE_KEYS.INTAKES, intakes);
+    });
+
+    set({ unsubscribe: unsubscribeFn });
+  },
+
+  // Firestoreの監視を停止
+  unsubscribeFromFirestore: () => {
+    const unsubscribeFn = get().unsubscribe;
+    if (unsubscribeFn) {
+      console.log('[IntakeStore] Stopping realtime sync');
+      unsubscribeFn();
+      set({ unsubscribe: null });
     }
   },
 }));

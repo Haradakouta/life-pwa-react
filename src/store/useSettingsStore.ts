@@ -1,15 +1,20 @@
 /**
- * 設定ストア（Zustand）
+ * 設定ストア（Zustand + Firebase）
  */
 import { create } from 'zustand';
 import type { Settings } from '../types';
 import { getFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/localStorage';
+import { settingsOperations } from '../utils/firestore';
+import { auth } from '../config/firebase';
 
 interface SettingsStore {
   settings: Settings;
-  updateSettings: (updates: Partial<Settings>) => void;
-  toggleDarkMode: () => void;
+  loading: boolean;
+  initialized: boolean;
+  updateSettings: (updates: Partial<Settings>) => Promise<void>;
+  toggleDarkMode: () => Promise<void>;
   setFirstTime: (value: boolean) => void;
+  syncWithFirestore: () => Promise<void>;
 }
 
 const defaultSettings: Settings = {
@@ -19,10 +24,15 @@ const defaultSettings: Settings = {
   firstTime: true,
 };
 
-export const useSettingsStore = create<SettingsStore>((set) => ({
+export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: { ...defaultSettings, ...getFromStorage(STORAGE_KEYS.SETTINGS, defaultSettings) },
+  loading: false,
+  initialized: false,
 
-  updateSettings: (updates) =>
+  updateSettings: async (updates) => {
+    const user = auth.currentUser;
+
+    // ローカル更新
     set((state) => {
       const newSettings = { ...state.settings, ...updates };
       saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
@@ -33,16 +43,41 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
       }
 
       return { settings: newSettings };
-    }),
+    });
 
-  toggleDarkMode: () =>
+    // Firestoreに保存
+    if (user) {
+      try {
+        const currentSettings = get().settings;
+        await settingsOperations.set(user.uid, currentSettings);
+      } catch (error) {
+        console.error('Failed to update settings in Firestore:', error);
+      }
+    }
+  },
+
+  toggleDarkMode: async () => {
+    const user = auth.currentUser;
+    const newDarkMode = !get().settings.darkMode;
+
+    // ローカル更新
     set((state) => {
-      const newDarkMode = !state.settings.darkMode;
       const newSettings = { ...state.settings, darkMode: newDarkMode };
       saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
       document.body.classList.toggle('dark-mode', newDarkMode);
       return { settings: newSettings };
-    }),
+    });
+
+    // Firestoreに保存
+    if (user) {
+      try {
+        const currentSettings = get().settings;
+        await settingsOperations.set(user.uid, currentSettings);
+      } catch (error) {
+        console.error('Failed to toggle dark mode in Firestore:', error);
+      }
+    }
+  },
 
   setFirstTime: (value) =>
     set((state) => {
@@ -50,4 +85,33 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
       saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
       return { settings: newSettings };
     }),
+
+  syncWithFirestore: async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      set({ loading: true });
+      console.log(`[SettingsStore] Syncing data for user: ${user.uid}`);
+      const firestoreSettings = await settingsOperations.get(user.uid);
+
+      if (firestoreSettings) {
+        console.log(`[SettingsStore] Loaded settings from Firestore`);
+        set({ settings: firestoreSettings, loading: false, initialized: true });
+        saveToStorage(STORAGE_KEYS.SETTINGS, firestoreSettings);
+
+        // ダークモードを適用
+        document.body.classList.toggle('dark-mode', firestoreSettings.darkMode);
+      } else {
+        // Firestoreにデータがない場合はデフォルト設定を保存
+        console.log(`[SettingsStore] No settings found, using defaults`);
+        const currentSettings = get().settings;
+        await settingsOperations.set(user.uid, currentSettings);
+        set({ loading: false, initialized: true });
+      }
+    } catch (error) {
+      console.error('Failed to sync settings with Firestore:', error);
+      set({ loading: false });
+    }
+  },
 }));

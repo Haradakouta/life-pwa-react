@@ -10,6 +10,7 @@ import {
   useExpenseStore,
   useStockStore,
   useShoppingStore,
+  useRecipeStore,
 } from './store';
 import { useAuth } from './hooks/useAuth';
 
@@ -22,6 +23,8 @@ function App() {
   const expenseStore = useExpenseStore();
   const stockStore = useStockStore();
   const shoppingStore = useShoppingStore();
+  const recipeStore = useRecipeStore();
+  const settingsStore = useSettingsStore();
 
   // ダークモードの初期化
   useEffect(() => {
@@ -42,6 +45,8 @@ function App() {
           expenseStore.syncWithFirestore(),
           stockStore.syncWithFirestore(),
           shoppingStore.syncWithFirestore(),
+          recipeStore.syncWithFirestore(),
+          settingsStore.syncWithFirestore(),
         ]);
         console.log('Sync completed for user:', user.uid);
       } catch (error) {

@@ -3,13 +3,16 @@
  */
 import React, { useState } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdNotifications, MdDescription, MdCode, MdSave } from 'react-icons/md';
+import { MdDarkMode, MdNotifications, MdDescription, MdCode, MdSave, MdLogout } from 'react-icons/md';
+import { logout } from '../../utils/auth';
+import { useAuth } from '../../hooks/useAuth';
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
   const { intakes } = useIntakeStore();
   const { expenses } = useExpenseStore();
   const { stocks } = useStockStore();
+  const { user } = useAuth();
 
   const [budget, setBudget] = useState((settings.monthlyBudget ?? 30000).toString());
 
@@ -52,6 +55,15 @@ export const SettingsScreen: React.FC = () => {
     link.href = URL.createObjectURL(blob);
     link.download = `健康家計アプリ_${new Date().toISOString().split('T')[0]}.json`;
     link.click();
+  };
+
+  const handleLogout = async () => {
+    if (window.confirm('ログアウトしますか？')) {
+      const result = await logout();
+      if (result.error) {
+        alert('ログアウトに失敗しました: ' + result.error);
+      }
+    }
   };
 
   return (
@@ -133,6 +145,24 @@ export const SettingsScreen: React.FC = () => {
           <p>支出記録: {expenses.length}件</p>
           <p>在庫アイテム: {stocks.length}件</p>
         </div>
+      </div>
+
+      <div className="card">
+        <h3>アカウント</h3>
+        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)', marginBottom: '12px' }}>
+          <p>ログイン: {user?.email}</p>
+        </div>
+        <button
+          className="submit"
+          onClick={handleLogout}
+          style={{
+            background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+            width: '100%'
+          }}
+        >
+          <MdLogout size={18} style={{ marginRight: '8px' }} />
+          ログアウト
+        </button>
       </div>
     </section>
   );

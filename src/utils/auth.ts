@@ -44,6 +44,8 @@ export const loginWithGoogle = async () => {
 export const logout = async () => {
   try {
     await signOut(auth);
+    // localStorageをクリア（次のユーザーのデータと混在しないように）
+    localStorage.clear();
     return { error: null };
   } catch (error: any) {
     return { error: error.message };

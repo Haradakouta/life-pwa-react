@@ -31,22 +31,19 @@ function App() {
   // ログイン時にFirestoreと同期
   useEffect(() => {
     const syncStores = async () => {
-      if (!user || syncing) return;
+      if (!user) return;
 
-      // すでに同期済みの場合はスキップ
-      if (intakeStore.initialized && expenseStore.initialized &&
-          stockStore.initialized && shoppingStore.initialized) {
-        return;
-      }
-
+      // ユーザーが切り替わった場合は再同期
       setSyncing(true);
       try {
+        console.log('Syncing data for user:', user.uid);
         await Promise.all([
           intakeStore.syncWithFirestore(),
           expenseStore.syncWithFirestore(),
           stockStore.syncWithFirestore(),
           shoppingStore.syncWithFirestore(),
         ]);
+        console.log('Sync completed for user:', user.uid);
       } catch (error) {
         console.error('Failed to sync stores with Firestore:', error);
       } finally {
@@ -55,7 +52,7 @@ function App() {
     };
 
     syncStores();
-  }, [user]);
+  }, [user?.uid]); // user.uidが変わったら再同期
 
   // ローディング中
   if (authLoading || syncing) {

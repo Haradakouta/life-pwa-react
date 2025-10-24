@@ -124,7 +124,9 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
 
     try {
       set({ loading: true });
+      console.log(`[IntakeStore] Syncing data for user: ${user.uid}`);
       const firestoreIntakes = await intakeOperations.getAll(user.uid);
+      console.log(`[IntakeStore] Loaded ${firestoreIntakes.length} intakes from Firestore`);
       set({ intakes: firestoreIntakes, loading: false, initialized: true });
       saveToStorage(STORAGE_KEYS.INTAKES, firestoreIntakes);
     } catch (error) {

@@ -34,7 +34,11 @@ function App() {
   // ログイン時にFirestoreと同期
   useEffect(() => {
     const syncStores = async () => {
-      if (!user) return;
+      if (!user) {
+        // ログアウト時はリアルタイム同期を停止
+        intakeStore.unsubscribeFromFirestore();
+        return;
+      }
 
       // ユーザーが切り替わった場合は再同期
       setSyncing(true);
@@ -49,6 +53,11 @@ function App() {
           settingsStore.syncWithFirestore(),
         ]);
         console.log('Sync completed for user:', user.uid);
+
+        // 初期同期完了後、リアルタイム同期を開始
+        console.log('Starting realtime sync...');
+        intakeStore.subscribeToFirestore();
+        console.log('Realtime sync started');
       } catch (error) {
         console.error('Failed to sync stores with Firestore:', error);
       } finally {
@@ -57,6 +66,13 @@ function App() {
     };
 
     syncStores();
+
+    // クリーンアップ: コンポーネントのアンマウント時に購読解除
+    return () => {
+      if (user) {
+        intakeStore.unsubscribeFromFirestore();
+      }
+    };
   }, [user?.uid]); // user.uidが変わったら再同期
 
   // ローディング中

@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-24 (Firebase統合完了！)**
+**最終更新: 2025-10-24 (Firebase統合＆リアルタイム同期完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -908,9 +908,53 @@ npm run deploy
 3. Authorized domains: `haradakouta.github.io` を追加
 4. Security Rules: ユーザー分離ルールを設定
 
+#### 5. リアルタイム同期の有効化（App.tsx）
+
+**実装内容:**
+- ログイン時に全ストアの初期同期完了後、リアルタイム同期を開始
+- 現在はIntakeStoreのみ有効化（食事記録が自動更新）
+- ログアウト時・コンポーネントアンマウント時に購読解除
+- 他のストア（Expense, Stock, Shopping, Recipe, Settings）も同様の実装が可能
+
+**App.tsxの実装:**
+```typescript
+useEffect(() => {
+  const syncStores = async () => {
+    if (!user) {
+      intakeStore.unsubscribeFromFirestore();
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      // 初期同期
+      await Promise.all([...]);
+
+      // リアルタイム同期開始
+      intakeStore.subscribeToFirestore();
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  syncStores();
+
+  return () => {
+    if (user) {
+      intakeStore.unsubscribeFromFirestore();
+    }
+  };
+}, [user?.uid]);
+```
+
+**動作:**
+- 複数デバイス間でデータが自動同期
+- 他のデバイスで追加・編集・削除された食事記録が即座に反映
+- ネットワーク接続時のみ動作（オフライン時はローカルのみ）
+
 **次のセッションで実装予定:**
-- [ ] リアルタイム同期をApp.tsxで有効化（subscribeToFirestore呼び出し）
-- [ ] パフォーマンス最適化（バンドルサイズ削減）
+- [ ] 他のストア（Expense, Stock, Shopping, Recipe, Settings）のリアルタイム同期を有効化
+- [ ] パフォーマンス最適化（バンドルサイズ削減: 現在1,541KB）
 - [ ] 収入管理機能
 - [ ] データ移行機能（localStorageからFirestoreへ）
 

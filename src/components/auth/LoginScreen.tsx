@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { MdEmail, MdLock, MdLogin, MdPersonAdd, MdVerified } from 'react-icons/md';
+import { MdEmail, MdLock, MdLogin } from 'react-icons/md';
 import { FaGoogle } from 'react-icons/fa';
-import { loginWithEmail, registerWithEmailVerification, loginWithGoogle, resendVerificationEmail } from '../../utils/auth';
+import { loginWithEmail, loginWithGoogle } from '../../utils/auth';
+import { RegisterFlow } from './RegisterFlow';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [isRegister, setIsRegister] = useState(false);
+  const [showRegisterFlow, setShowRegisterFlow] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
-  const [verificationEmail, setVerificationEmail] = useState('');
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,28 +21,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      if (isRegister) {
-        // 新規登録：確認メールを送信
-        const result = await registerWithEmailVerification(email, password);
-        if (result.error) {
-          setError(result.error);
-        } else {
-          setVerificationEmail(email);
-          setShowVerificationMessage(true);
-        }
+      const result = await loginWithEmail(email, password);
+      if (result.error) {
+        setError(result.error);
       } else {
-        // ログイン
-        const result = await loginWithEmail(email, password);
-        if (result.error) {
-          setError(result.error);
-        } else {
-          // メール確認済みかチェック
-          if (result.user && !result.user.emailVerified) {
-            setError('メールアドレスが未確認です。受信トレイを確認してください。');
-          } else {
-            onLoginSuccess();
-          }
-        }
+        onLoginSuccess();
       }
     } catch (err: any) {
       setError(err.message || '認証エラーが発生しました');
@@ -70,56 +52,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleResendVerification = async () => {
-    setLoading(true);
-    try {
-      const result = await resendVerificationEmail();
-      if (result.error) {
-        setError(result.error);
-      } else {
-        setError('');
-        alert('確認メールを再送信しました！');
-      }
-    } catch (err: any) {
-      setError('メール再送信に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // メール確認待ち画面
-  if (showVerificationMessage) {
+  // 新規登録フロー表示
+  if (showRegisterFlow) {
     return (
       <div className="login-screen">
         <div className="login-container">
-          <div className="verification-message">
-            <MdVerified className="verification-icon" />
-            <h2>確認メールを送信しました</h2>
-            <p>
-              <strong>{verificationEmail}</strong> 宛に確認メールを送信しました。
-            </p>
-            <p>
-              メール内のリンクをクリックして、メールアドレスを確認してください。
-            </p>
-            <p className="small-text">
-              メールが届かない場合は、迷惑メールフォルダを確認してください。
-            </p>
-
-            <div className="verification-actions">
-              <button onClick={handleResendVerification} className="resend-button" disabled={loading}>
-                確認メールを再送信
-              </button>
-              <button
-                onClick={() => {
-                  setShowVerificationMessage(false);
-                  setIsRegister(false);
-                }}
-                className="back-button"
-              >
-                ログイン画面に戻る
-              </button>
-            </div>
+          <div className="login-header">
+            <h1>🥗💰 健康家計アプリ</h1>
+            <p>新規登録</p>
           </div>
+
+          <RegisterFlow
+            onComplete={onLoginSuccess}
+            onBack={() => setShowRegisterFlow(false)}
+          />
         </div>
 
         <style>{`
@@ -136,81 +82,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             background: var(--card);
             border-radius: 16px;
             padding: 40px;
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           }
 
-          .verification-message {
+          .login-header {
             text-align: center;
+            margin-bottom: 32px;
           }
 
-          .verification-icon {
-            font-size: 64px;
-            color: var(--primary);
-            margin-bottom: 20px;
-          }
-
-          .verification-message h2 {
+          .login-header h1 {
             color: var(--text);
-            margin: 0 0 20px 0;
+            font-size: 28px;
+            margin: 0 0 8px 0;
           }
 
-          .verification-message p {
-            color: var(--text);
-            line-height: 1.6;
-            margin: 12px 0;
-          }
-
-          .verification-message p.small-text {
-            font-size: 14px;
+          .login-header p {
             color: var(--text-secondary);
-          }
-
-          .verification-message strong {
-            color: var(--primary);
-          }
-
-          .verification-actions {
-            margin-top: 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-          }
-
-          .resend-button,
-          .back-button {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-          }
-
-          .resend-button {
-            background: linear-gradient(135deg, var(--primary) 0%, #43a047 100%);
-            color: white;
-          }
-
-          .resend-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-          }
-
-          .resend-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-          }
-
-          .back-button {
-            background: var(--background);
-            color: var(--text);
-          }
-
-          .back-button:hover {
-            background: var(--border);
+            font-size: 14px;
+            margin: 0;
           }
         `}</style>
       </div>
@@ -223,21 +114,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <div className="login-header">
           <h1>🥗💰 健康家計アプリ</h1>
           <p>AIが健康をサポートする生活管理アプリ</p>
-        </div>
-
-        <div className="login-tabs">
-          <button
-            className={`login-tab ${!isRegister ? 'active' : ''}`}
-            onClick={() => setIsRegister(false)}
-          >
-            ログイン
-          </button>
-          <button
-            className={`login-tab ${isRegister ? 'active' : ''}`}
-            onClick={() => setIsRegister(true)}
-          >
-            新規登録
-          </button>
         </div>
 
         <form onSubmit={handleEmailLogin} className="login-form">
@@ -268,26 +144,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             />
           </div>
 
-          {isRegister && (
-            <div className="info-message">
-              <MdVerified /> 登録後、確認メールが送信されます
-            </div>
-          )}
-
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? (
-              '処理中...'
-            ) : isRegister ? (
-              <>
-                <MdPersonAdd /> 新規登録
-              </>
-            ) : (
+            {loading ? '処理中...' : (
               <>
                 <MdLogin /> ログイン
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowRegisterFlow(true)}
+            className="register-link-button"
+          >
+            アカウントをお持ちでない方はこちら
           </button>
         </form>
 
@@ -344,32 +216,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           margin: 0;
         }
 
-        .login-tabs {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 24px;
-          background: var(--background);
-          padding: 4px;
-          border-radius: 8px;
-        }
-
-        .login-tab {
-          flex: 1;
-          padding: 12px;
+        .register-link-button {
+          background: none;
           border: none;
-          background: transparent;
-          color: var(--text-secondary);
-          font-size: 16px;
-          font-weight: 500;
-          border-radius: 6px;
+          color: var(--primary);
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s;
+          padding: 12px;
+          text-decoration: underline;
+          transition: opacity 0.3s;
         }
 
-        .login-tab.active {
-          background: var(--card);
-          color: var(--primary);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .register-link-button:hover {
+          opacity: 0.8;
         }
 
         .login-form {

@@ -57,10 +57,22 @@ export const verifyCode = async (email: string, inputCode: string): Promise<{ va
   }
 };
 
-// メール送信（実際のメール送信はFirebase Cloud Functionsで行う想定）
-// 開発中はコンソールに出力
-export const sendVerificationEmail = async (_email: string, code: string) => {
-  console.log(`
+// メール送信（Firebase Cloud Functionsを使用）
+export const sendVerificationEmail = async (email: string, code: string) => {
+  try {
+    // Cloud Functionを呼び出す
+    const { httpsCallable } = await import('firebase/functions');
+    const { functions } = await import('../config/firebase');
+
+    const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
+    await sendEmail({ email, code });
+
+    console.log(`Verification email sent to ${email}`);
+  } catch (error) {
+    console.error('Failed to send email via Cloud Function:', error);
+
+    // フォールバック: 開発モードとしてアラート表示
+    console.log(`
 ====================================
 🥗💰 健康家計アプリ - メール確認コード
 ====================================
@@ -96,9 +108,8 @@ AIが健康をサポートする生活管理アプリです。
 https://haradakouta.github.io/life-pwa-react/
 
 ====================================
-  `);
+    `);
 
-  // TODO: 本番環境ではFirebase Cloud Functionsを使ってメール送信
-  // 現在は開発中のため、アラートで表示
-  alert(`【開発モード】確認コードをコンソールに表示しました:\n\n確認コード: ${code}\n\nこのコードを入力してください。`);
+    alert(`【開発モード】メール送信に失敗しました。\n確認コードをコンソールに表示しました:\n\n確認コード: ${code}\n\nこのコードを入力してください。`);
+  }
 };

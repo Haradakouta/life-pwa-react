@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 // Firebase設定
 const firebaseConfig = {
@@ -20,5 +21,8 @@ export const auth = getAuth(app);
 
 // Firestoreのインスタンス
 export const db = getFirestore(app);
+
+// Cloud Functionsのインスタンス
+export const functions = getFunctions(app);
 
 export default app;

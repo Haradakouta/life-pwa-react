@@ -12,7 +12,7 @@ import {
   MdShoppingCart,
   MdBarChart,
   MdSettings,
-  MdHelpOutline
+  MdEmojiEvents
 } from 'react-icons/md';
 
 interface QuickActionsProps {
@@ -72,16 +72,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
       color: '#6366f1',
     },
     {
+      screen: 'badges' as Screen,
+      icon: <MdEmojiEvents size={32} />,
+      label: 'バッジ',
+      color: '#f59e0b',
+    },
+    {
       screen: 'settings',
       icon: <MdSettings size={32} />,
       label: '設定',
       color: '#64748b',
-    },
-    {
-      icon: <MdHelpOutline size={32} />,
-      label: 'ヘルプ',
-      color: '#ec4899',
-      onClick: () => window.open('https://github.com/Haradakouta/life-pwa', '_blank'),
     },
   ];
 

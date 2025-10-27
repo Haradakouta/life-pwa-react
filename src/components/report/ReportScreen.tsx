@@ -2,6 +2,7 @@
  * レポート画面コンポーネント
  */
 import React from 'react';
+import { MonthlyReport } from './MonthlyReport';
 import { CalorieChart } from './CalorieChart';
 import { ExpenseChart } from './ExpenseChart';
 import { ProductRanking } from './ProductRanking';
@@ -11,6 +12,9 @@ export const ReportScreen: React.FC = () => {
   return (
     <section className="screen active">
       <h2>📊 レポート</h2>
+
+      {/* 月次レポート */}
+      <MonthlyReport />
 
       {/* カロリー推移グラフ */}
       <CalorieChart />

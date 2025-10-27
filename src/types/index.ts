@@ -8,3 +8,4 @@ export * from './recipe';
 export * from './shopping';
 export * from './settings';
 export * from './product';
+export * from './badge';

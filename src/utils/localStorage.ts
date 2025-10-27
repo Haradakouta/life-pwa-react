@@ -57,4 +57,5 @@ export const STORAGE_KEYS = {
   RECIPE_HISTORY: 'recipeHistory',
   FAVORITE_RECIPES: 'favoriteRecipes',
   SETTINGS: 'settings',
+  BADGES: 'app-badges',
 } as const;

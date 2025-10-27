@@ -20,7 +20,12 @@ interface SettingsStore {
 const defaultSettings: Settings = {
   monthlyBudget: 30000,
   darkMode: false,
-  notifications: true,
+  notifications: {
+    enabled: true,
+    breakfast: { enabled: true, time: '07:00' },
+    lunch: { enabled: true, time: '12:00' },
+    dinner: { enabled: true, time: '18:00' },
+  },
   firstTime: true,
 };
 

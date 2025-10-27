@@ -3,9 +3,10 @@
  */
 import React, { useState } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdNotifications, MdDescription, MdCode, MdSave, MdLogout } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
+import { NotificationSettings } from './NotificationSettings';
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
@@ -105,23 +106,7 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
-        <h3>通知設定</h3>
-        <div className="setting-item">
-          <div className="setting-item-left">
-            <div className="setting-icon">
-              <MdNotifications size={24} />
-            </div>
-            <span className="setting-label">在庫アラート通知</span>
-          </div>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={settings.notifications}
-              onChange={(e) => updateSettings({ notifications: e.target.checked })}
-            />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
+        <NotificationSettings />
       </div>
 
       <div className="card">

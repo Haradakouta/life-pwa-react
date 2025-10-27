@@ -262,6 +262,75 @@ export function isGeminiEnabled(): boolean {
 }
 
 /**
+ * テキスト生成（月次レポートのAI改善提案など）
+ */
+export async function generateText(prompt: string): Promise<string> {
+  console.log('[Gemini Text] テキスト生成開始');
+
+  if (!API_ENABLED) {
+    throw new Error('Gemini APIキーが設定されていません');
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
+
+    logRequestStats('recipe'); // テキスト生成もrecipeとしてカウント
+
+    console.log('[Gemini Text] APIリクエスト送信');
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    console.log('[Gemini Text] APIレスポンス受信', { status: response.status });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Gemini Text] APIエラー', errorText);
+      throw new Error(`Gemini API エラー: ${response.status}`);
+    }
+
+    const data: GeminiResponse = await response.json();
+    console.log('[Gemini Text] レスポンスデータ受信');
+
+    // レスポンスからテキストを抽出
+    if (data.candidates && data.candidates.length > 0) {
+      const candidate = data.candidates[0];
+      if (candidate.content?.parts && candidate.content.parts.length > 0) {
+        const text = candidate.content.parts[0].text.trim();
+        console.log('[Gemini Text] テキスト生成成功');
+        return text;
+      }
+    }
+
+    throw new Error('テキストを生成できませんでした');
+  } catch (error) {
+    console.error('[Gemini Text] エラー:', error);
+    throw error;
+  }
+}
+
+/**
  * 画像をBase64エンコード
  */
 const fileToBase64 = (file: File): Promise<string> => {

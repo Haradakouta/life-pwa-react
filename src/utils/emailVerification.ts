@@ -57,42 +57,24 @@ export const verifyCode = async (email: string, inputCode: string): Promise<{ va
   }
 };
 
-// メール送信（EmailJSを使用 - 完全無料）
+// メール送信（Cloud Functionsを使用）
 export const sendVerificationEmail = async (email: string, code: string) => {
   try {
-    // EmailJSを使ってメール送信
-    const emailjs = await import('@emailjs/browser');
+    // Cloud Functionを呼び出す
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const { default: app } = await import('../config/firebase');
 
-    // EmailJSの設定（環境変数から取得）
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+    const functions = getFunctions(app);
+    const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
 
-    if (!serviceId || !templateId || !publicKey) {
-      throw new Error('EmailJS configuration missing');
-    }
+    // Cloud Functionにメール送信をリクエスト
+    const result = await sendEmail({ email, code });
 
-    // メールテンプレートのパラメータ
-    const templateParams = {
-      to_email: email,
-      code: code,
-      app_name: '健康家計アプリ',
-      app_url: 'https://haradakouta.github.io/life-pwa-react/',
-    };
+    console.log(`✅ Verification email sent to ${email}`, result);
+  } catch (error: any) {
+    console.error('Failed to send email via Cloud Functions:', error);
 
-    // EmailJSでメール送信
-    await emailjs.default.send(
-      serviceId,
-      templateId,
-      templateParams,
-      publicKey
-    );
-
-    console.log(`✅ Verification email sent to ${email}`);
-  } catch (error) {
-    console.error('Failed to send email via EmailJS:', error);
-
-    // フォールバック: 開発モードとしてアラート表示
+    // フォールバック: 開発モードとしてコンソールに表示
     console.log(`
 ====================================
 🥗💰 健康家計アプリ - メール確認コード
@@ -131,6 +113,9 @@ https://haradakouta.github.io/life-pwa-react/
 ====================================
     `);
 
-    alert(`【開発モード】EmailJS未設定です。\n確認コードをコンソールに表示しました:\n\n確認コード: ${code}\n\nこのコードを入力してください。\n\nセットアップ方法は README_EMAILJS_SETUP.md を参照してください。`);
+    alert(`【開発モード】Cloud Function未設定です。\n確認コードをコンソールに表示しました:\n\n確認コード: ${code}\n\nこのコードを入力してください。`);
+
+    // エラーを再スローして上位で処理
+    throw new Error('メール送信に失敗しました。コンソールで確認コードを確認してください。');
   }
 };

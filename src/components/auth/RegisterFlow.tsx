@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
-import { MdEmail, MdLock, MdPerson, MdVerified, MdSecurity, MdArrowBack } from 'react-icons/md';
+import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack } from 'react-icons/md';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { generateVerificationCode, saveVerificationCode, verifyCode, sendVerificationEmail } from '../../utils/emailVerification';
 
 interface RegisterFlowProps {
-  onComplete: () => void;
   onBack: () => void;
 }
 
-type Step = 'email' | 'code' | 'profile' | '2fa';
+type Step = 'email' | 'code' | 'profile';
 
-export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }) => {
+export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [enable2FA, setEnable2FA] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,12 +33,15 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
       // Firestoreに保存
       await saveVerificationCode(email, code);
 
-      // メール送信（開発中はアラート表示）
+      // Cloud Functionでメール送信
       await sendVerificationEmail(email, code);
+
+      console.log('✅ 確認コードを送信しました:', email);
 
       // ステップ2へ
       setStep('code');
     } catch (err: any) {
+      console.error('Email send error:', err);
       setError(err.message || '確認コードの送信に失敗しました');
     } finally {
       setLoading(false);
@@ -61,6 +62,8 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
         return;
       }
 
+      console.log('✅ 確認コードが正しいです');
+
       // ステップ3へ
       setStep('profile');
     } catch (err: any) {
@@ -70,7 +73,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
     }
   };
 
-  // ステップ3: ユーザー名・パスワード入力
+  // ステップ3: ユーザー名・パスワード入力 → アカウント作成
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -85,14 +88,12 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
       return;
     }
 
-    // ステップ4へ
-    setStep('2fa');
-  };
+    if (!username.trim()) {
+      setError('ユーザー名を入力してください');
+      return;
+    }
 
-  // ステップ4: 二段階認証の設定 → アカウント作成
-  const handleFinalSubmit = async () => {
     setLoading(true);
-    setError('');
 
     try {
       // Firebase Authenticationでアカウント作成
@@ -104,15 +105,24 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
         displayName: username,
       });
 
-      // TODO: 二段階認証の設定（enable2FAがtrueの場合）
-      if (enable2FA) {
-        console.log('二段階認証を有効化（今後実装予定）');
+      console.log('✅ アカウント作成完了:', user.uid);
+
+      // ログイン画面に戻る（自動的にログイン状態になる）
+      onBack();
+    } catch (err: any) {
+      console.error('Registration error:', err);
+
+      // エラーメッセージを日本語化
+      let errorMessage = 'アカウント作成に失敗しました';
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'このメールアドレスは既に使用されています';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'メールアドレスの形式が正しくありません';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'パスワードが弱すぎます（6文字以上推奨）';
       }
 
-      // 登録完了
-      onComplete();
-    } catch (err: any) {
-      setError(err.message || 'アカウント作成に失敗しました');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -138,13 +148,11 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
   return (
     <div className="register-flow">
       <div className="progress-bar">
-        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile', '2fa'].includes(step) ? 'completed' : ''}`}>1</div>
+        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile'].includes(step) ? 'completed' : ''}`}>1</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'code' ? 'active' : ['profile', '2fa'].includes(step) ? 'completed' : ''}`}>2</div>
+        <div className={`progress-step ${step === 'code' ? 'active' : step === 'profile' ? 'completed' : ''}`}>2</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'profile' ? 'active' : step === '2fa' ? 'completed' : ''}`}>3</div>
-        <div className="progress-line" />
-        <div className={`progress-step ${step === '2fa' ? 'active' : ''}`}>4</div>
+        <div className={`progress-step ${step === 'profile' ? 'active' : ''}`}>3</div>
       </div>
 
       {/* ステップ1: メールアドレス入力 */}
@@ -216,7 +224,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
       {step === 'profile' && (
         <form onSubmit={handleProfileSubmit} className="step-form">
           <h2>
-            <MdPerson /> プロフィール設定
+            <MdPerson /> アカウント情報を設定
           </h2>
           <p className="step-description">ユーザー名とパスワードを設定してください</p>
 
@@ -264,50 +272,10 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="submit-button">
-            次へ
-          </button>
-        </form>
-      )}
-
-      {/* ステップ4: 二段階認証の設定 */}
-      {step === '2fa' && (
-        <div className="step-form">
-          <h2>
-            <MdSecurity /> 二段階認証
-          </h2>
-          <p className="step-description">セキュリティを強化するため、二段階認証を設定できます</p>
-
-          <div className="option-card">
-            <div className="option-info">
-              <h3>二段階認証とは？</h3>
-              <p>
-                ログイン時にパスワードに加えて、メールで送られる確認コードの入力が必要になります。
-                不正アクセスを防ぎ、アカウントをより安全に保護できます。
-              </p>
-            </div>
-
-            <label className="toggle-option">
-              <input
-                type="checkbox"
-                checked={enable2FA}
-                onChange={(e) => setEnable2FA(e.target.checked)}
-              />
-              <span className="toggle-slider"></span>
-              <span className="toggle-label">
-                {enable2FA ? '二段階認証を有効にする' : '二段階認証を無効にする'}
-              </span>
-            </label>
-
-            <p className="small-text">※ 後から設定画面で変更できます</p>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <button onClick={handleFinalSubmit} className="submit-button" disabled={loading}>
+          <button type="submit" className="submit-button" disabled={loading}>
             {loading ? 'アカウント作成中...' : '登録完了'}
           </button>
-        </div>
+        </form>
       )}
 
       <style>{`
@@ -362,7 +330,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
           align-self: flex-start;
           padding: 8px 16px;
           background: var(--background);
-          border: none;
+          border: 1px solid var(--border);
           border-radius: 6px;
           color: var(--text);
           font-size: 14px;
@@ -424,7 +392,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
           border: 2px solid var(--border);
           border-radius: 8px;
           font-size: 16px;
-          background: var(--background);
+          background: var(--card);
           color: var(--text);
           transition: all 0.3s;
         }
@@ -495,77 +463,6 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onComplete, onBack }
         .link-button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
-        }
-
-        .option-card {
-          background: var(--background);
-          padding: 24px;
-          border-radius: 12px;
-          border: 2px solid var(--border);
-        }
-
-        .option-info h3 {
-          color: var(--text);
-          font-size: 18px;
-          margin: 0 0 12px 0;
-        }
-
-        .option-info p {
-          color: var(--text-secondary);
-          line-height: 1.6;
-          margin: 0 0 20px 0;
-        }
-
-        .toggle-option {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          cursor: pointer;
-          padding: 12px 0;
-        }
-
-        .toggle-option input {
-          display: none;
-        }
-
-        .toggle-slider {
-          width: 50px;
-          height: 26px;
-          background: var(--border);
-          border-radius: 13px;
-          position: relative;
-          transition: all 0.3s;
-        }
-
-        .toggle-slider::after {
-          content: '';
-          position: absolute;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: white;
-          top: 3px;
-          left: 3px;
-          transition: all 0.3s;
-        }
-
-        .toggle-option input:checked + .toggle-slider {
-          background: var(--primary);
-        }
-
-        .toggle-option input:checked + .toggle-slider::after {
-          left: 27px;
-        }
-
-        .toggle-label {
-          color: var(--text);
-          font-weight: 500;
-        }
-
-        .small-text {
-          color: var(--text-secondary);
-          font-size: 12px;
-          margin: 12px 0 0 0;
         }
       `}</style>
     </div>

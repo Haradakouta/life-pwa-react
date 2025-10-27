@@ -8,7 +8,7 @@ service cloud.firestore {
 
     // メール確認コード（未認証ユーザーも読み書き可能、10分で期限切れ）
     match /verificationCodes/{email} {
-      allow read, write: true;
+      allow read, write: if true;
     }
 
     // その他のパスは全てアクセス不可

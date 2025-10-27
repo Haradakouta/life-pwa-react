@@ -63,7 +63,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           </div>
 
           <RegisterFlow
-            onComplete={onLoginSuccess}
             onBack={() => setShowRegisterFlow(false)}
           />
         </div>

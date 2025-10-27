@@ -42,6 +42,13 @@
 9. **家計簿** - 支出管理・予算管理・カテゴリ別集計
 10. **PWA対応** - オフライン動作
 
+### 🔐 Firebase統合
+- **Firebase Authentication** - ユーザー認証（メール/パスワード、Google）
+- **Firestore Database** - クラウドデータ保存
+- **リアルタイム同期** - 複数デバイス間でデータ同期
+- **3ステップ登録** - メール確認コード方式の新規登録フロー
+- **Cloud Functions** - Nodemailer + Gmail SMTPでメール送信
+
 ---
 
 ## 🚀 デモ
@@ -119,12 +126,49 @@ cp .env.example .env
 `.env`を編集：
 
 ```env
+# Gemini API（AIレシピ生成）
 VITE_GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+
+# 楽天API（商品検索）
 VITE_RAKUTEN_APP_ID=YOUR_RAKUTEN_APP_ID_HERE
+
+# JAN Code Lookup API（商品検索）
 VITE_JANCODE_APP_ID=YOUR_JANCODE_APP_ID_HERE
+
+# Firebase
+VITE_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY_HERE
+VITE_FIREBASE_AUTH_DOMAIN=YOUR_FIREBASE_AUTH_DOMAIN_HERE
+VITE_FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID_HERE
+VITE_FIREBASE_STORAGE_BUCKET=YOUR_FIREBASE_STORAGE_BUCKET_HERE
+VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_FIREBASE_MESSAGING_SENDER_ID_HERE
+VITE_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID_HERE
 ```
 
-### 4. 開発サーバー起動
+### 4. Firebase Cloud Functions の設定（メール送信用）
+
+Cloud Functionsを使用してメール送信機能を有効化します。
+
+#### Gmail設定
+1. Googleアカウントで2段階認証を有効化
+2. アプリパスワードを作成（https://myaccount.google.com/apppasswords）
+3. 16桁のパスワードをメモ
+
+#### Firebase Functions環境変数を設定
+```bash
+firebase login
+firebase use your-project-id
+firebase functions:config:set gmail.email="your-email@gmail.com" gmail.password="your-app-password"
+```
+
+#### Cloud Functionsをデプロイ
+```bash
+cd functions
+npm install
+cd ..
+firebase deploy --only functions
+```
+
+### 5. 開発サーバー起動
 
 ```bash
 npm run dev
@@ -175,6 +219,7 @@ life-pwa-react/
 │   │
 │   ├── components/
 │   │   ├── layout/            # レイアウト
+│   │   ├── auth/              # 認証（ログイン・登録）
 │   │   ├── dashboard/         # ダッシュボード
 │   │   ├── meals/             # 食事記録
 │   │   ├── settings/          # 設定
@@ -182,17 +227,25 @@ life-pwa-react/
 │   │   ├── shopping/          # 買い物リスト
 │   │   ├── recipe/            # AIレシピ
 │   │   ├── barcode/           # バーコードスキャン
+│   │   ├── expense/           # 家計簿
 │   │   └── report/            # レポート
 │   │
 │   ├── store/
 │   │   ├── useIntakeStore.ts  # 食事記録ストア
+│   │   ├── useExpenseStore.ts # 家計簿ストア
 │   │   ├── useStockStore.ts   # 在庫ストア
 │   │   ├── useShoppingStore.ts # 買い物リストストア
 │   │   ├── useRecipeStore.ts  # レシピストア
 │   │   └── useSettingsStore.ts # 設定ストア
 │   │
+│   ├── config/
+│   │   └── firebase.ts        # Firebase設定
+│   │
 │   ├── types/                 # TypeScript型定義
 │   ├── utils/
+│   │   ├── auth.ts            # 認証ユーティリティ
+│   │   ├── emailVerification.ts # メール確認コード
+│   │   ├── firestore.ts       # Firestore操作
 │   │   └── healthAdvisor.ts   # AI健康アドバイザー
 │   │
 │   ├── styles/
@@ -201,7 +254,16 @@ life-pwa-react/
 │   ├── App.tsx
 │   └── main.tsx
 │
+├── functions/                 # Cloud Functions
+│   ├── src/
+│   │   └── index.ts           # メール送信Function
+│   ├── package.json
+│   └── tsconfig.json
+│
 ├── vite.config.ts
+├── firebase.json              # Firebase設定
+├── .firebaserc                # Firebaseプロジェクト
+├── firestore.rules            # Firestoreルール
 ├── package.json
 ├── CLAUDE.md                  # 開発メモ
 └── README.md                  # このファイル

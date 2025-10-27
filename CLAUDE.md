@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-24 (Firebase統合＆リアルタイム同期完了！)**
+**最終更新: 2025-10-27 (Cloud Functions + 認証コードメール送信完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -25,6 +25,8 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 6. ✅ **レシートOCR機能** - Gemini APIでレシート読み取り・家計簿自動登録
 7. ✅ **Firebase統合** - ユーザー認証とクラウドデータ保存
 8. ✅ **リアルタイム同期** - Firestoreによる自動同期
+9. ✅ **3ステップ登録** - メール確認コード方式の新規登録フロー
+10. ✅ **Cloud Functions + Gmail** - 実際のメール送信機能（Nodemailer使用）
 
 ### ~~GitHub Pages デプロイ問題~~ ✅ **完全解決！**
 
@@ -952,10 +954,230 @@ useEffect(() => {
 - 他のデバイスで追加・編集・削除された食事記録が即座に反映
 - ネットワーク接続時のみ動作（オフライン時はローカルのみ）
 
+---
+
+### 2025-10-24 (セッション7) ✅ **マルチステップ登録＆EmailJS統合完了！**
+
+**実装内容:**
+
+#### 1. マルチステップ登録フロー（4段階）
+
+**ステップ1: メールアドレス入力**
+- メールアドレスを入力して確認コードを送信
+- 6桁の確認コードを生成
+- Firestoreに保存（10分間有効）
+
+**ステップ2: 確認コード入力**
+- メールで届いた6桁のコードを入力
+- 数字のみ、6桁まで自動制限
+- コード検証（Firestoreと照合）
+- 再送信機能付き
+
+**ステップ3: ユーザー名・パスワード設定**
+- ユーザー名を入力
+- パスワードを設定（6文字以上）
+- パスワード確認入力
+- 一致チェック機能
+
+**ステップ4: 二段階認証の設定**
+- 二段階認証の説明を表示
+- トグルスイッチでON/OFF切り替え
+- 「後から設定画面で変更できます」の案内
+- 「登録完了」でFirebaseアカウント作成
+
+**新規ファイル:**
+- `src/components/auth/RegisterFlow.tsx` - 4ステップの登録フロー
+- `src/utils/emailVerification.ts` - 6桁コード生成・検証・保存
+
+**UI/UX:**
+- プログレスバーで進捗を可視化（1→2→3→4）
+- 各ステップにアイコンと説明
+- 「戻る」ボタンでログイン画面に戻れる
+- モダンでわかりやすいデザイン
+
+#### 2. EmailJS統合（完全無料・課金不要）
+
+**Firebase Functionsからの切り替え:**
+- 理由: Firebase Blazeプラン（課金）でエラーが発生
+- 解決: EmailJSに切り替え（月200通まで完全無料）
+
+**EmailJSの特徴:**
+- ✅ 完全無料（月200通まで）
+- ✅ クレジットカード不要
+- ✅ Firebase Functions不要
+- ✅ フロントエンドから直接送信
+- ✅ 5分でセットアップ完了
+
+**実装:**
+- `@emailjs/browser` パッケージを追加
+- `emailVerification.ts` をEmailJS対応に変更
+- HTMLメールテンプレート（グラデーションデザイン）
+- フォールバック機能（未設定時はアラート表示）
+
+**環境変数:**
+```env
+VITE_EMAILJS_SERVICE_ID=service_g7krqn8
+VITE_EMAILJS_TEMPLATE_ID=template_kwl82wx
+VITE_EMAILJS_PUBLIC_KEY=XA6RJJmKgBemEJU6f
+```
+
+**新規ファイル:**
+- `README_EMAILJS_SETUP.md` - 詳細なセットアップガイド
+
+**メール本文:**
+- HTMLメール（グラデーション、プロフェッショナル）
+- 確認コードを大きく表示（36px、太字、間隔広め）
+- アプリの機能説明付き
+- レスポンシブデザイン対応
+
+#### 3. Firestoreセキュリティルール更新
+
+**verificationCodesコレクションの追加:**
+```javascript
+match /verificationCodes/{email} {
+  allow read, write: if true;
+}
+```
+
+**未解決の課題:**
+- Firestoreデータベースの作成でエラーが発生
+- 原因: 課金設定またはリージョンの問題と推測
+- 現状: localStorageで動作中（Firestoreなしでも機能）
+
+**デプロイ:**
+```bash
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ マルチステップ登録フローの完全実装
+- ✅ EmailJSによる実際のメール送信（無料）
+- ✅ HTMLメールでプロフェッショナルな見た目
+- ✅ 確認コードの生成・検証システム
+- ⚠️ Firestore作成エラー（次回対応）
+
 **次のセッションで実装予定:**
+- [ ] Firestoreデータベース作成エラーの解決
 - [ ] 他のストア（Expense, Stock, Shopping, Recipe, Settings）のリアルタイム同期を有効化
-- [ ] パフォーマンス最適化（バンドルサイズ削減: 現在1,541KB）
+- [ ] パフォーマンス最適化（バンドルサイズ削減: 現在1,567KB）
 - [ ] 収入管理機能
 - [ ] データ移行機能（localStorageからFirestoreへ）
+
+---
+
+### 2025-10-27 (セッション8) ✅ **Cloud Functions + 認証コードメール送信完了！**
+
+**実装内容:**
+
+#### 1. 新しいFirebaseプロジェクトへの移行
+
+**課金問題を解決:**
+- 旧プロジェクト（osikko-paradice）: 課金問題ですべての機能が使用不可能
+- 新プロジェクト（oshi-para）: 新しいアカウントで作成、Blazeプランに課金済み
+- `.env`ファイルを新しいFirebase設定に更新
+- `.firebaserc`を新プロジェクトIDに更新
+
+**Firebaseセットアップ:**
+- Firebase Authentication: メール/パスワード認証を有効化
+- Firestore Database: 東京リージョンでデータベース作成
+- セキュリティルール: ユーザー分離ルールを設定
+- 承認済みドメイン: `haradakouta.github.io` を追加
+
+#### 2. EmailJS廃止 → Cloud Functions + Nodemailerに変更
+
+**変更理由:**
+- EmailJSではなくFirebaseの標準機能を使いたい
+- Blazeプラン課金済みなのでCloud Functionsが使用可能
+- より確実なメール送信を実現
+
+**Cloud Functions実装:**
+- `functions/src/index.ts` - メール送信Function
+- Nodemailer + Gmail SMTP経由でメール送信
+- HTMLメールテンプレート（グラデーション、プロフェッショナル）
+- 確認コードを大きく表示（32px、太字、間隔広め）
+
+**Gmail設定:**
+- 送信元: `kou07.future.bright@gmail.com`
+- Googleアプリパスワードを使用（2段階認証必須）
+- Firebase Functions環境変数に設定:
+  ```bash
+  firebase functions:config:set gmail.email="..." gmail.password="..."
+  ```
+
+#### 3. 3ステップ登録フローに変更
+
+**4ステップ→3ステップに簡略化:**
+
+**ステップ1: メールアドレス入力**
+- メールアドレスを入力して確認コードを送信
+- 6桁の確認コードを生成
+- Firestoreに保存（10分間有効）
+- Cloud Functionでメール送信
+
+**ステップ2: 確認コード入力**
+- メールで届いた6桁のコードを入力
+- 数字のみ、6桁まで自動制限
+- コード検証（Firestoreと照合）
+- 再送信機能付き
+
+**ステップ3: ユーザー名・パスワード設定**
+- ユーザー名を入力
+- パスワードを設定（6文字以上）
+- パスワード確認入力
+- 「登録完了」でFirebaseアカウント作成
+
+**削除した機能:**
+- 二段階認証設定のステップ（シンプル化のため）
+
+#### 4. フロントエンドの実装
+
+**`src/utils/emailVerification.ts` の変更:**
+- EmailJS呼び出しを削除
+- Cloud Function呼び出しに変更:
+  ```typescript
+  const functions = getFunctions(app);
+  const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
+  await sendEmail({ email, code });
+  ```
+
+**`src/components/auth/RegisterFlow.tsx` の変更:**
+- 4ステップ→3ステップに変更
+- プログレスバーを3段階に変更
+- UIを簡素化
+
+#### 5. デプロイ
+
+**Cloud Functionsデプロイ:**
+```bash
+cd functions
+rm -r node_modules
+npm install
+cd ..
+firebase deploy --only functions
+# → Deploy complete! ✅
+```
+
+**フロントエンドデプロイ:**
+```bash
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ 新しいFirebaseプロジェクト（oshi-para）への移行完了
+- ✅ Cloud Functions + Nodemailerによる実際のメール送信
+- ✅ Gmail SMTP経由でプロフェッショナルなHTMLメールを送信
+- ✅ 3ステップの登録フローでシンプルで使いやすく
+- ✅ すべての機能が正常動作
+
+**今後の改善予定:**
+- [ ] Node.js 18（非推奨）→ Node.js 20にアップグレード
+- [ ] firebase-functions を最新版にアップグレード
+- [ ] パフォーマンス最適化（バンドルサイズ削減: 現在1,572KB）
+- [ ] 収入管理機能
+- [ ] データエクスポート機能の拡充
 
 ---

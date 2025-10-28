@@ -55,3 +55,37 @@ export interface Repost {
   userAvatar?: string;
   createdAt: string;
 }
+
+export interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  servings: number;
+  preparationTime: number; // 分単位
+  cookingTime: number; // 分単位
+  imageUrl?: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  likes: number;
+  commentCount: number;
+  visibility: 'public' | 'followers' | 'private';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface RecipeFormData {
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  servings: number;
+  preparationTime: number;
+  cookingTime: number;
+  image?: File;
+  visibility: 'public' | 'followers' | 'private';
+}

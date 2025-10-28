@@ -31,3 +31,22 @@ export interface ProfileFormData {
   websiteUrl: string;
   isPublic: boolean;
 }
+
+export interface Follow {
+  id: string;
+  followerId: string;
+  followerName: string;
+  followerAvatar?: string;
+  followingId: string;
+  followingName: string;
+  createdAt: string;
+}
+
+export interface Follower {
+  uid: string;
+  displayName: string;
+  username: string;
+  avatarUrl?: string;
+  bio?: string;
+  isFollowing: boolean; // 自分がこのユーザーをフォローしているか
+}

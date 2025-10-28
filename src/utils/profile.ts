@@ -2,10 +2,10 @@
  * プロフィール操作関連のユーティリティ関数
  */
 
-import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs, deleteDoc, increment } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db, auth } from '../config/firebase';
-import type { UserProfile, UserStats } from '../types/profile';
+import type { UserProfile, UserStats, Follow, Follower } from '../types/profile';
 
 /**
  * 初期プロフィールを作成
@@ -178,6 +178,210 @@ export const searchProfiles = async (searchTerm: string): Promise<UserProfile[]>
     return profiles;
   } catch (error) {
     console.error('Search profiles error:', error);
+    return [];
+  }
+};
+
+// ============================================
+// フォロー機能
+// ============================================
+
+/**
+ * ユーザーをフォロー
+ */
+export const followUser = async (
+  followerId: string,
+  followerName: string,
+  followerAvatar: string | undefined,
+  followingId: string,
+  followingName: string
+): Promise<void> => {
+  try {
+    // follows コレクションに追加
+    const followRef = doc(collection(db, `users/${followingId}/followers`));
+    const followData: Follow = {
+      id: followRef.id,
+      followerId,
+      followerName,
+      followerAvatar,
+      followingId,
+      followingName,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(followRef, followData);
+
+    // フォローしている側の followingCount を更新
+    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
+    const followerProfile = await getDoc(followerProfileRef);
+    if (followerProfile.exists()) {
+      await updateDoc(followerProfileRef, {
+        'stats.followingCount': increment(1),
+      });
+    }
+
+    // フォローされている側の followerCount を更新
+    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
+    const followingProfile = await getDoc(followingProfileRef);
+    if (followingProfile.exists()) {
+      await updateDoc(followingProfileRef, {
+        'stats.followerCount': increment(1),
+      });
+    }
+
+    console.log(`✅ ${followerId} followed ${followingId}`);
+  } catch (error) {
+    console.error('Follow error:', error);
+    throw error;
+  }
+};
+
+/**
+ * ユーザーをアンフォロー
+ */
+export const unfollowUser = async (followerId: string, followingId: string): Promise<void> => {
+  try {
+    // followers コレクションから削除
+    const followersRef = collection(db, `users/${followingId}/followers`);
+    const querySnapshot = await getDocs(followersRef);
+
+    for (const docSnap of querySnapshot.docs) {
+      const followData = docSnap.data() as Follow;
+      if (followData.followerId === followerId) {
+        await deleteDoc(docSnap.ref);
+      }
+    }
+
+    // フォローしている側の followingCount を更新
+    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
+    const followerProfile = await getDoc(followerProfileRef);
+    if (followerProfile.exists()) {
+      await updateDoc(followerProfileRef, {
+        'stats.followingCount': increment(-1),
+      });
+    }
+
+    // フォローされている側の followerCount を更新
+    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
+    const followingProfile = await getDoc(followingProfileRef);
+    if (followingProfile.exists()) {
+      await updateDoc(followingProfileRef, {
+        'stats.followerCount': increment(-1),
+      });
+    }
+
+    console.log(`✅ ${followerId} unfollowed ${followingId}`);
+  } catch (error) {
+    console.error('Unfollow error:', error);
+    throw error;
+  }
+};
+
+/**
+ * フォロー状態をチェック
+ */
+export const isFollowing = async (followerId: string, followingId: string): Promise<boolean> => {
+  try {
+    const followersRef = collection(db, `users/${followingId}/followers`);
+    const querySnapshot = await getDocs(followersRef);
+
+    for (const docSnap of querySnapshot.docs) {
+      const followData = docSnap.data() as Follow;
+      if (followData.followerId === followerId) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Check follow error:', error);
+    return false;
+  }
+};
+
+/**
+ * ユーザーのフォロワー一覧を取得
+ */
+export const getFollowers = async (userId: string): Promise<Follower[]> => {
+  try {
+    const followersRef = collection(db, `users/${userId}/followers`);
+    const querySnapshot = await getDocs(followersRef);
+
+    const followers: Follower[] = [];
+    const currentUser = auth.currentUser;
+
+    for (const docSnap of querySnapshot.docs) {
+      const followData = docSnap.data() as Follow;
+      const followerProfile = await getUserProfile(followData.followerId);
+
+      if (followerProfile) {
+        // 現在のユーザーがこのフォロワーをフォローしているかチェック
+        let isFollowingThisUser = false;
+        if (currentUser && currentUser.uid !== userId) {
+          isFollowingThisUser = await isFollowing(currentUser.uid, followData.followerId);
+        }
+
+        followers.push({
+          uid: followerProfile.uid,
+          displayName: followerProfile.displayName,
+          username: followerProfile.username,
+          avatarUrl: followerProfile.avatarUrl,
+          bio: followerProfile.bio,
+          isFollowing: isFollowingThisUser,
+        });
+      }
+    }
+
+    return followers.sort((a, b) => a.displayName.localeCompare(b.displayName));
+  } catch (error) {
+    console.error('Get followers error:', error);
+    return [];
+  }
+};
+
+/**
+ * フォロー中のユーザー一覧を取得
+ */
+export const getFollowing = async (userId: string): Promise<Follower[]> => {
+  try {
+    const profilesRef = collection(db, 'users');
+    const querySnapshot = await getDocs(profilesRef);
+
+    const following: Follower[] = [];
+    const currentUser = auth.currentUser;
+
+    for (const docSnap of querySnapshot.docs) {
+      const followerFollowersRef = collection(db, `users/${docSnap.id}/followers`);
+      const followerSnapshot = await getDocs(followerFollowersRef);
+
+      for (const followDoc of followerSnapshot.docs) {
+        const followData = followDoc.data() as Follow;
+        if (followData.followerId === userId) {
+          const followingProfile = await getUserProfile(docSnap.id);
+
+          if (followingProfile) {
+            // 現在のユーザーがこのユーザーをフォローしているかチェック
+            let isFollowingThisUser = false;
+            if (currentUser && currentUser.uid !== userId) {
+              isFollowingThisUser = await isFollowing(currentUser.uid, followingProfile.uid);
+            }
+
+            following.push({
+              uid: followingProfile.uid,
+              displayName: followingProfile.displayName,
+              username: followingProfile.username,
+              avatarUrl: followingProfile.avatarUrl,
+              bio: followingProfile.bio,
+              isFollowing: isFollowingThisUser,
+            });
+          }
+        }
+      }
+    }
+
+    return following.sort((a, b) => a.displayName.localeCompare(b.displayName));
+  } catch (error) {
+    console.error('Get following error:', error);
     return [];
   }
 };

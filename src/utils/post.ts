@@ -15,7 +15,7 @@ import {
   increment,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Post, PostFormData, Like, Comment, Bookmark, Repost } from '../types/post';
+import type { Post, PostFormData, Like, Comment, Bookmark, Repost, Recipe, RecipeFormData } from '../types/post';
 import { uploadPostImage } from './imageUpload';
 import { getUserProfile } from './profile';
 
@@ -724,6 +724,287 @@ export const getPostReposts = async (postId: string): Promise<Repost[]> => {
     return reposts;
   } catch (error) {
     console.error('リポスト一覧の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+// ============================================
+// レシピ共有機能（Phase 5）
+// ============================================
+
+/**
+ * レシピを投稿
+ */
+export const publishRecipe = async (
+  userId: string,
+  data: RecipeFormData
+): Promise<string> => {
+  try {
+    const profile = await getUserProfile(userId);
+    if (!profile) {
+      throw new Error('プロフィールが見つかりません');
+    }
+
+    // 画像をアップロード
+    let imageUrl = '';
+    if (data.image) {
+      imageUrl = await uploadPostImage(userId, data.image);
+    }
+
+    const recipeRef = doc(collection(db, 'recipes'));
+    const recipeId = recipeRef.id;
+
+    const recipeData: Recipe = {
+      id: recipeId,
+      title: data.title,
+      description: data.description,
+      ingredients: data.ingredients,
+      instructions: data.instructions,
+      difficulty: data.difficulty,
+      servings: data.servings,
+      preparationTime: data.preparationTime,
+      cookingTime: data.cookingTime,
+      imageUrl,
+      authorId: userId,
+      authorName: profile.displayName,
+      authorAvatar: profile.avatarUrl,
+      likes: 0,
+      commentCount: 0,
+      visibility: data.visibility,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(recipeRef, recipeData);
+    console.log('レシピを投稿しました:', recipeId);
+    return recipeId;
+  } catch (error) {
+    console.error('レシピの投稿に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * レシピを取得
+ */
+export const getRecipe = async (recipeId: string): Promise<Recipe | null> => {
+  try {
+    const recipeRef = doc(db, 'recipes', recipeId);
+    const recipeSnap = await getDoc(recipeRef);
+
+    if (!recipeSnap.exists()) {
+      return null;
+    }
+
+    const data = recipeSnap.data();
+    return {
+      id: recipeSnap.id,
+      title: data.title,
+      description: data.description,
+      ingredients: data.ingredients,
+      instructions: data.instructions,
+      difficulty: data.difficulty,
+      servings: data.servings,
+      preparationTime: data.preparationTime,
+      cookingTime: data.cookingTime,
+      imageUrl: data.imageUrl,
+      authorId: data.authorId,
+      authorName: data.authorName,
+      authorAvatar: data.authorAvatar,
+      likes: data.likes || 0,
+      commentCount: data.commentCount || 0,
+      visibility: data.visibility,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  } catch (error) {
+    console.error('レシピの取得に失敗しました:', error);
+    return null;
+  }
+};
+
+/**
+ * 公開レシピ一覧を取得
+ */
+export const getPublicRecipes = async (limit: number = 20): Promise<Recipe[]> => {
+  try {
+    const recipesRef = collection(db, 'recipes');
+    const q = query(
+      recipesRef,
+      where('visibility', '==', 'public'),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const recipes: Recipe[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      recipes.push({
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        ingredients: data.ingredients,
+        instructions: data.instructions,
+        difficulty: data.difficulty,
+        servings: data.servings,
+        preparationTime: data.preparationTime,
+        cookingTime: data.cookingTime,
+        imageUrl: data.imageUrl,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar,
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        visibility: data.visibility,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    });
+
+    return recipes;
+  } catch (error) {
+    console.error('レシピ一覧の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+/**
+ * ユーザーのレシピ一覧を取得
+ */
+export const getUserRecipes = async (userId: string, limit: number = 20): Promise<Recipe[]> => {
+  try {
+    const recipesRef = collection(db, 'recipes');
+    const q = query(
+      recipesRef,
+      where('authorId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const recipes: Recipe[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      recipes.push({
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        ingredients: data.ingredients,
+        instructions: data.instructions,
+        difficulty: data.difficulty,
+        servings: data.servings,
+        preparationTime: data.preparationTime,
+        cookingTime: data.cookingTime,
+        imageUrl: data.imageUrl,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar,
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        visibility: data.visibility,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    });
+
+    return recipes;
+  } catch (error) {
+    console.error('ユーザーのレシピ取得に失敗しました:', error);
+    return [];
+  }
+};
+
+// ============================================
+// ランキング機能（Phase 7）
+// ============================================
+
+/**
+ * いいねの多い投稿ランキング
+ */
+export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> => {
+  try {
+    const postsRef = collection(db, 'posts');
+    const q = query(
+      postsRef,
+      where('visibility', '==', 'public'),
+      orderBy('likes', 'desc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const posts: Post[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      posts.push({
+        id: doc.id,
+        content: data.content,
+        images: data.images || [],
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar || '',
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        repostCount: data.repostCount || 0,
+        hashtags: data.hashtags || [],
+        visibility: data.visibility,
+        createdAt: timestampToString(data.createdAt),
+        updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+      });
+    });
+
+    return posts;
+  } catch (error) {
+    console.error('ランキング取得に失敗しました:', error);
+    return [];
+  }
+};
+
+/**
+ * いいねの多いレシピランキング
+ */
+export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]> => {
+  try {
+    const recipesRef = collection(db, 'recipes');
+    const q = query(
+      recipesRef,
+      where('visibility', '==', 'public'),
+      orderBy('likes', 'desc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const recipes: Recipe[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      recipes.push({
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        ingredients: data.ingredients,
+        instructions: data.instructions,
+        difficulty: data.difficulty,
+        servings: data.servings,
+        preparationTime: data.preparationTime,
+        cookingTime: data.cookingTime,
+        imageUrl: data.imageUrl,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar,
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        visibility: data.visibility,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    });
+
+    return recipes;
+  } catch (error) {
+    console.error('レシピランキング取得に失敗しました:', error);
     return [];
   }
 };

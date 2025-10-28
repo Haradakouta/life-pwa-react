@@ -11,6 +11,22 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // 投稿（posts）のルール
+    match /posts/{postId} {
+      // 読み取り: 公開投稿は誰でも、それ以外は認証済みユーザー
+      allow read: if resource.data.visibility == 'public'
+                  || (request.auth != null && resource.data.visibility == 'followers')
+                  || (request.auth != null && request.auth.uid == resource.data.authorId);
+
+      // 作成: 認証済みユーザー、かつ自分のuidをauthorIdに設定
+      allow create: if request.auth != null
+                    && request.resource.data.authorId == request.auth.uid;
+
+      // 更新・削除: 自分の投稿のみ
+      allow update, delete: if request.auth != null
+                            && resource.data.authorId == request.auth.uid;
+    }
+
     // その他のパスは全てアクセス不可
     match /{document=**} {
       allow read, write: if false;

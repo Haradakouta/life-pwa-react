@@ -15,6 +15,7 @@ import { BarcodeScreen } from '../barcode/BarcodeScreen';
 import { ReportScreen } from '../report/ReportScreen';
 import { ExpenseScreen } from '../expense/ExpenseScreen';
 import { BadgeScreen } from '../badges/BadgeScreen';
+import { SocialScreen } from '../social/SocialScreen';
 
 export const Layout: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -25,6 +26,7 @@ export const Layout: React.FC = () => {
       meals: '食事記録',
       barcode: 'バーコードスキャン',
       report: 'レポート',
+      social: 'ソーシャル',
       settings: '設定',
       stock: '在庫管理',
       shopping: '買い物リスト',
@@ -45,6 +47,8 @@ export const Layout: React.FC = () => {
         return <BarcodeScreen onNavigateToStock={() => setCurrentScreen('stock')} />;
       case 'report':
         return <ReportScreen />;
+      case 'social':
+        return <SocialScreen />;
       case 'settings':
         return <SettingsScreen />;
       case 'stock':

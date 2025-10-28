@@ -7,9 +7,10 @@ import type { Post } from '../../types/post';
 
 interface TimelineScreenProps {
   onPostClick: (postId: string) => void;
+  onUserClick: (userId: string) => void;
 }
 
-export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick }) => {
+export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onUserClick }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -221,7 +222,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick }) =
           // 投稿一覧
           <div>
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onPostClick={onPostClick} />
+              <PostCard key={post.id} post={post} onPostClick={onPostClick} onUserClick={onUserClick} />
             ))}
           </div>
         )}

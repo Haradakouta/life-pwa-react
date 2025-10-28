@@ -8,12 +8,14 @@ interface PostDetailScreenProps {
   postId: string;
   onBack: () => void;
   onPostDeleted: () => void;
+  onUserClick: (userId: string) => void;
 }
 
 export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   postId,
   onBack,
   onPostDeleted,
+  onUserClick,
 }) => {
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
@@ -225,7 +227,25 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
       {/* 投稿本体 */}
       <div style={{ padding: '20px' }}>
         {/* プロフィール情報 */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+        <div
+          onClick={() => onUserClick(post.authorId)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '16px',
+            cursor: 'pointer',
+            padding: '8px',
+            marginLeft: '-8px',
+            borderRadius: '8px',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--border)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'none';
+          }}
+        >
           <div
             style={{
               width: '56px',

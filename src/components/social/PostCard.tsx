@@ -7,9 +7,10 @@ import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark,
 interface PostCardProps {
   post: Post;
   onPostClick: (postId: string) => void;
+  onUserClick?: (userId: string) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -146,7 +147,32 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick }) => {
       }}
     >
       {/* ヘッダー（プロフィール情報） */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+      <div
+        onClick={(e) => {
+          if (onUserClick) {
+            e.stopPropagation();
+            onUserClick(post.authorId);
+          }
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '12px',
+          cursor: onUserClick ? 'pointer' : 'default',
+          padding: '4px',
+          marginLeft: '-4px',
+          borderRadius: '8px',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          if (onUserClick) {
+            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'none';
+        }}
+      >
         <div
           style={{
             width: '48px',

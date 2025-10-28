@@ -1,0 +1,89 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // ========================================
+    // ユーザープロフィール画像
+    // ========================================
+
+    // アバター画像: users/{userId}/profile/avatar/*
+    match /users/{userId}/profile/avatar/{file=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+
+      // アップロード: 自分のアバターのみ
+      // 10MB以下、JPEG/PNG/GIF/WebP形式、名前は固定（avatar）
+      allow create, write: if request.auth != null
+                           && request.auth.uid == userId
+                           && request.resource.size < 10 * 1024 * 1024
+                           && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+      // 削除: 自分のアバターのみ削除可能
+      allow delete: if request.auth != null
+                    && request.auth.uid == userId;
+    }
+
+    // カバー画像: users/{userId}/profile/cover/*
+    match /users/{userId}/profile/cover/{file=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+
+      // アップロード: 自分のカバーのみ
+      // 10MB以下、JPEG/PNG/GIF/WebP形式、名前は固定（cover）
+      allow create, write: if request.auth != null
+                           && request.auth.uid == userId
+                           && request.resource.size < 10 * 1024 * 1024
+                           && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+      // 削除: 自分のカバーのみ削除可能
+      allow delete: if request.auth != null
+                    && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // 投稿画像
+    // ========================================
+
+    // 投稿画像: posts/{postId}/{fileName}
+    match /posts/{postId}/{file=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+
+      // アップロード: 認証済みユーザーのみ
+      // 15MB以下（複数枚対応）、JPEG/PNG/GIF/WebP形式
+      allow create: if request.auth != null
+                    && request.resource.size < 15 * 1024 * 1024
+                    && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+      // 削除: 投稿作成者のみ
+      allow delete: if request.auth != null;
+    }
+
+    // ========================================
+    // レシピ共有画像
+    // ========================================
+
+    // レシピ画像: recipes/{recipeId}/{fileName}
+    match /recipes/{recipeId}/{file=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+
+      // アップロード: 認証済みユーザーのみ
+      // 15MB以下、JPEG/PNG/GIF/WebP形式
+      allow create: if request.auth != null
+                    && request.resource.size < 15 * 1024 * 1024
+                    && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+      // 削除: レシピ作成者のみ
+      allow delete: if request.auth != null;
+    }
+
+    // ========================================
+    // デフォルト: すべてのパスはアクセス不可
+    // ========================================
+
+    // その他のパスは全てアクセス不可
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

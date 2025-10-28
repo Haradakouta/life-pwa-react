@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-28 (セッション10: パスワードリセット + SNSプロフィール基盤完成！)**
+**最終更新: 2025-10-28 (セッション11: SNS投稿機能（Phase 2）完成！)**
 
 ## 📋 プロジェクト概要
 
@@ -32,17 +32,21 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 13. ✅ **月次レポート** - サマリー、先月比較、AI改善提案
 14. ✅ **パスワードリセット機能** - 認証コード方式のパスワードリセット
 15. ✅ **SNSプロフィール基盤** - アイコン・名前・bio編集、画像アップロード（Phase 1完了）
+16. ✅ **SNS投稿機能** - 投稿作成、タイムライン、投稿詳細、削除機能（Phase 2完了）
 
-### 🚧 次の実装予定：SNS機能（Phase 2）
+### 🚧 次の実装予定：SNS機能（Phase 3）
 
-**Phase 2: 投稿機能**
-- [ ] 投稿作成機能（テキスト・画像投稿）
-- [ ] タイムライン表示
-- [ ] 投稿詳細画面
-- [ ] ソーシャル画面の構成
-- [ ] BottomNavにソーシャル追加
+**Phase 3: インタラクション**
+- [ ] いいね機能（Firestoreに保存）
+- [ ] コメント機能
+- [ ] ブックマーク機能
+- [ ] リポスト機能
 
-**詳細ガイド:** `PHASE2_HANDOFF.md` 参照
+**Phase 4以降:**
+- フォロー機能
+- レシピ共有機能
+- 通知機能
+- ランキング機能
 
 ### ~~GitHub Pages デプロイ問題~~ ✅ **完全解決！**
 
@@ -1299,17 +1303,188 @@ npm run deploy
 
 ---
 
-## 🎯 次回セッション（Phase 2）の開始方法
+### 2025-10-28 (セッション11) ✅ **SNS投稿機能（Phase 2）完成！**
 
-1. **`PHASE2_HANDOFF.md`を読む** - 詳細な実装ガイド
-2. **チェックリストを確認** - 実装すべき項目
-3. **実装手順に従う** - ステップ1から順番に実装
-4. **既存コードを参考にする** - レシピ作成画面など
+**実装内容:**
 
-**重要なファイル:**
-- `PHASE2_HANDOFF.md` - Phase 2の詳細ガイド
-- `src/utils/imageUpload.ts` - 画像アップロード機能（再利用）
-- `src/utils/profile.ts` - プロフィール操作（参考）
+#### 1. 投稿用の型定義
+
+**新規ファイル:** `src/types/post.ts`
+```typescript
+export interface Post {
+  id: string;
+  content: string;
+  images?: string[];
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  likes: number;
+  commentCount: number;
+  repostCount: number;
+  hashtags?: string[];
+  visibility: 'public' | 'followers' | 'private';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface PostFormData {
+  content: string;
+  images: File[];
+  visibility: 'public' | 'followers' | 'private';
+}
+```
+
+#### 2. 投稿操作ユーティリティ
+
+**新規ファイル:** `src/utils/post.ts`
+
+**主要関数:**
+- `createPost()` - 投稿を作成（画像アップロード、ハッシュタグ抽出）
+- `getPost()` - 投稿を取得
+- `getUserPosts()` - ユーザーの投稿一覧を取得
+- `getTimelinePosts()` - タイムライン取得（全体公開の投稿）
+- `deletePost()` - 投稿を削除（自分の投稿のみ）
+- `updatePost()` - 投稿を更新
+- `extractHashtags()` - ハッシュタグを抽出
+- `getRelativeTime()` - 相対時間を取得（「3時間前」など）
+
+**Firestoreデータ構造:**
+```
+Firestore
+└── posts (コレクション)
+    └── {postId}
+        ├── content
+        ├── images (配列)
+        ├── authorId
+        ├── authorName
+        ├── authorAvatar
+        ├── likes
+        ├── commentCount
+        ├── repostCount
+        ├── hashtags
+        ├── visibility
+        ├── createdAt
+        └── updatedAt
+```
+
+#### 3. 投稿カードコンポーネント
+
+**新規ファイル:** `src/components/social/PostCard.tsx`
+
+**機能:**
+- プロフィール画像、名前、投稿時間を表示
+- 本文表示（改行対応）
+- 画像表示（1枚: 16:9、複数枚: グリッド表示）
+- いいね、コメント、リポスト、共有ボタン
+- ホバーエフェクト
+- 投稿詳細画面への遷移
+
+#### 4. 投稿作成画面
+
+**新規ファイル:** `src/components/social/PostCreateScreen.tsx`
+
+**機能:**
+- テキスト入力エリア（280文字制限、カウント表示）
+- 画像アップロード（最大4枚、プレビュー表示）
+- 画像削除機能
+- 公開範囲選択（全体公開/フォロワー/非公開）
+- バリデーション（文字数、画像数）
+- モーダル表示
+
+#### 5. タイムライン画面
+
+**新規ファイル:** `src/components/social/TimelineScreen.tsx`
+
+**機能:**
+- 投稿作成ボタン（FAB）
+- 投稿一覧表示（最新20件）
+- 更新ボタン
+- ローディング表示
+- 空の状態表示
+- 投稿後の自動更新
+
+#### 6. 投稿詳細画面
+
+**新規ファイル:** `src/components/social/PostDetailScreen.tsx`
+
+**機能:**
+- 投稿の詳細表示
+- 削除ボタン（自分の投稿のみ）
+- 戻るボタン
+- いいね・コメント数表示
+- コメント欄（Phase 3で実装予定）
+
+#### 7. ソーシャル画面のメイン構成
+
+**新規ファイル:** `src/components/social/SocialScreen.tsx`
+
+**機能:**
+- タイムライン表示
+- 投稿詳細への画面遷移
+- タブ構成（Phase 3以降で拡張予定）
+
+#### 8. BottomNav & Layout統合
+
+**変更ファイル:**
+- `src/components/layout/BottomNav.tsx` - 'social'を追加（MdPeopleアイコン）
+- `src/components/layout/Layout.tsx` - SocialScreenを統合
+
+#### 9. Firestoreセキュリティルール更新
+
+**変更ファイル:** `firestore.rules`
+
+**投稿のルール:**
+```javascript
+match /posts/{postId} {
+  // 読み取り: 公開投稿は誰でも、それ以外は認証済みユーザー
+  allow read: if resource.data.visibility == 'public'
+              || (request.auth != null && resource.data.visibility == 'followers')
+              || (request.auth != null && request.auth.uid == resource.data.authorId);
+
+  // 作成: 認証済みユーザー、かつ自分のuidをauthorIdに設定
+  allow create: if request.auth != null
+                && request.resource.data.authorId == request.auth.uid;
+
+  // 更新・削除: 自分の投稿のみ
+  allow update, delete: if request.auth != null
+                        && resource.data.authorId == request.auth.uid;
+}
+```
+
+**デプロイ:**
+```bash
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ 投稿作成機能の完全実装（テキスト・画像・公開範囲）
+- ✅ タイムライン表示（最新投稿一覧）
+- ✅ 投稿詳細画面（削除機能付き）
+- ✅ BottomNavにソーシャルを追加（6つのタブ）
+- ✅ Firestoreセキュリティルール更新
+- ✅ すべての機能が正常動作
+- ✅ ビルド成功（バンドルサイズ: 1,682KB）
+
+**Phase 2完了項目:**
+- ✅ 投稿作成機能（テキスト・画像投稿）
+- ✅ タイムライン表示
+- ✅ 投稿詳細画面
+- ✅ ソーシャル画面の構成
+- ✅ BottomNavにソーシャル追加
+
+**次回の予定（Phase 3: インタラクション）:**
+- [ ] いいね機能（Firestoreに保存）
+- [ ] コメント機能
+- [ ] ブックマーク機能
+- [ ] リポスト機能
+
+**注意事項:**
+- Firestoreセキュリティルールは手動でデプロイする必要があります:
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
 
 ---
 

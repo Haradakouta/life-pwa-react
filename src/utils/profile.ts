@@ -11,28 +11,33 @@ import type { UserProfile, UserStats, Follow, Follower } from '../types/profile'
  * 初期プロフィールを作成
  */
 export const createUserProfile = async (uid: string, email: string, displayName: string): Promise<void> => {
-  const userProfile: UserProfile = {
-    uid,
-    displayName,
-    username: `user${uid.slice(0, 8)}`, // 仮のusername
-    email,
-    bio: '',
-    avatarUrl: '',
-    coverUrl: '',
-    websiteUrl: '',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-    stats: {
-      postCount: 0,
-      followerCount: 0,
-      followingCount: 0,
-      recipeCount: 0,
-      likeCount: 0,
-    },
-  };
+  try {
+    const userProfile: UserProfile = {
+      uid,
+      displayName,
+      username: `user${uid.slice(0, 8)}`, // 仮のusername
+      email,
+      bio: '',
+      avatarUrl: '',
+      coverUrl: '',
+      websiteUrl: '',
+      isPublic: true,
+      createdAt: new Date().toISOString(),
+      stats: {
+        postCount: 0,
+        followerCount: 0,
+        followingCount: 0,
+        recipeCount: 0,
+        likeCount: 0,
+      },
+    };
 
-  await setDoc(doc(db, 'users', uid, 'profile', 'data'), userProfile);
-  console.log('✅ User profile created:', uid);
+    await setDoc(doc(db, 'users', uid, 'profile', 'data'), userProfile);
+    console.log('✅ User profile created:', uid);
+  } catch (error) {
+    console.error('Failed to create user profile:', error);
+    throw new Error('プロフィール作成に失敗しました');
+  }
 };
 
 /**

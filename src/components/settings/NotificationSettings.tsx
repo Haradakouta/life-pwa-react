@@ -23,7 +23,8 @@ export function NotificationSettings() {
     if (settings.notifications.enabled && permission === 'granted') {
       scheduleNotifications(settings.notifications);
     }
-  }, [settings.notifications, permission]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.notifications.enabled, permission]);
 
   const handleToggleNotifications = async () => {
     if (!isNotificationSupported()) {
@@ -42,12 +43,15 @@ export function NotificationSettings() {
       }
     }
 
-    await updateSettings({
+    // 設定を更新
+    const newSettings = {
       notifications: {
         ...settings.notifications,
         enabled: !settings.notifications.enabled,
       },
-    });
+    };
+
+    await updateSettings(newSettings);
   };
 
   const handleToggleMeal = async (meal: 'breakfast' | 'lunch' | 'dinner') => {

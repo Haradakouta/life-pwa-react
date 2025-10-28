@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MdClose, MdImage, MdPublic, MdPeople, MdLock } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { createPost } from '../../utils/post';
+import { getUserProfile, createUserProfile } from '../../utils/profile';
 import type { PostFormData } from '../../types/post';
 
 interface PostCreateScreenProps {
@@ -76,6 +77,30 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
     setError('');
 
     try {
+      // プロフィールが存在するかチェック（投稿にはプロフィールが必要）
+      console.log('📝 Checking user profile before posting...');
+      let profile = await getUserProfile(user.uid);
+
+      if (!profile) {
+        console.log('⚠️ プロフィールが存在しません。自動作成します...');
+        try {
+          await createUserProfile(
+            user.uid,
+            user.email || '',
+            user.displayName || `User${user.uid.slice(0, 8)}`
+          );
+          console.log('✅ プロフィールを作成しました');
+
+          // 作成したプロフィールを取得
+          profile = await getUserProfile(user.uid);
+        } catch (profileError: any) {
+          console.error('❌ プロフィール作成に失敗しました:', profileError);
+          setError('プロフィール作成に失敗しました。設定画面からプロフィールを作成してください。');
+          setLoading(false);
+          return;
+        }
+      }
+
       const postData: PostFormData = {
         content: content.trim(),
         images,

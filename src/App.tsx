@@ -15,6 +15,7 @@ import {
   useBadgeStore,
 } from './store';
 import { useAuth } from './hooks/useAuth';
+import { getUserProfile, createUserProfile } from './utils/profile';
 import type { BadgeCheckData } from './types';
 
 /**
@@ -138,6 +139,27 @@ function App() {
       setSyncing(true);
       try {
         console.log('Syncing data for user:', user.uid);
+
+        // プロフィールが存在するかチェック（ソーシャル機能に必要）
+        console.log('📝 Checking user profile...');
+        const profile = await getUserProfile(user.uid);
+        if (!profile) {
+          console.log('⚠️ プロフィールが存在しません。自動作成します...');
+          try {
+            await createUserProfile(
+              user.uid,
+              user.email || '',
+              user.displayName || `User${user.uid.slice(0, 8)}`
+            );
+            console.log('✅ プロフィールを作成しました');
+          } catch (profileError) {
+            console.error('❌ プロフィール作成に失敗しました:', profileError);
+            // プロフィール作成失敗しても続行（他の機能は使える）
+          }
+        } else {
+          console.log('✅ プロフィールが存在します');
+        }
+
         await Promise.all([
           intakeStore.syncWithFirestore(),
           expenseStore.syncWithFirestore(),

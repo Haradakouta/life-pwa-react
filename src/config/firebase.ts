@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 
 // Firebase設定
 const firebaseConfig = {
@@ -24,5 +25,8 @@ export const db = getFirestore(app);
 
 // Cloud Functionsのインスタンス
 export const functions = getFunctions(app);
+
+// Firebase Storageのインスタンス
+export const storage = getStorage(app);
 
 export default app;

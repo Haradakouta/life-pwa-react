@@ -3,6 +3,7 @@ import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack } from 'react-icons/
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { generateVerificationCode, saveVerificationCode, verifyCode, sendVerificationEmail } from '../../utils/emailVerification';
+import { createUserProfile } from '../../utils/profile';
 
 interface RegisterFlowProps {
   onBack: () => void;
@@ -104,6 +105,9 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       await updateProfile(user, {
         displayName: username,
       });
+
+      // Firestoreにプロフィールを作成
+      await createUserProfile(user.uid, email, username);
 
       console.log('✅ アカウント作成完了:', user.uid);
 

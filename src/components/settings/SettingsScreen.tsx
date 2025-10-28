@@ -3,10 +3,11 @@
  */
 import React, { useState } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { NotificationSettings } from './NotificationSettings';
+import { ProfileEditScreen } from '../profile/ProfileEditScreen';
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
@@ -16,6 +17,7 @@ export const SettingsScreen: React.FC = () => {
   const { user } = useAuth();
 
   const [budget, setBudget] = useState((settings.monthlyBudget ?? 30000).toString());
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
 
   const handleSaveSettings = () => {
     updateSettings({
@@ -67,9 +69,46 @@ export const SettingsScreen: React.FC = () => {
     }
   };
 
+  // プロフィール編集画面を表示中
+  if (showProfileEdit) {
+    return <ProfileEditScreen onBack={() => setShowProfileEdit(false)} />;
+  }
+
   return (
     <section className="screen active">
       <h2>設定</h2>
+
+      <div className="card">
+        <h3>プロフィール</h3>
+        <button
+          className="profile-edit-button"
+          onClick={() => setShowProfileEdit(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdPerson size={24} color="var(--primary)" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              プロフィールを編集
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
+          アイコン、名前、自己紹介などを編集
+        </p>
+      </div>
 
       <div className="card">
         <h3>月間予算</h3>

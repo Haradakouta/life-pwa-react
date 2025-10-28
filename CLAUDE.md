@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-27 (セッション9: 継続利用促進機能実装完了！)**
+**最終更新: 2025-10-28 (セッション10: パスワードリセット + SNSプロフィール基盤完成！)**
 
 ## 📋 プロジェクト概要
 
@@ -30,6 +30,19 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 11. ✅ **通知機能** - 朝・昼・夕の食事記録リマインダー（Web Notification API）
 12. ✅ **バッジシステム** - 14種類のアチーブメント、デカデカ表示
 13. ✅ **月次レポート** - サマリー、先月比較、AI改善提案
+14. ✅ **パスワードリセット機能** - 認証コード方式のパスワードリセット
+15. ✅ **SNSプロフィール基盤** - アイコン・名前・bio編集、画像アップロード（Phase 1完了）
+
+### 🚧 次の実装予定：SNS機能（Phase 2）
+
+**Phase 2: 投稿機能**
+- [ ] 投稿作成機能（テキスト・画像投稿）
+- [ ] タイムライン表示
+- [ ] 投稿詳細画面
+- [ ] ソーシャル画面の構成
+- [ ] BottomNavにソーシャル追加
+
+**詳細ガイド:** `PHASE2_HANDOFF.md` 参照
 
 ### ~~GitHub Pages デプロイ問題~~ ✅ **完全解決！**
 
@@ -1185,3 +1198,118 @@ npm run deploy
 - [ ] データエクスポート機能の拡充
 
 ---
+
+### 2025-10-28 (セッション10) ✅ **パスワードリセット機能 + SNSプロフィール基盤完成！**
+
+**実装内容:**
+
+#### 1. パスワードリセット機能（認証コード方式）
+
+**3ステップフロー:**
+- ステップ1: メールアドレス入力 → 確認コード送信
+- ステップ2: 確認コード入力 → 検証
+- ステップ3: 新しいパスワード入力 → パスワード更新
+
+**Cloud Functions:**
+- `sendPasswordResetEmail` - パスワードリセット用のメール送信
+- `resetPassword` - Firebase Admin SDKでパスワード更新
+
+**新規ファイル:**
+- `src/components/auth/PasswordResetFlow.tsx` - パスワードリセットフロー
+- `src/utils/emailVerification.ts` - sendPasswordResetEmail, resetPasswordWithCode 関数追加
+- `functions/src/index.ts` - sendPasswordResetEmail, resetPassword 関数追加
+
+**変更ファイル:**
+- `src/components/auth/LoginScreen.tsx` - 「パスワードをお忘れですか？」リンク追加
+
+#### 2. SNSプロフィール機能（Phase 1: Profile Foundation）
+
+**Firebase Storage統合:**
+- 画像アップロード機能（アバター、カバー、投稿用）
+- 自動リサイズ（アバター: 512x512、カバー: 1200x400、投稿: 1080x1080）
+- ファイルバリデーション（10MB以下、JPEG/PNG/GIF/WebP対応）
+
+**プロフィールデータ構造:**
+```
+Firestore
+└── users/{userId}
+    └── profile/
+        └── data/
+            ├── uid
+            ├── displayName
+            ├── username (ユニーク、@username形式)
+            ├── email
+            ├── bio (自己紹介、200文字まで)
+            ├── avatarUrl
+            ├── coverUrl
+            ├── websiteUrl
+            ├── isPublic (公開/非公開)
+            ├── createdAt
+            └── stats (postCount, followerCount, etc.)
+```
+
+**プロフィール編集画面:**
+- アイコン画像の変更（カメラボタンでアップロード）
+- カバー画像の変更
+- 表示名の編集（50文字まで）
+- ユーザー名の編集（@username、重複チェック付き）
+- 自己紹介の編集（200文字まで）
+- WebサイトURLの編集
+- プロフィール公開/非公開設定
+
+**新規ファイル:**
+- `src/types/profile.ts` - UserProfile, UserStats 型定義
+- `src/utils/imageUpload.ts` - 画像アップロード・リサイズ機能
+- `src/utils/profile.ts` - プロフィール操作関数（作成、更新、取得、検索）
+- `src/components/profile/ProfileEditScreen.tsx` - プロフィール編集画面
+
+**変更ファイル:**
+- `src/config/firebase.ts` - Firebase Storage追加
+- `src/components/settings/SettingsScreen.tsx` - プロフィール編集リンク追加
+- `src/components/auth/RegisterFlow.tsx` - 新規登録時にプロフィール自動作成
+
+**デプロイ:**
+```bash
+# Cloud Functionsデプロイ
+firebase deploy --only functions
+
+# フロントエンドデプロイ
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ パスワードリセット機能の完全実装（認証コード方式）
+- ✅ Cloud Functions（sendPasswordResetEmail, resetPassword）のデプロイ完了
+- ✅ SNSプロフィール機能の基盤完成（Phase 1）
+- ✅ 画像アップロード機能（Firebase Storage）
+- ✅ プロフィール編集画面の完全実装
+- ✅ すべての機能が正常動作
+
+**次回の予定（Phase 2: 投稿機能）:**
+- [ ] 投稿作成機能（テキスト・画像投稿）
+- [ ] タイムライン表示
+- [ ] 投稿詳細画面
+- [ ] ソーシャル画面のメイン構成
+- [ ] BottomNavにソーシャル追加
+
+**引き継ぎ資料:**
+`PHASE2_HANDOFF.md` に詳細な実装ガイドを作成済み。次回セッションで参照してください。
+
+---
+
+## 🎯 次回セッション（Phase 2）の開始方法
+
+1. **`PHASE2_HANDOFF.md`を読む** - 詳細な実装ガイド
+2. **チェックリストを確認** - 実装すべき項目
+3. **実装手順に従う** - ステップ1から順番に実装
+4. **既存コードを参考にする** - レシピ作成画面など
+
+**重要なファイル:**
+- `PHASE2_HANDOFF.md` - Phase 2の詳細ガイド
+- `src/utils/imageUpload.ts` - 画像アップロード機能（再利用）
+- `src/utils/profile.ts` - プロフィール操作（参考）
+
+---
+

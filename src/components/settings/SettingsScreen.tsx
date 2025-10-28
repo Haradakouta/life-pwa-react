@@ -6,7 +6,6 @@ import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from
 import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
-import { NotificationSettings } from './NotificationSettings';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
 
 export const SettingsScreen: React.FC = () => {
@@ -142,10 +141,6 @@ export const SettingsScreen: React.FC = () => {
             <span className="toggle-slider"></span>
           </label>
         </div>
-      </div>
-
-      <div className="card">
-        <NotificationSettings />
       </div>
 
       <div className="card">

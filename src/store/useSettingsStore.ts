@@ -20,12 +20,6 @@ interface SettingsStore {
 const defaultSettings: Settings = {
   monthlyBudget: 30000,
   darkMode: false,
-  notifications: {
-    enabled: true,
-    breakfast: { enabled: true, time: '07:00' },
-    lunch: { enabled: true, time: '12:00' },
-    dinner: { enabled: true, time: '18:00' },
-  },
   firstTime: true,
 };
 
@@ -39,20 +33,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
     // ローカル更新
     set((state) => {
-      // ネストされたオブジェクトを深くマージ
-      const newSettings: Settings = {
-        ...state.settings,
-        ...updates,
-      };
-
-      // notifications がある場合、ネストされた構造を保持
-      if (updates.notifications) {
-        newSettings.notifications = {
-          ...state.settings.notifications,
-          ...updates.notifications,
-        };
-      }
-
+      const newSettings = { ...state.settings, ...updates };
       saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
 
       // ダークモードの適用

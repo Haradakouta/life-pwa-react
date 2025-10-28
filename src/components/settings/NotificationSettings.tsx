@@ -18,13 +18,21 @@ export function NotificationSettings() {
     getNotificationPermission()
   );
 
+  // notifications が undefined の場合のフォールバック
+  const notificationSettings = settings.notifications || {
+    enabled: false,
+    breakfast: { enabled: false, time: '07:00' },
+    lunch: { enabled: false, time: '12:00' },
+    dinner: { enabled: false, time: '18:00' },
+  };
+
   useEffect(() => {
     // 通知スケジュールを設定
-    if (settings.notifications.enabled && permission === 'granted') {
-      scheduleNotifications(settings.notifications);
+    if (notificationSettings.enabled && permission === 'granted') {
+      scheduleNotifications(notificationSettings);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.notifications.enabled, permission]);
+  }, [notificationSettings.enabled, permission]);
 
   const handleToggleNotifications = async () => {
     if (!isNotificationSupported()) {
@@ -32,7 +40,7 @@ export function NotificationSettings() {
       return;
     }
 
-    if (!settings.notifications.enabled) {
+    if (!notificationSettings.enabled) {
       // 通知を有効化する場合、権限をリクエスト
       const granted = await requestNotificationPermission();
       setPermission(granted ? 'granted' : 'denied');
@@ -46,8 +54,8 @@ export function NotificationSettings() {
     // 設定を更新
     const newSettings = {
       notifications: {
-        ...settings.notifications,
-        enabled: !settings.notifications.enabled,
+        ...notificationSettings,
+        enabled: !notificationSettings.enabled,
       },
     };
 
@@ -56,10 +64,10 @@ export function NotificationSettings() {
 
   const handleToggleMeal = async (meal: 'breakfast' | 'lunch' | 'dinner') => {
     const newNotifications: NotificationSettingsType = {
-      ...settings.notifications,
+      ...notificationSettings,
       [meal]: {
-        ...settings.notifications[meal],
-        enabled: !settings.notifications[meal].enabled,
+        ...notificationSettings[meal],
+        enabled: !notificationSettings[meal].enabled,
       },
     };
 
@@ -71,9 +79,9 @@ export function NotificationSettings() {
     time: string
   ) => {
     const newNotifications: NotificationSettingsType = {
-      ...settings.notifications,
+      ...notificationSettings,
       [meal]: {
-        ...settings.notifications[meal],
+        ...notificationSettings[meal],
         time,
       },
     };
@@ -105,7 +113,7 @@ export function NotificationSettings() {
           <label className="toggle-switch">
             <input
               type="checkbox"
-              checked={settings.notifications.enabled}
+              checked={notificationSettings.enabled}
               onChange={handleToggleNotifications}
             />
             <span className="toggle-slider"></span>
@@ -120,7 +128,7 @@ export function NotificationSettings() {
           </div>
         )}
 
-        {settings.notifications.enabled && permission === 'granted' && (
+        {notificationSettings.enabled && permission === 'granted' && (
           <div className="meal-notifications">
             {/* 朝食 */}
             <div className="meal-notification-item">
@@ -132,17 +140,17 @@ export function NotificationSettings() {
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.notifications.breakfast.enabled}
+                    checked={notificationSettings.breakfast.enabled}
                     onChange={() => handleToggleMeal('breakfast')}
                   />
                   <span className="toggle-slider"></span>
                 </label>
               </div>
-              {settings.notifications.breakfast.enabled && (
+              {notificationSettings.breakfast.enabled && (
                 <div className="time-input-wrapper">
                   <input
                     type="time"
-                    value={settings.notifications.breakfast.time}
+                    value={notificationSettings.breakfast.time}
                     onChange={(e) => handleTimeChange('breakfast', e.target.value)}
                     className="time-input"
                   />
@@ -160,17 +168,17 @@ export function NotificationSettings() {
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.notifications.lunch.enabled}
+                    checked={notificationSettings.lunch.enabled}
                     onChange={() => handleToggleMeal('lunch')}
                   />
                   <span className="toggle-slider"></span>
                 </label>
               </div>
-              {settings.notifications.lunch.enabled && (
+              {notificationSettings.lunch.enabled && (
                 <div className="time-input-wrapper">
                   <input
                     type="time"
-                    value={settings.notifications.lunch.time}
+                    value={notificationSettings.lunch.time}
                     onChange={(e) => handleTimeChange('lunch', e.target.value)}
                     className="time-input"
                   />
@@ -188,17 +196,17 @@ export function NotificationSettings() {
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.notifications.dinner.enabled}
+                    checked={notificationSettings.dinner.enabled}
                     onChange={() => handleToggleMeal('dinner')}
                   />
                   <span className="toggle-slider"></span>
                 </label>
               </div>
-              {settings.notifications.dinner.enabled && (
+              {notificationSettings.dinner.enabled && (
                 <div className="time-input-wrapper">
                   <input
                     type="time"
-                    value={settings.notifications.dinner.time}
+                    value={notificationSettings.dinner.time}
                     onChange={(e) => handleTimeChange('dinner', e.target.value)}
                     className="time-input"
                   />

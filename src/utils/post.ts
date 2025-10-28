@@ -182,8 +182,12 @@ export const getUserPosts = async (
  * - Fields: visibility (Ascending), createdAt (Descending)
  */
 export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
+  console.log('🔍 getTimelinePosts: Starting to fetch timeline posts...');
+
   try {
     const postsRef = collection(db, 'posts');
+    console.log('📁 getTimelinePosts: Creating query with visibility=public, orderBy createdAt desc');
+
     const q = query(
       postsRef,
       where('visibility', '==', 'public'),
@@ -191,11 +195,21 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
       firestoreLimit(limit)
     );
 
+    console.log('⚡ getTimelinePosts: Executing query...');
     const querySnapshot = await getDocs(q);
+    console.log(`📊 getTimelinePosts: Query returned ${querySnapshot.size} documents`);
+
     const posts: Post[] = [];
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+      console.log(`📄 Processing post ${doc.id}:`, {
+        authorId: data.authorId,
+        authorName: data.authorName,
+        visibility: data.visibility,
+        createdAt: data.createdAt,
+      });
+
       posts.push({
         id: doc.id,
         content: data.content,
@@ -213,8 +227,13 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
       });
     });
 
+    console.log(`✅ getTimelinePosts: Successfully processed ${posts.length} posts`);
     return posts;
   } catch (error: any) {
+    console.error('❌ getTimelinePosts: Error occurred:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+
     // Firestoreインデックスエラーの場合、フォールバッククエリを実行
     if (error.code === 'failed-precondition' && error.message?.includes('index')) {
       console.warn('⚠️ Firestoreインデックスが未作成です。フォールバッククエリを使用します。');
@@ -222,13 +241,17 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
 
       // フォールバック: createdAtのみでソート（効率は落ちるが動作する）
       try {
+        console.log('🔄 getTimelinePosts: Trying fallback query (orderBy createdAt only)...');
         const fallbackPostsRef = collection(db, 'posts');
         const fallbackQuery = query(
           fallbackPostsRef,
           orderBy('createdAt', 'desc'),
           firestoreLimit(limit * 3) // 余裕を持って取得
         );
+
         const fallbackSnapshot = await getDocs(fallbackQuery);
+        console.log(`📊 Fallback query returned ${fallbackSnapshot.size} documents`);
+
         const allPosts: Post[] = [];
 
         fallbackSnapshot.forEach((doc) => {
@@ -251,14 +274,18 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
         });
 
         // クライアント側でフィルタリング
-        return allPosts.filter((post) => post.visibility === 'public').slice(0, limit);
-      } catch (fallbackError) {
-        console.error('フォールバッククエリもエラー:', fallbackError);
+        const publicPosts = allPosts.filter((post) => post.visibility === 'public').slice(0, limit);
+        console.log(`✅ Fallback: Filtered to ${publicPosts.length} public posts`);
+        return publicPosts;
+      } catch (fallbackError: any) {
+        console.error('❌ フォールバッククエリもエラー:', fallbackError);
+        console.error('Fallback error code:', fallbackError.code);
+        console.error('Fallback error message:', fallbackError.message);
         return [];
       }
     }
 
-    console.error('タイムラインの取得に失敗しました:', error);
+    console.error('❌ タイムラインの取得に失敗しました（詳細）:', error);
     return [];
   }
 };

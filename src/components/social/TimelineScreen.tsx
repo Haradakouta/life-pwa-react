@@ -12,15 +12,21 @@ interface TimelineScreenProps {
 export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
   const [showCreatePost, setShowCreatePost] = useState(false);
 
   const fetchPosts = async () => {
     setLoading(true);
+    setError('');
     try {
+      console.log('📡 Fetching timeline posts...');
       const fetchedPosts = await getTimelinePosts(20);
+      console.log(`✅ Fetched ${fetchedPosts.length} posts`);
       setPosts(fetchedPosts);
-    } catch (error) {
-      console.error('投稿の取得に失敗しました:', error);
+    } catch (error: any) {
+      console.error('❌ 投稿の取得に失敗しました:', error);
+      console.error('Error details:', error.message, error.code);
+      setError(error.message || 'タイムラインの取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -112,7 +118,41 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick }) =
 
       {/* 本体 */}
       <div style={{ padding: '16px' }}>
-        {loading ? (
+        {error ? (
+          // エラー表示
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              background: '#ffebee',
+              borderRadius: '12px',
+              margin: '20px 0',
+            }}
+          >
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#c62828', marginBottom: '8px' }}>
+              タイムラインの取得に失敗しました
+            </div>
+            <div style={{ fontSize: '14px', color: '#d32f2f', marginBottom: '16px' }}>
+              {error}
+            </div>
+            <button
+              onClick={fetchPosts}
+              style={{
+                padding: '10px 20px',
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 600,
+              }}
+            >
+              再試行
+            </button>
+          </div>
+        ) : loading ? (
           // ローディング表示
           <div
             style={{

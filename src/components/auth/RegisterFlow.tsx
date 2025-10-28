@@ -107,9 +107,14 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       });
 
       // Firestoreにプロフィールを作成
-      await createUserProfile(user.uid, email, username);
-
-      console.log('✅ アカウント作成完了:', user.uid);
+      try {
+        await createUserProfile(user.uid, email, username);
+        console.log('✅ アカウント作成完了:', user.uid);
+      } catch (profileErr) {
+        console.error('Profile creation error:', profileErr);
+        // プロフィール作成失敗時もユーザーは作成されているため、継続
+        alert('注意: プロフィール作成に失敗しました。設定画面からプロフィールを作成してください。');
+      }
 
       // ログイン画面に戻る（自動的にログイン状態になる）
       onBack();

@@ -175,6 +175,11 @@ export const getUserPosts = async (
 
 /**
  * タイムライン取得（全体公開の投稿）
+ *
+ * 注意: このクエリはFirestoreのコンポジットインデックスが必要です。
+ * 初回実行時にエラーが出た場合、Firebaseコンソールで以下のインデックスを作成してください：
+ * - Collection: posts
+ * - Fields: visibility (Ascending), createdAt (Descending)
  */
 export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
   try {
@@ -209,7 +214,50 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
     });
 
     return posts;
-  } catch (error) {
+  } catch (error: any) {
+    // Firestoreインデックスエラーの場合、フォールバッククエリを実行
+    if (error.code === 'failed-precondition' && error.message?.includes('index')) {
+      console.warn('⚠️ Firestoreインデックスが未作成です。フォールバッククエリを使用します。');
+      console.warn('インデックス作成URL:', error.message);
+
+      // フォールバック: createdAtのみでソート（効率は落ちるが動作する）
+      try {
+        const fallbackPostsRef = collection(db, 'posts');
+        const fallbackQuery = query(
+          fallbackPostsRef,
+          orderBy('createdAt', 'desc'),
+          firestoreLimit(limit * 3) // 余裕を持って取得
+        );
+        const fallbackSnapshot = await getDocs(fallbackQuery);
+        const allPosts: Post[] = [];
+
+        fallbackSnapshot.forEach((doc) => {
+          const data = doc.data() as any;
+          allPosts.push({
+            id: doc.id,
+            content: data.content,
+            images: data.images || [],
+            authorId: data.authorId,
+            authorName: data.authorName,
+            authorAvatar: data.authorAvatar || '',
+            likes: data.likes || 0,
+            commentCount: data.commentCount || 0,
+            repostCount: data.repostCount || 0,
+            hashtags: data.hashtags || [],
+            visibility: data.visibility,
+            createdAt: timestampToString(data.createdAt),
+            updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+          });
+        });
+
+        // クライアント側でフィルタリング
+        return allPosts.filter((post) => post.visibility === 'public').slice(0, limit);
+      } catch (fallbackError) {
+        console.error('フォールバッククエリもエラー:', fallbackError);
+        return [];
+      }
+    }
+
     console.error('タイムラインの取得に失敗しました:', error);
     return [];
   }

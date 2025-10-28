@@ -106,17 +106,42 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
         displayName: username,
       });
 
-      // 認証トークンが完全に設定されるまで少し待つ
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 認証トークンを強制的にリフレッシュして、Firestoreに伝播させる
+      console.log('🔄 認証トークンをリフレッシュ中...');
+      await user.getIdToken(true);
 
-      // Firestoreにプロフィールを作成
-      try {
-        await createUserProfile(user.uid, email, username);
-        console.log('✅ アカウント作成完了:', user.uid);
-      } catch (profileErr) {
-        console.error('Profile creation error:', profileErr);
-        // プロフィール作成失敗時もユーザーは作成されているため、継続
-        alert('注意: プロフィール作成に失敗しました。設定画面からプロフィールを作成してください。');
+      // Firestoreの認証状態が完全に更新されるまで待機
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Firestoreにプロフィールを作成（リトライ機能付き）
+      let profileCreated = false;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (!profileCreated && retryCount < maxRetries) {
+        try {
+          console.log(`📝 プロフィール作成試行 ${retryCount + 1}/${maxRetries}...`);
+          await createUserProfile(user.uid, email, username);
+          profileCreated = true;
+          console.log('✅ アカウント作成完了:', user.uid);
+        } catch (profileErr: any) {
+          retryCount++;
+          console.error(`❌ プロフィール作成失敗（試行 ${retryCount}/${maxRetries}）:`, profileErr);
+
+          if (retryCount < maxRetries) {
+            // リトライ前に少し待つ（指数バックオフ）
+            const waitTime = 1000 * Math.pow(2, retryCount);
+            console.log(`⏳ ${waitTime}ms 待機してリトライします...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+
+            // トークンを再度リフレッシュ
+            await user.getIdToken(true);
+          } else {
+            // 最大リトライ回数に達した
+            console.error('❌ プロフィール作成に失敗しました（最大リトライ回数超過）');
+            alert('注意: プロフィール作成に失敗しました。設定画面からプロフィールを作成してください。\n\nエラー: ' + (profileErr.message || profileErr.code || '不明なエラー'));
+          }
+        }
       }
 
       // ログイン画面に戻る（自動的にログイン状態になる）

@@ -39,7 +39,20 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
     // ローカル更新
     set((state) => {
-      const newSettings = { ...state.settings, ...updates };
+      // ネストされたオブジェクトを深くマージ
+      const newSettings: Settings = {
+        ...state.settings,
+        ...updates,
+      };
+
+      // notifications がある場合、ネストされた構造を保持
+      if (updates.notifications) {
+        newSettings.notifications = {
+          ...state.settings.notifications,
+          ...updates.notifications,
+        };
+      }
+
       saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
 
       // ダークモードの適用

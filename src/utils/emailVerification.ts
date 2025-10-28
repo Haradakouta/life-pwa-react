@@ -119,3 +119,72 @@ https://haradakouta.github.io/life-pwa-react/
     throw new Error('メール送信に失敗しました。コンソールで確認コードを確認してください。');
   }
 };
+
+// パスワードリセット用のメール送信
+export const sendPasswordResetEmail = async (email: string, code: string) => {
+  try {
+    // Cloud Functionを呼び出す
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const { default: app } = await import('../config/firebase');
+
+    const functions = getFunctions(app);
+    const sendEmail = httpsCallable(functions, 'sendPasswordResetEmail');
+
+    // Cloud Functionにメール送信をリクエスト
+    const result = await sendEmail({ email, code });
+
+    console.log(`✅ Password reset email sent to ${email}`, result);
+  } catch (error: any) {
+    console.error('Failed to send password reset email via Cloud Functions:', error);
+
+    // フォールバック: 開発モードとしてコンソールに表示
+    console.log(`
+====================================
+🥗💰 健康家計アプリ - パスワードリセット
+====================================
+
+こんにちは！
+
+パスワードのリセットをリクエストいただきありがとうございます。
+
+以下の確認コードを入力して、パスワードのリセットを完了してください：
+
+確認コード: ${code}
+
+※ このコードは10分間有効です。
+※ このメールに心当たりがない場合は、無視していただいて構いません。
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+© 2025 健康家計アプリ
+https://haradakouta.github.io/life-pwa-react/
+
+====================================
+    `);
+
+    alert(`【開発モード】Cloud Function未設定です。\n確認コードをコンソールに表示しました:\n\n確認コード: ${code}\n\nこのコードを入力してください。`);
+
+    // エラーを再スローせず、続行（開発モード）
+  }
+};
+
+// パスワードをリセット（Cloud Functionsを使用）
+export const resetPasswordWithCode = async (email: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Cloud Functionを呼び出す
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const { default: app } = await import('../config/firebase');
+
+    const functions = getFunctions(app);
+    const resetPassword = httpsCallable(functions, 'resetPassword');
+
+    // Cloud Functionにパスワードリセットをリクエスト
+    const result = await resetPassword({ email, newPassword });
+
+    console.log(`✅ Password reset successful for ${email}`, result);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to reset password via Cloud Functions:', error);
+    return { success: false, error: error.message || 'パスワードのリセットに失敗しました' };
+  }
+};

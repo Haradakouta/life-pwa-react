@@ -3,6 +3,7 @@ import { MdEmail, MdLock, MdLogin } from 'react-icons/md';
 import { FaGoogle } from 'react-icons/fa';
 import { loginWithEmail, loginWithGoogle } from '../../utils/auth';
 import { RegisterFlow } from './RegisterFlow';
+import { PasswordResetFlow } from './PasswordResetFlow';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -10,6 +11,7 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [showRegisterFlow, setShowRegisterFlow] = useState(false);
+  const [showPasswordResetFlow, setShowPasswordResetFlow] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -107,6 +109,62 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     );
   }
 
+  // パスワードリセットフロー表示
+  if (showPasswordResetFlow) {
+    return (
+      <div className="login-screen">
+        <div className="login-container">
+          <div className="login-header">
+            <h1>🥗💰 健康家計アプリ</h1>
+            <p>パスワードリセット</p>
+          </div>
+
+          <PasswordResetFlow
+            onBack={() => setShowPasswordResetFlow(false)}
+            onSuccess={() => setShowPasswordResetFlow(false)}
+          />
+        </div>
+
+        <style>{`
+          .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px;
+          }
+
+          .login-container {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          }
+
+          .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+          }
+
+          .login-header h1 {
+            color: var(--text);
+            font-size: 28px;
+            margin: 0 0 8px 0;
+          }
+
+          .login-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="login-screen">
       <div className="login-container">
@@ -151,6 +209,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 <MdLogin /> ログイン
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowPasswordResetFlow(true)}
+            className="forgot-password-button"
+          >
+            パスワードをお忘れですか？
           </button>
 
           <button
@@ -215,6 +281,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           margin: 0;
         }
 
+        .forgot-password-button,
         .register-link-button {
           background: none;
           border: none;
@@ -226,6 +293,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           transition: opacity 0.3s;
         }
 
+        .forgot-password-button:hover,
         .register-link-button:hover {
           opacity: 0.8;
         }

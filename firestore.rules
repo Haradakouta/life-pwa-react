@@ -20,8 +20,20 @@ service cloud.firestore {
     // パート1: ユーザーデータ（プロフィール、設定）
     // ========================================
 
+    // ========================================
+    // ユーザープロフィール（読み取り専用）
+    // ========================================
+    // 認証済みユーザーは全ユーザーのプロフィールを読み取り可能（username重複チェック等に必要）
+    match /users/{userId}/profile/data {
+      allow read: if isAuth();
+      allow write: if isOwner(userId);
+    }
+
+    // ========================================
+    // ユーザー個人データ
+    // ========================================
     // ユーザーは自分のデータのみアクセス可能
-    // 対象: profile/data, settings, intakes, expenses, stocks, shopping, recipes など
+    // 対象: settings, intakes, expenses, stocks, shopping, recipes など
     match /users/{userId}/{document=**} {
       allow read, write: if isOwner(userId);
     }

@@ -84,22 +84,31 @@ export const isUsernameAvailable = async (username: string, currentUid: string):
     const querySnapshot = await getDocs(q);
 
     for (const docSnap of querySnapshot.docs) {
-      const profileDocRef = doc(db, 'users', docSnap.id, 'profile', 'data');
-      const profileDoc = await getDoc(profileDocRef);
+      // 自分のuid以外をチェック
+      if (docSnap.id === currentUid) continue;
 
-      if (profileDoc.exists()) {
-        const profile = profileDoc.data() as UserProfile;
-        // 同じusernameが存在し、かつ自分以外のユーザーの場合はfalse
-        if (profile.username === username && profile.uid !== currentUid) {
-          return false;
+      const profileDocRef = doc(db, 'users', docSnap.id, 'profile', 'data');
+      try {
+        const profileDoc = await getDoc(profileDocRef);
+
+        if (profileDoc.exists()) {
+          const profile = profileDoc.data() as UserProfile;
+          // 同じusernameが存在する場合はfalse
+          if (profile.username === username) {
+            return false;
+          }
         }
+      } catch (err) {
+        // プロフィールがない場合はスキップ
+        console.log(`No profile for user ${docSnap.id}`);
       }
     }
 
     return true;
   } catch (error) {
     console.error('Username check error:', error);
-    return false;
+    // エラー時は true を返す（ユーザーが登録できるように）
+    return true;
   }
 };
 

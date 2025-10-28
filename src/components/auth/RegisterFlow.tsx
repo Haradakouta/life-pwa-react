@@ -106,6 +106,9 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
         displayName: username,
       });
 
+      // 認証トークンが完全に設定されるまで少し待つ
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Firestoreにプロフィールを作成
       try {
         await createUserProfile(user.uid, email, username);

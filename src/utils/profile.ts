@@ -32,11 +32,20 @@ export const createUserProfile = async (uid: string, email: string, displayName:
       },
     };
 
-    await setDoc(doc(db, 'users', uid, 'profile', 'data'), userProfile);
-    console.log('✅ User profile created:', uid);
-  } catch (error) {
-    console.error('Failed to create user profile:', error);
-    throw new Error('プロフィール作成に失敗しました');
+    console.log('📝 Creating user profile for:', uid);
+    console.log('📝 Profile data:', userProfile);
+
+    const profileRef = doc(db, 'users', uid, 'profile', 'data');
+    console.log('📝 Profile document path:', profileRef.path);
+
+    await setDoc(profileRef, userProfile);
+    console.log('✅ User profile created successfully:', uid);
+  } catch (error: any) {
+    console.error('❌ Failed to create user profile:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    throw new Error(`プロフィール作成に失敗しました: ${error.message || error.code || '不明なエラー'}`);
   }
 };
 

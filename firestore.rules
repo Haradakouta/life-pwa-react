@@ -25,6 +25,51 @@ service cloud.firestore {
       // 更新・削除: 自分の投稿のみ
       allow update, delete: if request.auth != null
                             && resource.data.authorId == request.auth.uid;
+
+      // いいね（likes）のサブコレクション
+      match /likes/{likeId} {
+        // 読み取り: 公開投稿のいいねは誰でも読み取り可能
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
+                    || request.auth != null;
+
+        // 作成: 認証済みユーザーのみ
+        allow create: if request.auth != null
+                      && request.resource.data.userId == request.auth.uid;
+
+        // 削除: 自分のいいねのみ削除可能
+        allow delete: if request.auth != null
+                      && resource.data.userId == request.auth.uid;
+      }
+
+      // コメント（comments）のサブコレクション
+      match /comments/{commentId} {
+        // 読み取り: 公開投稿のコメントは誰でも読み取り可能
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
+                    || request.auth != null;
+
+        // 作成: 認証済みユーザーのみ
+        allow create: if request.auth != null
+                      && request.resource.data.userId == request.auth.uid;
+
+        // 削除: 自分のコメントのみ削除可能
+        allow delete: if request.auth != null
+                      && resource.data.userId == request.auth.uid;
+      }
+
+      // リポスト（reposts）のサブコレクション
+      match /reposts/{repostId} {
+        // 読み取り: 公開投稿のリポストは誰でも読み取り可能
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
+                    || request.auth != null;
+
+        // 作成: 認証済みユーザーのみ
+        allow create: if request.auth != null
+                      && request.resource.data.userId == request.auth.uid;
+
+        // 削除: 自分のリポストのみ削除可能
+        allow delete: if request.auth != null
+                      && resource.data.userId == request.auth.uid;
+      }
     }
 
     // その他のパスは全てアクセス不可

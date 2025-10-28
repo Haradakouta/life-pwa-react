@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdDelete, MdFavorite, MdFavoriteBorder, MdComment } from 'react-icons/md';
+import { MdArrowBack, MdDelete, MdFavorite, MdFavoriteBorder, MdComment, MdSend } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { getPost, deletePost, getRelativeTime } from '../../utils/post';
-import type { Post } from '../../types/post';
+import { getPost, deletePost, getRelativeTime, addLike, removeLike, hasUserLiked, addComment, deleteComment, getPostComments } from '../../utils/post';
+import type { Post, Comment } from '../../types/post';
 
 interface PostDetailScreenProps {
   postId: string;
@@ -17,9 +17,12 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
 }) => {
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(0);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -29,6 +32,16 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
         if (fetchedPost) {
           setPost(fetchedPost);
           setLocalLikes(fetchedPost.likes);
+
+          // いいね状態をチェック
+          if (user) {
+            const isLiked = await hasUserLiked(postId, user.uid);
+            setLiked(isLiked);
+          }
+
+          // コメント一覧を取得
+          const fetchedComments = await getPostComments(postId);
+          setComments(fetchedComments);
         } else {
           alert('投稿が見つかりません');
           onBack();
@@ -43,12 +56,59 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
     };
 
     fetchPost();
-  }, [postId, onBack]);
+  }, [postId, onBack, user]);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLocalLikes(liked ? localLikes - 1 : localLikes + 1);
-    // TODO: Phase 3でFirestoreに保存
+  const handleLike = async () => {
+    if (!user) return;
+
+    try {
+      if (liked) {
+        await removeLike(postId, user.uid);
+        setLiked(false);
+        setLocalLikes(Math.max(0, localLikes - 1));
+      } else {
+        await addLike(postId, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        setLiked(true);
+        setLocalLikes(localLikes + 1);
+      }
+    } catch (error) {
+      console.error('いいね操作エラー:', error);
+      alert('いいね操作に失敗しました');
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!user || !post || !commentText.trim()) return;
+
+    try {
+      setIsSubmittingComment(true);
+      await addComment(postId, user.uid, user.email?.split('@')[0] || 'anonymous', commentText.trim());
+
+      // コメント一覧を更新
+      const updatedComments = await getPostComments(postId);
+      setComments(updatedComments);
+      setCommentText('');
+    } catch (error) {
+      console.error('コメント追加エラー:', error);
+      alert('コメントの追加に失敗しました');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user || !confirm('このコメントを削除しますか？')) return;
+
+    try {
+      await deleteComment(postId, commentId, user.uid);
+
+      // コメント一覧を更新
+      const updatedComments = await getPostComments(postId);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('コメント削除エラー:', error);
+      alert('コメントの削除に失敗しました');
+    }
   };
 
   const handleDelete = async () => {
@@ -299,18 +359,140 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           </div>
         </div>
 
-        {/* コメント欄（Phase 3で実装予定） */}
-        <div
-          style={{
-            marginTop: '24px',
-            padding: '40px 20px',
-            textAlign: 'center',
-            color: 'var(--text-secondary)',
-            background: 'var(--bg)',
-            borderRadius: '12px',
-          }}
-        >
-          <div style={{ fontSize: '14px' }}>コメント機能は次のフェーズで実装予定です</div>
+        {/* コメント欄 */}
+        <div style={{ marginTop: '24px' }}>
+          {/* コメント入力フォーム */}
+          {user && (
+            <div style={{ marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'flex-end',
+                  padding: '12px',
+                  background: 'var(--card)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="コメントを入力..."
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    background: 'var(--bg)',
+                    color: 'var(--text)',
+                    fontFamily: 'inherit',
+                    fontSize: '14px',
+                    resize: 'vertical',
+                    minHeight: '44px',
+                    maxHeight: '120px',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={isSubmittingComment || !commentText.trim()}
+                  style={{
+                    background: commentText.trim() ? 'var(--primary)' : 'var(--border)',
+                    border: 'none',
+                    color: commentText.trim() ? 'white' : 'var(--text-secondary)',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    cursor: commentText.trim() && !isSubmittingComment ? 'pointer' : 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <MdSend size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* コメント一覧 */}
+          <div style={{ marginTop: '20px' }}>
+            {comments.length > 0 ? (
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--text)' }}>
+                  コメント ({comments.length})
+                </h3>
+                {comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    style={{
+                      padding: '12px',
+                      background: 'var(--bg)',
+                      borderRadius: '8px',
+                      marginBottom: '12px',
+                      borderLeft: '2px solid var(--primary)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '14px' }}>
+                          {comment.userName}
+                        </div>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+                          {getRelativeTime(comment.createdAt)}
+                        </div>
+                      </div>
+                      {user && user.uid === comment.userId && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#f44336',
+                            cursor: 'pointer',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            transition: 'background 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#ffebee';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'none';
+                          }}
+                        >
+                          削除
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ color: 'var(--text)', fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {comment.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: 'var(--text-secondary)',
+                  background: 'var(--bg)',
+                  borderRadius: '12px',
+                }}
+              >
+                <div style={{ fontSize: '14px' }}>コメントはまだありません</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

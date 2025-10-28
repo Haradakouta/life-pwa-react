@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
-import { getRelativeTime } from '../../utils/post';
-import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare } from 'react-icons/md';
+import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
+import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder } from 'react-icons/md';
 
 interface PostCardProps {
   post: Post;
@@ -9,14 +10,55 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick }) => {
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [reposted, setReposted] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.likes);
+  const [localRepostCount, setLocalRepostCount] = useState(post.repostCount);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLike = (e: React.MouseEvent) => {
-    e.stopPropagation(); // 投稿クリックイベントを防ぐ
-    setLiked(!liked);
-    setLocalLikes(liked ? localLikes - 1 : localLikes + 1);
-    // TODO: Phase 3でFirestoreに保存
+  // いいね・ブックマーク・リポスト状態を初期化
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) return;
+      try {
+        const isLiked = await hasUserLiked(post.id, user.uid);
+        const isBookmarked = await hasUserBookmarked(post.id, user.uid);
+        const isReposted = await hasUserReposted(post.id, user.uid);
+
+        setLiked(isLiked);
+        setBookmarked(isBookmarked);
+        setReposted(isReposted);
+      } catch (error) {
+        console.error('ステータス確認エラー:', error);
+      }
+    };
+
+    checkStatus();
+  }, [post.id, user]);
+
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || isLoading) return;
+
+    try {
+      setIsLoading(true);
+      if (liked) {
+        await removeLike(post.id, user.uid);
+        setLiked(false);
+        setLocalLikes(Math.max(0, localLikes - 1));
+      } else {
+        await addLike(post.id, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        setLiked(true);
+        setLocalLikes(localLikes + 1);
+      }
+    } catch (error) {
+      console.error('いいね操作エラー:', error);
+      alert('いいね操作に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleComment = (e: React.MouseEvent) => {
@@ -24,14 +66,61 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick }) => {
     onPostClick(post.id); // 投稿詳細画面へ
   };
 
-  const handleRepost = (e: React.MouseEvent) => {
+  const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Phase 3でリポスト機能を実装
+    if (!user || isLoading) return;
+
+    try {
+      setIsLoading(true);
+      if (reposted) {
+        await removeRepost(post.id, user.uid);
+        setReposted(false);
+        setLocalRepostCount(Math.max(0, localRepostCount - 1));
+      } else {
+        await addRepost(post.id, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        setReposted(true);
+        setLocalRepostCount(localRepostCount + 1);
+      }
+    } catch (error) {
+      console.error('リポスト操作エラー:', error);
+      alert('リポスト操作に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || isLoading) return;
+
+    try {
+      setIsLoading(true);
+      if (bookmarked) {
+        await removeBookmark(post.id, user.uid);
+        setBookmarked(false);
+      } else {
+        await addBookmark(post.id, user.uid);
+        setBookmarked(true);
+      }
+    } catch (error) {
+      console.error('ブックマーク操作エラー:', error);
+      alert('ブックマーク操作に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Phase 3で共有機能を実装
+    // Web Share APIを使用
+    if (navigator.share) {
+      navigator.share({
+        title: '投稿を共有',
+        text: post.content,
+      }).catch(err => console.log('Share cancelled:', err));
+    } else {
+      alert('この投稿をシェアしました！');
+    }
   };
 
   return (
@@ -228,20 +317,49 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick }) => {
             cursor: 'pointer',
             padding: '4px 8px',
             borderRadius: '8px',
-            color: 'var(--text-secondary)',
-            transition: 'background 0.2s',
+            color: reposted ? '#4caf50' : 'var(--text-secondary)',
+            transition: 'background 0.2s, color 0.2s',
+            opacity: isLoading ? 0.6 : 1,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)';
-            e.currentTarget.style.color = '#4caf50';
+            if (!reposted) e.currentTarget.style.color = '#4caf50';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'none';
-            e.currentTarget.style.color = 'var(--text-secondary)';
+            if (!reposted) e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
           <MdRepeat size={20} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{post.repostCount}</span>
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{localRepostCount}</span>
+        </button>
+
+        {/* ブックマーク */}
+        <button
+          onClick={handleBookmark}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            color: bookmarked ? '#ff9800' : 'var(--text-secondary)',
+            transition: 'background 0.2s, color 0.2s',
+            opacity: isLoading ? 0.6 : 1,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 152, 0, 0.1)';
+            if (!bookmarked) e.currentTarget.style.color = '#ff9800';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'none';
+            if (!bookmarked) e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
+        >
+          {bookmarked ? <MdBookmark size={20} /> : <MdBookmarkBorder size={20} />}
         </button>
 
         {/* 共有 */}

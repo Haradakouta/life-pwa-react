@@ -12,9 +12,10 @@ import {
   limit as firestoreLimit,
   serverTimestamp,
   Timestamp,
+  increment,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Post, PostFormData } from '../types/post';
+import type { Post, PostFormData, Like, Comment, Bookmark, Repost } from '../types/post';
 import { uploadPostImage } from './imageUpload';
 import { getUserProfile } from './profile';
 
@@ -302,4 +303,427 @@ export const getRelativeTime = (dateString: string): string => {
 
   // 30日以上前は日付を表示
   return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
+};
+
+// ============================================
+// いいね機能
+// ============================================
+
+/**
+ * いいねを追加
+ */
+export const addLike = async (
+  postId: string,
+  userId: string,
+  userName: string,
+  userAvatar?: string
+): Promise<void> => {
+  try {
+    // いいねIDを生成
+    const likeRef = doc(collection(db, `posts/${postId}/likes`));
+    const likeId = likeRef.id;
+
+    // いいねデータを作成
+    const likeData: Like = {
+      id: likeId,
+      postId,
+      userId,
+      userName,
+      userAvatar,
+      createdAt: new Date().toISOString(),
+    };
+
+    // いいねを保存
+    await setDoc(likeRef, likeData);
+
+    // 投稿のいいね数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      likes: increment(1),
+    });
+
+    console.log('いいねを追加しました');
+  } catch (error) {
+    console.error('いいねの追加に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * いいねを削除
+ */
+export const removeLike = async (postId: string, userId: string): Promise<void> => {
+  try {
+    // ユーザーのいいねを取得
+    const likesRef = collection(db, `posts/${postId}/likes`);
+    const q = query(likesRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    // いいねを削除
+    for (const doc of querySnapshot.docs) {
+      await deleteDoc(doc.ref);
+    }
+
+    // 投稿のいいね数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      likes: increment(-1),
+    });
+
+    console.log('いいねを削除しました');
+  } catch (error) {
+    console.error('いいねの削除に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * ユーザーがいいねしているかチェック
+ */
+export const hasUserLiked = async (postId: string, userId: string): Promise<boolean> => {
+  try {
+    const likesRef = collection(db, `posts/${postId}/likes`);
+    const q = query(likesRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error('いいね確認に失敗しました:', error);
+    return false;
+  }
+};
+
+/**
+ * 投稿のいいん一覧を取得
+ */
+export const getPostLikes = async (postId: string): Promise<Like[]> => {
+  try {
+    const likesRef = collection(db, `posts/${postId}/likes`);
+    const q = query(likesRef, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+
+    const likes: Like[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      likes.push({
+        id: doc.id,
+        postId,
+        userId: data.userId,
+        userName: data.userName,
+        userAvatar: data.userAvatar,
+        createdAt: data.createdAt,
+      });
+    });
+
+    return likes;
+  } catch (error) {
+    console.error('いいね一覧の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+// ============================================
+// コメント機能
+// ============================================
+
+/**
+ * コメントを追加
+ */
+export const addComment = async (
+  postId: string,
+  userId: string,
+  userName: string,
+  content: string,
+  userAvatar?: string
+): Promise<void> => {
+  try {
+    const commentRef = doc(collection(db, `posts/${postId}/comments`));
+    const commentId = commentRef.id;
+
+    const commentData: Comment = {
+      id: commentId,
+      postId,
+      userId,
+      userName,
+      userAvatar,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(commentRef, commentData);
+
+    // 投稿のコメント数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      commentCount: increment(1),
+    });
+
+    console.log('コメントを追加しました');
+  } catch (error) {
+    console.error('コメントの追加に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * コメントを削除
+ */
+export const deleteComment = async (
+  postId: string,
+  commentId: string,
+  userId: string
+): Promise<void> => {
+  try {
+    // コメントを取得
+    const commentRef = doc(db, `posts/${postId}/comments/${commentId}`);
+    const commentSnap = await getDoc(commentRef);
+
+    if (!commentSnap.exists()) {
+      throw new Error('コメントが見つかりません');
+    }
+
+    // 自分のコメントかチェック
+    if (commentSnap.data().userId !== userId) {
+      throw new Error('自分のコメントのみ削除できます');
+    }
+
+    // コメントを削除
+    await deleteDoc(commentRef);
+
+    // 投稿のコメント数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      commentCount: increment(-1),
+    });
+
+    console.log('コメントを削除しました');
+  } catch (error) {
+    console.error('コメントの削除に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * 投稿のコメント一覧を取得
+ */
+export const getPostComments = async (postId: string): Promise<Comment[]> => {
+  try {
+    const commentsRef = collection(db, `posts/${postId}/comments`);
+    const q = query(commentsRef, orderBy('createdAt', 'asc'));
+    const querySnapshot = await getDocs(q);
+
+    const comments: Comment[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      comments.push({
+        id: doc.id,
+        postId,
+        userId: data.userId,
+        userName: data.userName,
+        userAvatar: data.userAvatar,
+        content: data.content,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    });
+
+    return comments;
+  } catch (error) {
+    console.error('コメント一覧の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+// ============================================
+// ブックマーク機能
+// ============================================
+
+/**
+ * ブックマークを追加
+ */
+export const addBookmark = async (postId: string, userId: string): Promise<void> => {
+  try {
+    const bookmarkRef = doc(db, `users/${userId}/bookmarks/${postId}`);
+
+    const bookmarkData: Bookmark = {
+      id: postId,
+      postId,
+      userId,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(bookmarkRef, bookmarkData);
+    console.log('ブックマークを追加しました');
+  } catch (error) {
+    console.error('ブックマークの追加に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * ブックマークを削除
+ */
+export const removeBookmark = async (postId: string, userId: string): Promise<void> => {
+  try {
+    const bookmarkRef = doc(db, `users/${userId}/bookmarks/${postId}`);
+    await deleteDoc(bookmarkRef);
+    console.log('ブックマークを削除しました');
+  } catch (error) {
+    console.error('ブックマークの削除に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * ユーザーがブックマークしているかチェック
+ */
+export const hasUserBookmarked = async (postId: string, userId: string): Promise<boolean> => {
+  try {
+    const bookmarkRef = doc(db, `users/${userId}/bookmarks/${postId}`);
+    const bookmarkSnap = await getDoc(bookmarkRef);
+    return bookmarkSnap.exists();
+  } catch (error) {
+    console.error('ブックマーク確認に失敗しました:', error);
+    return false;
+  }
+};
+
+/**
+ * ユーザーのブックマーク一覧を取得
+ */
+export const getUserBookmarks = async (userId: string): Promise<Post[]> => {
+  try {
+    const bookmarksRef = collection(db, `users/${userId}/bookmarks`);
+    const querySnapshot = await getDocs(bookmarksRef);
+
+    const posts: Post[] = [];
+    for (const bookmarkDoc of querySnapshot.docs) {
+      const post = await getPost(bookmarkDoc.id);
+      if (post) {
+        posts.push(post);
+      }
+    }
+
+    return posts.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch (error) {
+    console.error('ブックマーク一覧の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+// ============================================
+// リポスト機能
+// ============================================
+
+/**
+ * リポストを追加
+ */
+export const addRepost = async (
+  postId: string,
+  userId: string,
+  userName: string,
+  userAvatar?: string
+): Promise<void> => {
+  try {
+    const repostRef = doc(collection(db, `posts/${postId}/reposts`));
+    const repostId = repostRef.id;
+
+    const repostData: Repost = {
+      id: repostId,
+      postId,
+      userId,
+      userName,
+      userAvatar,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(repostRef, repostData);
+
+    // 投稿のリポスト数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      repostCount: increment(1),
+    });
+
+    console.log('リポストを追加しました');
+  } catch (error) {
+    console.error('リポストの追加に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * リポストを削除
+ */
+export const removeRepost = async (postId: string, userId: string): Promise<void> => {
+  try {
+    // ユーザーのリポストを取得
+    const repostsRef = collection(db, `posts/${postId}/reposts`);
+    const q = query(repostsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    // リポストを削除
+    for (const doc of querySnapshot.docs) {
+      await deleteDoc(doc.ref);
+    }
+
+    // 投稿のリポスト数を更新
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      repostCount: increment(-1),
+    });
+
+    console.log('リポストを削除しました');
+  } catch (error) {
+    console.error('リポストの削除に失敗しました:', error);
+    throw error;
+  }
+};
+
+/**
+ * ユーザーがリポストしているかチェック
+ */
+export const hasUserReposted = async (postId: string, userId: string): Promise<boolean> => {
+  try {
+    const repostsRef = collection(db, `posts/${postId}/reposts`);
+    const q = query(repostsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error('リポスト確認に失敗しました:', error);
+    return false;
+  }
+};
+
+/**
+ * 投稿のリポスト一覧を取得
+ */
+export const getPostReposts = async (postId: string): Promise<Repost[]> => {
+  try {
+    const repostsRef = collection(db, `posts/${postId}/reposts`);
+    const q = query(repostsRef, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+
+    const reposts: Repost[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      reposts.push({
+        id: doc.id,
+        postId,
+        userId: data.userId,
+        userName: data.userName,
+        userAvatar: data.userAvatar,
+        createdAt: data.createdAt,
+      });
+    });
+
+    return reposts;
+  } catch (error) {
+    console.error('リポスト一覧の取得に失敗しました:', error);
+    return [];
+  }
 };

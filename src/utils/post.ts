@@ -178,6 +178,7 @@ export const getUserPosts = async (
   limit: number = 20
 ): Promise<Post[]> => {
   try {
+    console.log(`[getUserPosts] Fetching posts for user: ${userId}`);
     const postsRef = collection(db, 'posts');
     const q = query(
       postsRef,
@@ -186,7 +187,9 @@ export const getUserPosts = async (
       firestoreLimit(limit)
     );
 
+    console.log('[getUserPosts] Executing query...');
     const querySnapshot = await getDocs(q);
+    console.log(`[getUserPosts] Query returned ${querySnapshot.docs.length} documents`);
     const posts: Post[] = [];
 
     for (const docSnap of querySnapshot.docs) {
@@ -223,9 +226,18 @@ export const getUserPosts = async (
       });
     }
 
+    console.log(`[getUserPosts] Successfully processed ${posts.length} posts`);
     return posts;
   } catch (error) {
-    console.error('ユーザーの投稿取得に失敗しました:', error);
+    console.error('[getUserPosts] ユーザーの投稿取得に失敗しました:', error);
+
+    // インデックスエラーの場合は詳細を表示
+    if (error instanceof Error && error.message.includes('index')) {
+      console.error('[getUserPosts] Firestoreインデックスが必要です。Firebaseコンソールで以下のインデックスを作成してください:');
+      console.error('- Collection: posts');
+      console.error('- Fields: authorId (Ascending), createdAt (Descending)');
+    }
+
     return [];
   }
 };

@@ -22,6 +22,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
@@ -30,18 +31,20 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // プロフィール取得
         const fetchedProfile = await getUserProfile(userId);
         if (!fetchedProfile) {
-          alert('プロフィールが見つかりません');
-          onBack();
+          setError('プロフィールが見つかりません');
           return;
         }
         setProfile(fetchedProfile);
 
         // 投稿一覧取得
+        console.log(`[UserProfileScreen] Fetching posts for user: ${userId}`);
         const fetchedPosts = await getUserPosts(userId);
+        console.log(`[UserProfileScreen] Received ${fetchedPosts.length} posts`);
         setPosts(fetchedPosts);
 
         // フォロー状態をチェック
@@ -50,9 +53,8 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           setIsFollowingUser(following);
         }
       } catch (error) {
-        console.error('プロフィールの取得に失敗しました:', error);
-        alert('プロフィールの取得に失敗しました');
-        onBack();
+        console.error('[UserProfileScreen] プロフィールの取得に失敗しました:', error);
+        setError(error instanceof Error ? error.message : 'プロフィールの取得に失敗しました');
       } finally {
         setLoading(false);
       }
@@ -103,7 +105,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
     }
   };
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
         <div
@@ -118,6 +120,32 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           }}
         />
         <div>プロフィールを読み込んでいます...</div>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+        <div style={{ fontSize: '16px', color: 'var(--text)', marginBottom: '16px' }}>
+          {error || 'プロフィールが見つかりません'}
+        </div>
+        <button
+          onClick={onBack}
+          style={{
+            padding: '10px 20px',
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          戻る
+        </button>
       </div>
     );
   }

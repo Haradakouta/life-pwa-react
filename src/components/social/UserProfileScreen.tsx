@@ -47,8 +47,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
 
         // 投稿一覧取得
         console.log(`[UserProfileScreen] Fetching posts for user: ${userId}`);
+        console.log(`[UserProfileScreen] Profile stats show postCount: ${fetchedProfile.stats.postCount}`);
         const fetchedPosts = await getUserPosts(userId);
-        console.log(`[UserProfileScreen] Received ${fetchedPosts.length} posts`);
+        console.log(`[UserProfileScreen] Received ${fetchedPosts.length} posts from getUserPosts`);
+        console.log(`[UserProfileScreen] Posts:`, fetchedPosts.map(p => ({ id: p.id, authorId: p.authorId, content: p.content.substring(0, 50) })));
         setPosts(fetchedPosts);
 
         // フォロー状態をチェック
@@ -75,14 +77,12 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       if (isFollowingUser) {
         await unfollowUser(user.uid, userId);
         setIsFollowingUser(false);
-        // フォロワー数を更新
-        setProfile({
-          ...profile,
-          stats: {
-            ...profile.stats,
-            followerCount: Math.max(0, profile.stats.followerCount - 1),
-          },
-        });
+
+        // プロフィール情報を再取得して最新の状態を反映
+        const updatedProfile = await getUserProfile(userId);
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+        }
       } else {
         await followUser(
           user.uid,
@@ -92,14 +92,12 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           profile.displayName
         );
         setIsFollowingUser(true);
-        // フォロワー数を更新
-        setProfile({
-          ...profile,
-          stats: {
-            ...profile.stats,
-            followerCount: profile.stats.followerCount + 1,
-          },
-        });
+
+        // プロフィール情報を再取得して最新の状態を反映
+        const updatedProfile = await getUserProfile(userId);
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+        }
       }
     } catch (error) {
       console.error('フォロー操作に失敗しました:', error);

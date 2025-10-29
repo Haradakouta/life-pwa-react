@@ -249,6 +249,13 @@ export const followUser = async (
   followingName: string
 ): Promise<void> => {
   try {
+    // 既にフォローしているかチェック
+    const alreadyFollowing = await isFollowing(followerId, followingId);
+    if (alreadyFollowing) {
+      console.log(`⚠️ ${followerId} is already following ${followingId}`);
+      return; // 既にフォロー済みなので何もしない
+    }
+
     // follows コレクションに追加
     const followRef = doc(collection(db, `users/${followingId}/followers`));
     const followData: Follow = {

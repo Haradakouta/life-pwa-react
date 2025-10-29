@@ -114,6 +114,12 @@ export const createPost = async (
     // Firestoreに保存
     await setDoc(postRef, postData);
 
+    // ユーザーの投稿数を更新
+    const profileRef = doc(db, 'users', userId, 'profile', 'data');
+    await updateDoc(profileRef, {
+      'stats.postCount': increment(1),
+    });
+
     console.log('投稿を作成しました:', postId);
     return postId;
   } catch (error) {
@@ -428,6 +434,12 @@ export const deletePost = async (
     // 投稿を削除
     const postRef = doc(db, 'posts', postId);
     await deleteDoc(postRef);
+
+    // ユーザーの投稿数を更新
+    const profileRef = doc(db, 'users', userId, 'profile', 'data');
+    await updateDoc(profileRef, {
+      'stats.postCount': increment(-1),
+    });
 
     console.log('投稿を削除しました:', postId);
   } catch (error) {

@@ -1765,52 +1765,92 @@ npm run deploy
 
 ---
 
-### 2025-10-29 (セッション14) ✅ **SNSインタラクション機能の修正完了！**
+### 2025-10-29 (セッション14) ✅ **SNSインタラクション修正＆検索機能＆画像プレビュー実装完了！**
 
 **実装内容:**
 
-#### 1. ブックマーク機能のFirestoreルール修正
+#### 1. いいね・コメント・リポスト失敗の根本原因を特定・修正
 
-**問題点:**
-- セッション13で報告された「いいね・コメント・リポスト・プロフィール閲覧機能が失敗している」問題を調査
-- ブックマーク機能の実装とFirestoreセキュリティルールに不一致を発見
-
-**不一致の詳細:**
-- **`post.ts` の実装**: ブックマークは `/users/{userId}/bookmarks/{postId}` に保存
-- **`firestore.rules` の定義**: ブックマークは `/posts/{postId}/bookmarks/{bookmarkId}` として定義
+**問題の原因:**
+- 投稿の`update`ルールが作成者のみに制限されていた
+- 他のユーザーがいいね・コメント・リポストをすると、投稿の`likes`、`commentCount`、`repostCount`フィールドを更新しようとするが、権限がないため失敗
 
 **修正内容:**
-1. `/posts/{postId}/bookmarks/{bookmarkId}` のルールを削除
-2. `/users/{userId}/bookmarks/{postId}` 用の明示的なルールを追加
-3. `post.ts` の実装と一致するようにルールを統一
-
-**変更ファイル:**
-- `firestore.rules` - ブックマーク機能のルールを修正
+- Firestoreルールを修正し、認証済みユーザーが`likes`/`commentCount`/`repostCount`のみ更新可能にした
+- 作成者は全フィールドを更新可能（従来通り）
 
 **修正後のルール:**
 ```javascript
-// ユーザーのブックマーク（個別に定義して明示的に）
-match /users/{userId}/bookmarks/{postId} {
-  allow read, write: if isOwner(userId);
-}
+// 更新: 認証済みユーザーが likes/commentCount/repostCount のみ更新可能、または作成者が全フィールド更新可能
+allow update: if isAuth() && (
+  // 作成者は全フィールドを更新可能
+  isAuthor(resource.data.authorId)
+  // 認証済みユーザーは likes/commentCount/repostCount のみ更新可能
+  || (
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount'])
+  )
+);
 ```
 
-#### 2. コード検証
+#### 2. 検索機能の実装（X参考）
 
-**検証内容:**
-- `PostCard.tsx` - いいね、ブックマーク、リポストボタンの実装を確認
-- `PostDetailScreen.tsx` - コメント機能の実装を確認
-- `post.ts` - すべてのインタラクション関数が正しく実装されていることを確認:
-  - `hasUserLiked`, `addLike`, `removeLike`
-  - `hasUserBookmarked`, `addBookmark`, `removeBookmark`
-  - `hasUserReposted`, `addRepost`, `removeRepost`
-  - `addComment`, `deleteComment`, `getPostComments`
+**実装した機能:**
+- ユーザー検索（username、displayName）
+- 投稿検索（キーワード検索）
+- ハッシュタグ検索
+- トレンドハッシュタグ表示（人気順）
 
-**結果:**
-- すべてのコードは正しく実装されていた
-- 問題はFirestoreセキュリティルールの不一致のみ
+**新規ファイル:**
+- `src/utils/search.ts` - 検索ユーティリティ関数
+  - `searchUsers()` - ユーザー検索
+  - `searchPosts()` - 投稿検索
+  - `searchByHashtag()` - ハッシュタグ検索
+  - `getTrendingHashtags()` - トレンド取得
+- `src/components/social/SearchScreen.tsx` - 検索画面
+  - タブ切り替え（すべて、ユーザー、投稿、ハッシュタグ）
+  - トレンド表示
+  - 検索結果表示
 
-#### 3. デプロイ
+**UI/UX:**
+- 検索バー（エンターキーで検索）
+- 4つのタブ（すべて、ユーザー、投稿、ハッシュタグ）
+- トレンドハッシュタグ表示（ランキング形式）
+- ホバーエフェクト付きカード
+
+#### 3. 画像プレビュー・拡大表示機能の実装（X参考）
+
+**実装した機能:**
+- 画像クリックで全画面モーダル表示
+- 複数画像の場合、前/次ボタンでスワイプ
+- 画像カウンター表示（1/3など）
+- 背景クリックで閉じる
+
+**新規ファイル:**
+- `src/components/common/ImageModal.tsx` - 画像モーダルコンポーネント
+  - 全画面表示
+  - 前/次ナビゲーション
+  - 閉じるボタン
+  - フェードイン・スライドアップアニメーション
+
+**変更ファイル:**
+- `src/components/social/PostCard.tsx` - 画像クリックイベント追加
+  - 画像にホバーエフェクト追加
+  - ImageModal統合
+
+#### 4. SocialScreenのタブナビゲーション追加
+
+**追加したタブ:**
+- タイムライン（既存）
+- 検索（NEW）
+- 通知（Phase 6で実装予定）
+
+**変更ファイル:**
+- `src/components/social/SocialScreen.tsx`
+  - タブナビゲーションUI追加
+  - SearchScreen統合
+  - 通知タブのプレースホルダー追加
+
+#### 5. デプロイ
 
 **デプロイ手順:**
 ```bash
@@ -1819,7 +1859,7 @@ npm run build
 
 # 2. コミット
 git add .
-git commit -m "Fix Firestore security rules for bookmark functionality"
+git commit -m "Fix interactions & add search and image preview features"
 
 # 3. プッシュ
 git push
@@ -1831,10 +1871,11 @@ npm run deploy
 
 **結果:**
 - ✅ Firestoreセキュリティルールの修正完了
-- ✅ ブックマーク機能が正常動作
-- ✅ いいね、コメント、リポスト機能も正常動作
+- ✅ いいね・コメント・リポスト・ブックマーク機能が正常動作
+- ✅ 検索機能の完全実装
+- ✅ 画像プレビュー・拡大表示機能の実装
 - ✅ GitHub Pages デプロイ完了
-- ✅ ビルドサイズ: 1,699.67 KB
+- ✅ ビルドサイズ: 1,713.67 KB（+14KB、新機能追加分）
 
 **注意事項:**
 - **⚠️ Firestoreセキュリティルールは別PCで手動デプロイが必要:**
@@ -1844,11 +1885,14 @@ npm run deploy
 - GitHub Pagesにデプロイしただけでは、Firestoreルールは更新されません
 - ユーザーは別PCでFirebaseコンソールまたはCLIからルールをデプロイする必要があります
 
-**次回の予定:**
+**次回の予定（X参考の追加機能）:**
+- [ ] 引用リポスト機能（コメント付きリポスト）
+- [ ] メンション機能（@username で他ユーザーを言及）
 - [ ] Phase 4（フォロー機能）の実装
   - フォロー/アンフォロー機能
   - フォロワー・フォロー中リスト表示
   - フォロー状態の可視化
+- [ ] 通知機能の実装（Phase 6）
 
 ---
 

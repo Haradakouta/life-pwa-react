@@ -2062,21 +2062,30 @@ git push
 - `CLAUDE.md` - セッション16の記録を追加
 
 **ユーザーが次に行うべきこと:**
-1. **Firebase Console にアクセス** (https://console.firebase.google.com/project/oshi-para/storage/rules)
-   - `CORS_FIX_GUIDE.md` のステップ1に従ってStorage Rulesを更新
 
-2. **Google Cloud Console にアクセス** (https://console.cloud.google.com/storage/browser?project=oshi-para)
-   - `CORS_FIX_GUIDE.md` のステップ2に従ってCORS設定を適用
+**⚠️ 重要: Firebase Storage が存在しないことが判明！**
 
-3. **ブラウザキャッシュをクリア**してテスト
+1. **まず、Firebase Storage を有効化:**
+   - `FIREBASE_STORAGE_SETUP.md` の手順に従って Storage を有効化してください
+   - https://console.firebase.google.com/project/oshi-para/storage にアクセス
+   - 「始める」ボタンをクリック → 本番環境モード → Tokyo リージョン
+
+2. **Storage Rules を設定:**
+   - `FIREBASE_STORAGE_SETUP.md` のステップ5に従って Rules を設定
+
+3. **CORS 設定を適用（オプション）:**
+   - `FIREBASE_STORAGE_SETUP.md` のステップ6に従って CORS を設定
+
+4. **ブラウザキャッシュをクリア**してテスト
 
 **注意事項:**
-- Firebase CLI ログインは別PCで行う必要がある
-- しかし、GUI設定だけで十分に対応可能
+- Firebase Storage が有効化されていないと、画像アップロードは動作しません
+- バケット名が `oshi-para.appspot.com` の場合、`.env` ファイルの修正が必要
 - 設定の反映には5〜10分かかることがある
 
 **次回の予定:**
-- [ ] CORSエラーが解決したか確認
+- [ ] Firebase Storage 有効化の確認
+- [ ] 画像アップロードのテスト
 - [ ] 引用リポスト機能（コメント付きリポスト）
 - [ ] メンション機能（@username で他ユーザーを言及）
 - [ ] Phase 4（フォロー機能）の実装

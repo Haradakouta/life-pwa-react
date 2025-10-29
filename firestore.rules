@@ -21,12 +21,19 @@ service cloud.firestore {
     // ========================================
 
     // ========================================
-    // ユーザープロフィール（読み取り専用）
+    // ユーザープロフィール
     // ========================================
     // 認証済みユーザーは全ユーザーのプロフィールを読み取り可能（username重複チェック等に必要）
     match /users/{userId}/profile/data {
       allow read: if isAuth();
-      allow write: if isOwner(userId);
+
+      // 作成・削除: 本人のみ
+      allow create, delete: if isOwner(userId);
+
+      // 更新: 本人は全フィールド更新可能
+      //       他の認証ユーザーはstatsフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
+      allow update: if isOwner(userId)
+                    || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats']));
     }
 
     // ========================================

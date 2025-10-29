@@ -90,8 +90,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
     // バックグラウンドでFirestoreを更新
     try {
       if (previousFollowState) {
+        console.log(`[UserProfile] Unfollowing: ${user.uid} X ${userId}`);
         await unfollowUser(user.uid, userId);
       } else {
+        console.log(`[UserProfile] Following: ${user.uid} → ${userId}`);
         await followUser(
           user.uid,
           user.displayName || 'Anonymous',
@@ -100,13 +102,18 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           profile.displayName
         );
       }
-      console.log('✅ Follow operation completed');
-    } catch (error) {
-      console.error('❌ Follow operation failed:', error);
+      console.log('✅ [UserProfile] Follow operation completed successfully');
+    } catch (error: any) {
+      console.error('❌ [UserProfile] Follow operation failed:', error);
+      console.error('❌ [UserProfile] Error details:', error.message, error.code);
+
       // 失敗時は元に戻す（rollback）
       setIsFollowingUser(previousFollowState);
       setProfile(previousProfile);
-      alert('フォロー操作に失敗しました。もう一度お試しください。');
+
+      // 詳細なエラーメッセージを表示
+      const errorMsg = error.message || error.code || '不明なエラー';
+      alert(`フォロー操作に失敗しました。\n\nエラー: ${errorMsg}\n\nもう一度お試しください。`);
     }
   };
 

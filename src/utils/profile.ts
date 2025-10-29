@@ -248,14 +248,17 @@ export const followUser = async (
   followingId: string,
   followingName: string
 ): Promise<void> => {
+  console.log(`[followUser] Starting: ${followerId} → ${followingId}`);
+
   try {
     // 固定IDでドキュメント作成（高速チェック用）
     const followRef = doc(db, `users/${followingId}/followers/${followerId}`);
 
     // 既にフォローしているかチェック（1回のgetDocで高速化）
+    console.log(`[followUser] Checking if already following...`);
     const existingFollow = await getDoc(followRef);
     if (existingFollow.exists()) {
-      console.log(`⚠️ ${followerId} is already following ${followingId}`);
+      console.log(`⚠️ Already following: ${followerId} → ${followingId}`);
       return;
     }
 
@@ -269,21 +272,35 @@ export const followUser = async (
       createdAt: new Date().toISOString(),
     };
 
-    // 並列実行で高速化
-    await Promise.all([
-      setDoc(followRef, followData),
-      updateDoc(doc(db, `users/${followerId}/profile/data`), {
-        'stats.followingCount': increment(1),
-      }),
-      updateDoc(doc(db, `users/${followingId}/profile/data`), {
-        'stats.followerCount': increment(1),
-      }),
-    ]);
+    console.log(`[followUser] Creating follow document...`);
+    console.log(`[followUser] Follow data:`, followData);
 
-    console.log(`✅ ${followerId} followed ${followingId}`);
-  } catch (error) {
-    console.error('Follow error:', error);
-    throw error;
+    // ステップ1: フォロー関係を作成
+    await setDoc(followRef, followData);
+    console.log(`✅ [followUser] Follow document created`);
+
+    // ステップ2: フォロワー側のfollowingCountを更新
+    console.log(`[followUser] Updating follower's followingCount...`);
+    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
+    await updateDoc(followerProfileRef, {
+      'stats.followingCount': increment(1),
+    });
+    console.log(`✅ [followUser] Follower's followingCount updated`);
+
+    // ステップ3: フォロー対象のfollowerCountを更新
+    console.log(`[followUser] Updating target's followerCount...`);
+    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
+    await updateDoc(followingProfileRef, {
+      'stats.followerCount': increment(1),
+    });
+    console.log(`✅ [followUser] Target's followerCount updated`);
+
+    console.log(`✅ [followUser] Complete: ${followerId} → ${followingId}`);
+  } catch (error: any) {
+    console.error(`❌ [followUser] Error:`, error);
+    console.error(`❌ [followUser] Error code:`, error.code);
+    console.error(`❌ [followUser] Error message:`, error.message);
+    throw new Error(`フォローに失敗しました: ${error.message || error.code || '不明なエラー'}`);
   }
 };
 
@@ -291,25 +308,39 @@ export const followUser = async (
  * ユーザーをアンフォロー
  */
 export const unfollowUser = async (followerId: string, followingId: string): Promise<void> => {
+  console.log(`[unfollowUser] Starting: ${followerId} X ${followingId}`);
+
   try {
     // 固定IDで直接削除（クエリ不要）
     const followRef = doc(db, `users/${followingId}/followers/${followerId}`);
 
-    // 並列実行で高速化
-    await Promise.all([
-      deleteDoc(followRef),
-      updateDoc(doc(db, `users/${followerId}/profile/data`), {
-        'stats.followingCount': increment(-1),
-      }),
-      updateDoc(doc(db, `users/${followingId}/profile/data`), {
-        'stats.followerCount': increment(-1),
-      }),
-    ]);
+    // ステップ1: フォロー関係を削除
+    console.log(`[unfollowUser] Deleting follow document...`);
+    await deleteDoc(followRef);
+    console.log(`✅ [unfollowUser] Follow document deleted`);
 
-    console.log(`✅ ${followerId} unfollowed ${followingId}`);
-  } catch (error) {
-    console.error('Unfollow error:', error);
-    throw error;
+    // ステップ2: フォロワー側のfollowingCountを更新
+    console.log(`[unfollowUser] Updating follower's followingCount...`);
+    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
+    await updateDoc(followerProfileRef, {
+      'stats.followingCount': increment(-1),
+    });
+    console.log(`✅ [unfollowUser] Follower's followingCount updated`);
+
+    // ステップ3: フォロー対象のfollowerCountを更新
+    console.log(`[unfollowUser] Updating target's followerCount...`);
+    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
+    await updateDoc(followingProfileRef, {
+      'stats.followerCount': increment(-1),
+    });
+    console.log(`✅ [unfollowUser] Target's followerCount updated`);
+
+    console.log(`✅ [unfollowUser] Complete: ${followerId} X ${followingId}`);
+  } catch (error: any) {
+    console.error(`❌ [unfollowUser] Error:`, error);
+    console.error(`❌ [unfollowUser] Error code:`, error.code);
+    console.error(`❌ [unfollowUser] Error message:`, error.message);
+    throw new Error(`アンフォローに失敗しました: ${error.message || error.code || '不明なエラー'}`);
   }
 };
 

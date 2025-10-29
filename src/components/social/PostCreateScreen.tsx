@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MdClose, MdImage, MdPublic, MdPeople, MdLock } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { createPost } from '../../utils/post';
+import { createPost, getPost } from '../../utils/post';
 import { getUserProfile, createUserProfile } from '../../utils/profile';
-import type { PostFormData } from '../../types/post';
+import type { PostFormData, Post, RecipeData } from '../../types/post';
 
 interface PostCreateScreenProps {
   onClose: () => void;
   onPostCreated: () => void;
+  quotedPostId?: string; // 引用元の投稿ID
+  recipeData?: RecipeData; // 添付するレシピデータ
 }
 
 const MAX_CHARS = 280;
@@ -16,6 +18,8 @@ const MAX_IMAGES = 4;
 export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
   onClose,
   onPostCreated,
+  quotedPostId,
+  recipeData,
 }) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
@@ -24,6 +28,18 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [quotedPost, setQuotedPost] = useState<Post | null>(null);
+
+  // 引用元の投稿を取得
+  useEffect(() => {
+    const fetchQuotedPost = async () => {
+      if (quotedPostId) {
+        const post = await getPost(quotedPostId);
+        setQuotedPost(post);
+      }
+    };
+    fetchQuotedPost();
+  }, [quotedPostId]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -105,6 +121,8 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
         content: content.trim(),
         images,
         visibility,
+        quotedPostId, // 引用元の投稿ID
+        recipeData, // レシピデータ
       };
 
       await createPost(user.uid, postData);
@@ -215,6 +233,24 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
               marginBottom: '12px',
             }}
           />
+
+          {/* 引用元の投稿を表示 */}
+          {quotedPost && (
+            <div style={{ padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>引用元:</div>
+              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{quotedPost.authorName}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px' }}>{quotedPost.content.substring(0, 100)}{quotedPost.content.length > 100 ? '...' : ''}</div>
+            </div>
+          )}
+
+          {/* レシピデータを表示 */}
+          {recipeData && (
+            <div style={{ padding: '12px', background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(129, 199, 132, 0.05))', border: '2px solid var(--primary)', borderRadius: '12px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>添付レシピ:</div>
+              <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>👨‍🍳 {recipeData.title}</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>{recipeData.description}</div>
+            </div>
+          )}
 
           {/* 文字数カウント */}
           <div

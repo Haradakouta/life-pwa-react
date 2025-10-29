@@ -29,6 +29,18 @@ export const extractHashtags = (content: string): string[] => {
 };
 
 /**
+ * メンションを抽出（@usernameの形式）
+ */
+export const extractMentions = (content: string): string[] => {
+  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+  const matches = content.match(mentionRegex);
+  if (!matches) return [];
+
+  // "@"を除去してユニークな配列を返す
+  return [...new Set(matches.map((mention) => mention.substring(1)))];
+};
+
+/**
  * Timestampを日付文字列に変換
  */
 const timestampToString = (timestamp: Timestamp | string | undefined): string => {
@@ -60,15 +72,16 @@ export const createPost = async (
       }
     }
 
-    // ハッシュタグを抽出
+    // ハッシュタグとメンションを抽出
     const hashtags = extractHashtags(data.content);
+    const mentions = extractMentions(data.content);
 
     // 新しい投稿IDを生成
     const postRef = doc(collection(db, 'posts'));
     const postId = postRef.id;
 
     // 投稿データを作成
-    const postData = {
+    const postData: any = {
       id: postId,
       content: data.content,
       images: imageUrls,
@@ -82,6 +95,21 @@ export const createPost = async (
       visibility: data.visibility,
       createdAt: serverTimestamp(),
     };
+
+    // メンションがあれば追加
+    if (mentions.length > 0) {
+      postData.mentions = mentions;
+    }
+
+    // 引用リポストの場合
+    if (data.quotedPostId) {
+      postData.quotedPostId = data.quotedPostId;
+    }
+
+    // レシピデータがあれば追加
+    if (data.recipeData) {
+      postData.recipeData = data.recipeData;
+    }
 
     // Firestoreに保存
     await setDoc(postRef, postData);
@@ -107,6 +135,16 @@ export const getPost = async (postId: string): Promise<Post | null> => {
     }
 
     const data = postSnap.data();
+
+    // 引用元の投稿を取得
+    let quotedPost: Post | undefined = undefined;
+    if (data.quotedPostId) {
+      const quotedPostData = await getPost(data.quotedPostId);
+      if (quotedPostData) {
+        quotedPost = quotedPostData;
+      }
+    }
+
     return {
       id: postSnap.id,
       content: data.content,
@@ -118,6 +156,10 @@ export const getPost = async (postId: string): Promise<Post | null> => {
       commentCount: data.commentCount || 0,
       repostCount: data.repostCount || 0,
       hashtags: data.hashtags || [],
+      mentions: data.mentions || [],
+      quotedPostId: data.quotedPostId,
+      quotedPost,
+      recipeData: data.recipeData,
       visibility: data.visibility,
       createdAt: timestampToString(data.createdAt),
       updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
@@ -147,10 +189,21 @@ export const getUserPosts = async (
     const querySnapshot = await getDocs(q);
     const posts: Post[] = [];
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data();
+
+      // 引用元の投稿を取得（1階層のみ）
+      let quotedPost: Post | undefined = undefined;
+      if (data.quotedPostId) {
+        const quotedPostData = await getPost(data.quotedPostId);
+        if (quotedPostData) {
+          // 引用元の投稿の引用元は取得しない（無限ループ防止）
+          quotedPost = { ...quotedPostData, quotedPost: undefined };
+        }
+      }
+
       posts.push({
-        id: doc.id,
+        id: docSnap.id,
         content: data.content,
         images: data.images || [],
         authorId: data.authorId,
@@ -160,11 +213,15 @@ export const getUserPosts = async (
         commentCount: data.commentCount || 0,
         repostCount: data.repostCount || 0,
         hashtags: data.hashtags || [],
+        mentions: data.mentions || [],
+        quotedPostId: data.quotedPostId,
+        quotedPost,
+        recipeData: data.recipeData,
         visibility: data.visibility,
         createdAt: timestampToString(data.createdAt),
         updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
       });
-    });
+    }
 
     return posts;
   } catch (error) {
@@ -201,17 +258,26 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
 
     const posts: Post[] = [];
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      console.log(`📄 Processing post ${doc.id}:`, {
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data();
+      console.log(`📄 Processing post ${docSnap.id}:`, {
         authorId: data.authorId,
         authorName: data.authorName,
         visibility: data.visibility,
         createdAt: data.createdAt,
       });
 
+      // 引用元の投稿を取得（1階層のみ）
+      let quotedPost: Post | undefined = undefined;
+      if (data.quotedPostId) {
+        const quotedPostData = await getPost(data.quotedPostId);
+        if (quotedPostData) {
+          quotedPost = { ...quotedPostData, quotedPost: undefined };
+        }
+      }
+
       posts.push({
-        id: doc.id,
+        id: docSnap.id,
         content: data.content,
         images: data.images || [],
         authorId: data.authorId,
@@ -221,11 +287,15 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
         commentCount: data.commentCount || 0,
         repostCount: data.repostCount || 0,
         hashtags: data.hashtags || [],
+        mentions: data.mentions || [],
+        quotedPostId: data.quotedPostId,
+        quotedPost,
+        recipeData: data.recipeData,
         visibility: data.visibility,
         createdAt: timestampToString(data.createdAt),
         updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
       });
-    });
+    }
 
     console.log(`✅ getTimelinePosts: Successfully processed ${posts.length} posts`);
     return posts;
@@ -254,10 +324,20 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
 
         const allPosts: Post[] = [];
 
-        fallbackSnapshot.forEach((doc) => {
-          const data = doc.data() as any;
+        for (const docSnap of fallbackSnapshot.docs) {
+          const data = docSnap.data() as any;
+
+          // 引用元の投稿を取得（1階層のみ）
+          let quotedPost: Post | undefined = undefined;
+          if (data.quotedPostId) {
+            const quotedPostData = await getPost(data.quotedPostId);
+            if (quotedPostData) {
+              quotedPost = { ...quotedPostData, quotedPost: undefined };
+            }
+          }
+
           allPosts.push({
-            id: doc.id,
+            id: docSnap.id,
             content: data.content,
             images: data.images || [],
             authorId: data.authorId,
@@ -267,11 +347,15 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
             commentCount: data.commentCount || 0,
             repostCount: data.repostCount || 0,
             hashtags: data.hashtags || [],
+            mentions: data.mentions || [],
+            quotedPostId: data.quotedPostId,
+            quotedPost,
+            recipeData: data.recipeData,
             visibility: data.visibility,
             createdAt: timestampToString(data.createdAt),
             updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
           });
-        });
+        }
 
         // クライアント側でフィルタリング
         const publicPosts = allPosts.filter((post) => post.visibility === 'public').slice(0, limit);

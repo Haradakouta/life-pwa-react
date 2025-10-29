@@ -9,15 +9,33 @@ export interface Post {
   commentCount: number;
   repostCount: number;
   hashtags?: string[];
+  mentions?: string[]; // メンションされたユーザーID配列
+  quotedPostId?: string; // 引用元の投稿ID
+  quotedPost?: Post; // 引用元の投稿（取得時に埋め込み）
+  recipeData?: RecipeData; // レシピデータ（投稿に含まれる場合）
   visibility: 'public' | 'followers' | 'private';
   createdAt: string;
   updatedAt?: string;
+}
+
+// 投稿に含まれるレシピデータ（簡略版）
+export interface RecipeData {
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  servings: number;
+  preparationTime: number; // 分単位
+  cookingTime: number; // 分単位
 }
 
 export interface PostFormData {
   content: string;
   images: File[];
   visibility: 'public' | 'followers' | 'private';
+  quotedPostId?: string; // 引用元の投稿ID
+  recipeData?: RecipeData; // レシピデータ
 }
 
 export interface Like {

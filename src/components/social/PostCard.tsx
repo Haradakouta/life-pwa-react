@@ -229,19 +229,172 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         </div>
       </div>
 
-      {/* 本文 */}
+      {/* 本文（メンション対応） */}
       <div
         style={{
           color: 'var(--text)',
           fontSize: '15px',
           lineHeight: '1.5',
-          marginBottom: post.images && post.images.length > 0 ? '12px' : '16px',
+          marginBottom: '12px',
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
         }}
       >
-        {post.content}
+        {post.content.split(/(@[a-zA-Z0-9_]+)/g).map((part, index) => {
+          // @usernameの場合
+          if (part.match(/^@[a-zA-Z0-9_]+$/)) {
+            return (
+              <span
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const username = part.substring(1);
+                  // TODO: usernameからuserIdを取得してプロフィールに遷移
+                  console.log('Mention clicked:', username);
+                }}
+                style={{
+                  color: 'var(--primary)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                {part}
+              </span>
+            );
+          }
+          return part;
+        })}
       </div>
+
+      {/* レシピデータ */}
+      {post.recipeData && (
+        <div
+          style={{
+            marginBottom: '12px',
+            padding: '16px',
+            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(129, 199, 132, 0.05))',
+            borderRadius: '12px',
+            border: '2px solid var(--primary)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div
+              style={{
+                fontSize: '20px',
+              }}
+            >
+              👨‍🍳
+            </div>
+            <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
+              {post.recipeData.title}
+            </div>
+            <div
+              style={{
+                marginLeft: 'auto',
+                padding: '4px 12px',
+                background: 'var(--primary)',
+                color: 'white',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: 600,
+              }}
+            >
+              {post.recipeData.difficulty === 'easy' ? '簡単' : post.recipeData.difficulty === 'medium' ? '普通' : '難しい'}
+            </div>
+          </div>
+          <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            {post.recipeData.description}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+            <span>🍽️ {post.recipeData.servings}人分</span>
+            <span>⏱️ {post.recipeData.preparationTime + post.recipeData.cookingTime}分</span>
+          </div>
+        </div>
+      )}
+
+      {/* 引用リポスト */}
+      {post.quotedPost && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onPostClick(post.quotedPost!.id);
+          }}
+          style={{
+            marginBottom: '12px',
+            padding: '12px',
+            background: 'var(--bg)',
+            borderRadius: '12px',
+            border: '1px solid var(--border)',
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--border)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--bg)';
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: post.quotedPost.authorAvatar
+                  ? `url(${post.quotedPost.authorAvatar}) center/cover`
+                  : 'linear-gradient(135deg, var(--primary), #81c784)',
+              }}
+            />
+            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>
+              {post.quotedPost.authorName}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {getRelativeTime(post.quotedPost.createdAt)}
+            </div>
+          </div>
+          <div
+            style={{
+              fontSize: '14px',
+              color: 'var(--text)',
+              lineHeight: '1.4',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {post.quotedPost.content}
+          </div>
+          {post.quotedPost.images && post.quotedPost.images.length > 0 && (
+            <div
+              style={{
+                marginTop: '8px',
+                width: '100%',
+                paddingBottom: '40%',
+                position: 'relative',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                background: 'var(--border)',
+              }}
+            >
+              <img
+                src={post.quotedPost.images[0]}
+                alt="引用元画像"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 画像 */}
       {post.images && post.images.length > 0 && (

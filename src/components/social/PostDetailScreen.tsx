@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { MdArrowBack, MdDelete, MdFavorite, MdFavoriteBorder, MdComment, MdSend } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getPost, deletePost, getRelativeTime, addLike, removeLike, hasUserLiked, addComment, deleteComment, getPostComments } from '../../utils/post';
+import { getUserProfile } from '../../utils/profile';
 import type { Post, Comment } from '../../types/post';
+import type { UserProfile } from '../../types/profile';
 
 interface PostDetailScreenProps {
   postId: string;
@@ -25,6 +27,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   const [localLikes, setLocalLikes] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -39,6 +42,10 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           if (user) {
             const isLiked = await hasUserLiked(postId, user.uid);
             setLiked(isLiked);
+
+            // ユーザープロフィールを取得
+            const profile = await getUserProfile(user.uid);
+            setUserProfile(profile);
           }
 
           // コメント一覧を取得
@@ -61,7 +68,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   }, [postId, onBack, user]);
 
   const handleLike = async () => {
-    if (!user) return;
+    if (!user || !userProfile) return;
 
     try {
       if (liked) {
@@ -69,7 +76,12 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
         setLiked(false);
         setLocalLikes(Math.max(0, localLikes - 1));
       } else {
-        await addLike(postId, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        await addLike(
+          postId,
+          user.uid,
+          userProfile.displayName,
+          userProfile.avatarUrl
+        );
         setLiked(true);
         setLocalLikes(localLikes + 1);
       }
@@ -80,11 +92,17 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   };
 
   const handleAddComment = async () => {
-    if (!user || !post || !commentText.trim()) return;
+    if (!user || !post || !commentText.trim() || !userProfile) return;
 
     try {
       setIsSubmittingComment(true);
-      await addComment(postId, user.uid, user.email?.split('@')[0] || 'anonymous', commentText.trim());
+      await addComment(
+        postId,
+        user.uid,
+        userProfile.displayName,
+        commentText.trim(),
+        userProfile.avatarUrl
+      );
 
       // コメント一覧を更新
       const updatedComments = await getPostComments(postId);

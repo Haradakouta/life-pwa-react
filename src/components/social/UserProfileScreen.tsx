@@ -346,7 +346,16 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         ) : (
           <div>
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onPostClick={onPostClick} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onPostClick={onPostClick}
+                onUserClick={(clickedUserId) => {
+                  // 他のユーザーのプロフィールをクリックした場合のみ遷移
+                  // （既に表示中のプロフィールの場合は何もしない）
+                  console.log('User clicked:', clickedUserId, 'Current userId:', userId);
+                }}
+              />
             ))}
           </div>
         )}

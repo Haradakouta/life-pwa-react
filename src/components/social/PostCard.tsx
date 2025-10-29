@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
+import type { UserProfile } from '../../types/profile';
 import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
+import { getUserProfile } from '../../utils/profile';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder } from 'react-icons/md';
 import { ImageModal } from '../common/ImageModal';
 
@@ -21,6 +23,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   const [isLoading, setIsLoading] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [imageModalIndex, setImageModalIndex] = useState(0);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // いいね・ブックマーク・リポスト状態を初期化
   useEffect(() => {
@@ -34,6 +37,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         setLiked(isLiked);
         setBookmarked(isBookmarked);
         setReposted(isReposted);
+
+        // ユーザープロフィールを取得
+        const profile = await getUserProfile(user.uid);
+        setUserProfile(profile);
       } catch (error) {
         console.error('ステータス確認エラー:', error);
       }
@@ -44,7 +51,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user || isLoading) return;
+    if (!user || isLoading || !userProfile) return;
 
     try {
       setIsLoading(true);
@@ -53,7 +60,12 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         setLiked(false);
         setLocalLikes(Math.max(0, localLikes - 1));
       } else {
-        await addLike(post.id, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        await addLike(
+          post.id,
+          user.uid,
+          userProfile.displayName,
+          userProfile.avatarUrl
+        );
         setLiked(true);
         setLocalLikes(localLikes + 1);
       }
@@ -72,7 +84,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user || isLoading) return;
+    if (!user || isLoading || !userProfile) return;
 
     try {
       setIsLoading(true);
@@ -81,7 +93,12 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         setReposted(false);
         setLocalRepostCount(Math.max(0, localRepostCount - 1));
       } else {
-        await addRepost(post.id, user.uid, user.email?.split('@')[0] || 'anonymous', undefined);
+        await addRepost(
+          post.id,
+          user.uid,
+          userProfile.displayName,
+          userProfile.avatarUrl
+        );
         setReposted(true);
         setLocalRepostCount(localRepostCount + 1);
       }

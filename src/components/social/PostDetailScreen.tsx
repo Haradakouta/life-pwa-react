@@ -292,13 +292,174 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
             color: 'var(--text)',
             fontSize: '16px',
             lineHeight: '1.6',
-            marginBottom: post.images && post.images.length > 0 ? '20px' : '24px',
+            marginBottom: '20px',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
           }}
         >
           {post.content}
         </div>
+
+        {/* レシピデータ */}
+        {post.recipeData && (
+          <div
+            style={{
+              marginBottom: '20px',
+              padding: '20px',
+              background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(129, 199, 132, 0.05))',
+              borderRadius: '12px',
+              border: '2px solid var(--primary)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '24px' }}>👨‍🍳</div>
+              <div style={{ fontWeight: 700, fontSize: '18px', color: 'var(--text)' }}>
+                {post.recipeData.title}
+              </div>
+              <div
+                style={{
+                  marginLeft: 'auto',
+                  padding: '6px 16px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                {post.recipeData.difficulty === 'easy' ? '簡単' : post.recipeData.difficulty === 'medium' ? '普通' : '難しい'}
+              </div>
+            </div>
+            <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              {post.recipeData.description}
+            </div>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              <span>🍽️ {post.recipeData.servings}人分</span>
+              <span>⏱️ {post.recipeData.preparationTime + post.recipeData.cookingTime}分</span>
+            </div>
+
+            {/* 材料 */}
+            {post.recipeData.ingredients && post.recipeData.ingredients.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text)', marginBottom: '10px' }}>
+                  📝 材料
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '14px', color: 'var(--text)', lineHeight: '2' }}>
+                  {post.recipeData.ingredients.map((ingredient, index) => (
+                    <li key={index}>{ingredient}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 作り方 */}
+            {post.recipeData.instructions && post.recipeData.instructions.length > 0 && (
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text)', marginBottom: '10px' }}>
+                  👨‍🍳 作り方
+                </div>
+                <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '14px', color: 'var(--text)', lineHeight: '2' }}>
+                  {post.recipeData.instructions.map((instruction, index) => (
+                    <li key={index} style={{ marginBottom: '8px' }}>{instruction}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 引用リポスト */}
+        {post.quotedPost && (
+          <div
+            style={{
+              marginBottom: '20px',
+              padding: '16px',
+              background: 'var(--background)',
+              borderRadius: '12px',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              引用元の投稿:
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: post.quotedPost.authorAvatar
+                    ? `url(${post.quotedPost.authorAvatar}) center/cover`
+                    : 'linear-gradient(135deg, var(--primary), #81c784)',
+                }}
+              />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>
+                  {post.quotedPost.authorName}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  {getRelativeTime(post.quotedPost.createdAt)}
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: '15px',
+                color: 'var(--text)',
+                lineHeight: '1.5',
+                marginBottom: post.quotedPost.recipeData || (post.quotedPost.images && post.quotedPost.images.length > 0) ? '12px' : '0',
+              }}
+            >
+              {post.quotedPost.content}
+            </div>
+            {post.quotedPost.recipeData && (
+              <div
+                style={{
+                  marginBottom: '12px',
+                  padding: '12px',
+                  background: 'rgba(22, 163, 74, 0.05)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--primary)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '16px' }}>👨‍🍳</span>
+                  <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>
+                    {post.quotedPost.recipeData.title}
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  {post.quotedPost.recipeData.description}
+                </div>
+              </div>
+            )}
+            {post.quotedPost.images && post.quotedPost.images.length > 0 && (
+              <div
+                style={{
+                  width: '100%',
+                  paddingBottom: '56.25%',
+                  position: 'relative',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  background: 'var(--border)',
+                }}
+              >
+                <img
+                  src={post.quotedPost.images[0]}
+                  alt="引用元画像"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 画像 */}
         {post.images && post.images.length > 0 && (

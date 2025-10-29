@@ -317,13 +317,41 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               {post.recipeData.difficulty === 'easy' ? '簡単' : post.recipeData.difficulty === 'medium' ? '普通' : '難しい'}
             </div>
           </div>
-          <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+          <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
             {post.recipeData.description}
           </div>
-          <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+          <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
             <span>🍽️ {post.recipeData.servings}人分</span>
             <span>⏱️ {post.recipeData.preparationTime + post.recipeData.cookingTime}分</span>
           </div>
+
+          {/* 材料 */}
+          {post.recipeData.ingredients && post.recipeData.ingredients.length > 0 && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)', marginBottom: '8px' }}>
+                📝 材料
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--text)', lineHeight: '1.8' }}>
+                {post.recipeData.ingredients.map((ingredient, index) => (
+                  <li key={index}>{ingredient}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 作り方 */}
+          {post.recipeData.instructions && post.recipeData.instructions.length > 0 && (
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)', marginBottom: '8px' }}>
+                👨‍🍳 作り方
+              </div>
+              <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--text)', lineHeight: '1.8' }}>
+                {post.recipeData.instructions.map((instruction, index) => (
+                  <li key={index} style={{ marginBottom: '4px' }}>{instruction}</li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
       )}
 
@@ -378,10 +406,32 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
+              marginBottom: post.quotedPost.recipeData ? '8px' : '0',
             }}
           >
             {post.quotedPost.content}
           </div>
+          {post.quotedPost.recipeData && (
+            <div
+              style={{
+                marginBottom: '8px',
+                padding: '8px',
+                background: 'rgba(22, 163, 74, 0.05)',
+                borderRadius: '8px',
+                border: '1px solid var(--primary)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '14px' }}>👨‍🍳</span>
+                <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>
+                  {post.quotedPost.recipeData.title}
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                {post.quotedPost.recipeData.description}
+              </div>
+            </div>
+          )}
           {post.quotedPost.images && post.quotedPost.images.length > 0 && (
             <div
               style={{

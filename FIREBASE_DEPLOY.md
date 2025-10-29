@@ -36,10 +36,46 @@ firebase projects:list
 
 - 現在のプロジェクト: `oshi-para`
 
-### 3. Firestore ルールをデプロイ
+### 3. すべてのルールをデプロイ
 
 ```bash
+# Firestore + Storage ルールを一括デプロイ
+firebase deploy --only firestore:rules,storage:rules
+```
+
+**または個別にデプロイ:**
+
+```bash
+# Firestore ルールのみ
 firebase deploy --only firestore:rules
+
+# Storage ルールのみ
+firebase deploy --only storage:rules
+```
+
+### 4. Storage CORS 設定をデプロイ
+
+```bash
+# Google Cloud SDK (gcloud) をインストール（初回のみ）
+# https://cloud.google.com/sdk/docs/install
+
+# プロジェクトを設定
+gcloud config set project oshi-para
+
+# CORS設定を適用
+gsutil cors set cors.json gs://oshi-para.firebasestorage.app
+```
+
+**成功メッセージ例:**
+```
+Setting CORS on gs://oshi-para.firebasestorage.app/...
+```
+
+### 5. CORS 設定の確認
+
+```bash
+# 現在のCORS設定を確認
+gsutil cors get gs://oshi-para.firebasestorage.app
 ```
 
 **成功メッセージ例:**
@@ -99,17 +135,32 @@ firebase login
 
 ## 📝 最近の変更内容
 
-### 2025-10-29 (セッション継続)
+### 2025-10-29 (セッション継続) - CORS & Storage Rules 修正
 
-**変更内容:**
+**Firestore Rules 変更:**
 - 投稿作成時に `quotedPostId`, `recipeData`, `mentions` フィールドを許可
 - 必須フィールドのバリデーション追加（`content`, `authorId`, `authorName`, `visibility`）
 - `visibility` の値検証（`public`, `followers`, `private` のみ許可）
 
+**Storage Rules 変更:**
+- ❗ **重要:** パス構造を修正してコードと一致させました
+  - アバター画像: `users/{userId}/profile/avatar/` → `avatars/{userId}/`
+  - カバー画像: `users/{userId}/profile/cover/` → `covers/{userId}/`
+  - 投稿画像: `posts/{postId}/` → `posts/{userId}/`
+  - レシピ画像: `recipes/{recipeId}/` → `recipes/{userId}/`
+- すべての画像の読み取りを公開に変更（`allow read: if true`）
+
+**CORS 設定追加:**
+- `cors.json` ファイルを作成
+- `https://haradakouta.github.io` からのアクセスを許可
+- GET, POST, PUT, DELETE, OPTIONS メソッドを許可
+
 **影響する機能:**
-- 引用リポスト機能
-- レシピ添付機能
-- メンション機能
+- ✅ 引用リポスト機能
+- ✅ レシピ添付機能
+- ✅ メンション機能
+- ✅ プロフィール画像アップロード（CORS エラー修正）
+- ✅ 投稿画像アップロード
 
 ---
 

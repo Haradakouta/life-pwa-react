@@ -32,6 +32,11 @@ service cloud.firestore {
     // ========================================
     // ユーザー個人データ
     // ========================================
+    // ユーザーのブックマーク（個別に定義して明示的に）
+    match /users/{userId}/bookmarks/{postId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // ユーザーは自分のデータのみアクセス可能
     // 対象: settings, intakes, expenses, stocks, shopping, recipes など
     match /users/{userId}/{document=**} {
@@ -113,20 +118,6 @@ service cloud.firestore {
                       && resource.data.userId == request.auth.uid;
       }
 
-      // ---- 投稿のブックマーク（bookmarks）サブコレクション ----
-      match /bookmarks/{bookmarkId} {
-        // 読み取り: 認証済みユーザーのみ（自分のブックマークのみ）
-        allow read: if isAuth()
-                    && resource.data.userId == request.auth.uid;
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のブックマークのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
-      }
     }
 
     // ========================================

@@ -8,6 +8,19 @@ Access to XMLHttpRequest at 'https://firebasestorage.googleapis.com/...'
 from origin 'https://haradakouta.github.io' has been blocked by CORS policy
 ```
 
+## 🚨 重要: Firebase Storage が有効か確認
+
+**まず、Firebase Storage が有効になっているか確認してください。**
+
+1. https://console.firebase.google.com/project/oshi-para/storage にアクセス
+2. バケット `oshi-para.firebasestorage.app` または `oshi-para.appspot.com` が表示されているか確認
+
+**もしバケットが存在しない場合:**
+- `FIREBASE_STORAGE_SETUP.md` を参照して、Firebase Storage を有効化してください
+- Storage が有効化されるまで、このガイドは使えません
+
+---
+
 ## 🎯 解決方法（3ステップ、CLIは不要！）
 
 ### ステップ1: Firebase Storage Rules を更新（Firebase Console）

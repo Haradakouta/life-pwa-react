@@ -4,6 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
 import { getUserPosts } from '../../utils/post';
 import { PostCard } from './PostCard';
+import { FollowersListModal } from './FollowersListModal';
+import { FollowingListModal } from './FollowingListModal';
 import type { UserProfile } from '../../types/profile';
 import type { Post } from '../../types/post';
 
@@ -25,6 +27,8 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
 
   const isOwnProfile = user && user.uid === userId;
 
@@ -341,13 +345,41 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
             </span>
             <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>投稿</span>
           </div>
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            onClick={() => setShowFollowersModal(true)}
+            style={{
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '4px',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--border)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
             <span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>
               {profile.stats.followerCount}
             </span>
             <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フォロワー</span>
           </div>
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            onClick={() => setShowFollowingModal(true)}
+            style={{
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '4px',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--border)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
             <span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>
               {profile.stats.followingCount}
             </span>
@@ -388,6 +420,30 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           </div>
         )}
       </div>
+
+      {/* フォロワーモーダル */}
+      {showFollowersModal && (
+        <FollowersListModal
+          userId={userId}
+          onClose={() => setShowFollowersModal(false)}
+          onUserClick={(clickedUserId) => {
+            // プロフィール画面を再読み込みする場合はここで処理
+            console.log('Navigate to user:', clickedUserId);
+          }}
+        />
+      )}
+
+      {/* フォロー中モーダル */}
+      {showFollowingModal && (
+        <FollowingListModal
+          userId={userId}
+          onClose={() => setShowFollowingModal(false)}
+          onUserClick={(clickedUserId) => {
+            // プロフィール画面を再読み込みする場合はここで処理
+            console.log('Navigate to user:', clickedUserId);
+          }}
+        />
+      )}
     </div>
   );
 };

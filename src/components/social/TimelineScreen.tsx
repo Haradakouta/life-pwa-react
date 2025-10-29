@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { MdAdd, MdRefresh } from 'react-icons/md';
+import { useAuth } from '../../hooks/useAuth';
 import { PostCard } from './PostCard';
 import { PostCreateScreen } from './PostCreateScreen';
-import { getTimelinePosts } from '../../utils/post';
+import { getTimelinePosts, getFollowingPosts } from '../../utils/post';
 import type { Post } from '../../types/post';
 
 interface TimelineScreenProps {
@@ -11,20 +12,29 @@ interface TimelineScreenProps {
 }
 
 export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onUserClick }) => {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [quotedPostId, setQuotedPostId] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<'all' | 'following'>('all');
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (tab: 'all' | 'following' = activeTab) => {
     setLoading(true);
     setError('');
     try {
-      console.log('📡 Fetching timeline posts...');
-      const fetchedPosts = await getTimelinePosts(20);
-      console.log(`✅ Fetched ${fetchedPosts.length} posts`);
-      setPosts(fetchedPosts);
+      if (tab === 'following' && user) {
+        console.log('📡 Fetching following posts...');
+        const fetchedPosts = await getFollowingPosts(user.uid, 20);
+        console.log(`✅ Fetched ${fetchedPosts.length} following posts`);
+        setPosts(fetchedPosts);
+      } else {
+        console.log('📡 Fetching timeline posts...');
+        const fetchedPosts = await getTimelinePosts(20);
+        console.log(`✅ Fetched ${fetchedPosts.length} posts`);
+        setPosts(fetchedPosts);
+      }
     } catch (error: any) {
       console.error('❌ 投稿の取得に失敗しました:', error);
       console.error('Error details:', error.message, error.code);
@@ -35,8 +45,8 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    fetchPosts(activeTab);
+  }, [activeTab, user]);
 
   const handlePostCreated = () => {
     fetchPosts(); // 投稿後にタイムラインを更新
@@ -74,7 +84,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* 更新ボタン */}
           <button
-            onClick={fetchPosts}
+            onClick={() => fetchPosts()}
             disabled={loading}
             style={{
               background: 'none',
@@ -128,6 +138,53 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
         </div>
       </div>
 
+      {/* タブ */}
+      <div
+        style={{
+          display: 'flex',
+          background: 'var(--card)',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: '69px',
+          zIndex: 9,
+        }}
+      >
+        <button
+          onClick={() => setActiveTab('all')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'all' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'all' ? 600 : 400,
+            color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          すべて
+        </button>
+        <button
+          onClick={() => setActiveTab('following')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'following' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'following' ? 600 : 400,
+            color: activeTab === 'following' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          フォロー中
+        </button>
+      </div>
+
       {/* 本体 */}
       <div style={{ padding: '16px' }}>
         {error ? (
@@ -149,7 +206,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
               {error}
             </div>
             <button
-              onClick={fetchPosts}
+              onClick={() => fetchPosts()}
               style={{
                 padding: '10px 20px',
                 background: 'var(--primary)',
@@ -195,9 +252,11 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
               color: 'var(--text-secondary)',
             }}
           >
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+              {activeTab === 'following' ? '👥' : '📝'}
+            </div>
             <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>
-              まだ投稿がありません
+              {activeTab === 'following' ? 'フォロー中のユーザーの投稿がありません' : 'まだ投稿がありません'}
             </div>
             <div style={{ fontSize: '14px', marginBottom: '24px' }}>
               最初の投稿をしてみましょう！

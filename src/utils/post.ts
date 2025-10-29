@@ -17,7 +17,7 @@ import {
 import { db } from '../config/firebase';
 import type { Post, PostFormData, Like, Comment, Bookmark, Repost, Recipe, RecipeFormData } from '../types/post';
 import { uploadPostImage } from './imageUpload';
-import { getUserProfile } from './profile';
+import { getUserProfile, getFollowing } from './profile';
 
 /**
  * ハッシュタグを抽出する
@@ -1208,6 +1208,88 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
     return recipes;
   } catch (error) {
     console.error('レシピランキング取得に失敗しました:', error);
+    return [];
+  }
+};
+
+/**
+ * フォロー中のユーザーの投稿を取得
+ */
+export const getFollowingPosts = async (userId: string, limit: number = 20): Promise<Post[]> => {
+  try {
+    console.log(`[getFollowingPosts] Fetching following posts for user: ${userId}`);
+
+    // フォロー中のユーザーリストを取得
+    const followingUsers = await getFollowing(userId);
+    console.log(`[getFollowingPosts] Found ${followingUsers.length} following users`);
+
+    if (followingUsers.length === 0) {
+      return [];
+    }
+
+    // フォロー中のユーザーのIDリスト
+    const followingUserIds = followingUsers.map(user => user.uid);
+
+    // すべての投稿を取得（authorIdでフィルタ）
+    const postsRef = collection(db, 'posts');
+    const allPosts: Post[] = [];
+
+    // Firestoreの'in'クエリは最大10件までなので、10件ずつ分割して取得
+    for (let i = 0; i < followingUserIds.length; i += 10) {
+      const batch = followingUserIds.slice(i, i + 10);
+      const q = query(
+        postsRef,
+        where('authorId', 'in', batch),
+        where('visibility', 'in', ['public', 'followers'])
+      );
+
+      const querySnapshot = await getDocs(q);
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+
+        // 引用元の投稿を取得（1階層のみ）
+        let quotedPost: Post | undefined = undefined;
+        if (data.quotedPostId) {
+          const quotedPostData = await getPost(data.quotedPostId);
+          if (quotedPostData) {
+            quotedPost = { ...quotedPostData, quotedPost: undefined };
+          }
+        }
+
+        allPosts.push({
+          id: docSnap.id,
+          content: data.content,
+          images: data.images || [],
+          authorId: data.authorId,
+          authorName: data.authorName,
+          authorAvatar: data.authorAvatar || '',
+          likes: data.likes || 0,
+          commentCount: data.commentCount || 0,
+          repostCount: data.repostCount || 0,
+          hashtags: data.hashtags || [],
+          mentions: data.mentions || [],
+          quotedPostId: data.quotedPostId,
+          quotedPost,
+          recipeData: data.recipeData,
+          visibility: data.visibility,
+          createdAt: timestampToString(data.createdAt),
+          updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+        });
+      }
+    }
+
+    // 時系列順にソート
+    allPosts.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    // limit適用
+    const result = allPosts.slice(0, limit);
+    console.log(`[getFollowingPosts] Returning ${result.length} posts`);
+
+    return result;
+  } catch (error) {
+    console.error('[getFollowingPosts] フォロー中の投稿取得に失敗しました:', error);
     return [];
   }
 };

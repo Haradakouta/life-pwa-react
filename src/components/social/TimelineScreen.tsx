@@ -3,6 +3,7 @@ import { MdAdd, MdRefresh } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { PostCard } from './PostCard';
 import { PostCreateScreen } from './PostCreateScreen';
+import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { getTimelinePosts, getFollowingPosts } from '../../utils/post';
 import type { Post } from '../../types/post';
 
@@ -222,26 +223,11 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
             </button>
           </div>
         ) : loading ? (
-          // ローディング表示
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '40px 20px',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '4px solid var(--border)',
-                borderTop: '4px solid var(--primary)',
-                borderRadius: '50%',
-                margin: '0 auto 16px',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <div>投稿を読み込んでいます...</div>
+          // スケルトンローディング表示（3枚表示）
+          <div>
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
           </div>
         ) : posts.length === 0 ? (
           // 投稿がない場合

@@ -249,17 +249,18 @@ export const followUser = async (
   followingName: string
 ): Promise<void> => {
   try {
-    // 既にフォローしているかチェック
-    const alreadyFollowing = await isFollowing(followerId, followingId);
-    if (alreadyFollowing) {
+    // 固定IDでドキュメント作成（高速チェック用）
+    const followRef = doc(db, `users/${followingId}/followers/${followerId}`);
+
+    // 既にフォローしているかチェック（1回のgetDocで高速化）
+    const existingFollow = await getDoc(followRef);
+    if (existingFollow.exists()) {
       console.log(`⚠️ ${followerId} is already following ${followingId}`);
-      return; // 既にフォロー済みなので何もしない
+      return;
     }
 
-    // follows コレクションに追加
-    const followRef = doc(collection(db, `users/${followingId}/followers`));
     const followData: Follow = {
-      id: followRef.id,
+      id: followerId,
       followerId,
       followerName,
       followerAvatar,
@@ -268,25 +269,16 @@ export const followUser = async (
       createdAt: new Date().toISOString(),
     };
 
-    await setDoc(followRef, followData);
-
-    // フォローしている側の followingCount を更新
-    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
-    const followerProfile = await getDoc(followerProfileRef);
-    if (followerProfile.exists()) {
-      await updateDoc(followerProfileRef, {
+    // 並列実行で高速化
+    await Promise.all([
+      setDoc(followRef, followData),
+      updateDoc(doc(db, `users/${followerId}/profile/data`), {
         'stats.followingCount': increment(1),
-      });
-    }
-
-    // フォローされている側の followerCount を更新
-    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
-    const followingProfile = await getDoc(followingProfileRef);
-    if (followingProfile.exists()) {
-      await updateDoc(followingProfileRef, {
+      }),
+      updateDoc(doc(db, `users/${followingId}/profile/data`), {
         'stats.followerCount': increment(1),
-      });
-    }
+      }),
+    ]);
 
     console.log(`✅ ${followerId} followed ${followingId}`);
   } catch (error) {
@@ -300,34 +292,19 @@ export const followUser = async (
  */
 export const unfollowUser = async (followerId: string, followingId: string): Promise<void> => {
   try {
-    // followers コレクションから削除
-    const followersRef = collection(db, `users/${followingId}/followers`);
-    const querySnapshot = await getDocs(followersRef);
+    // 固定IDで直接削除（クエリ不要）
+    const followRef = doc(db, `users/${followingId}/followers/${followerId}`);
 
-    for (const docSnap of querySnapshot.docs) {
-      const followData = docSnap.data() as Follow;
-      if (followData.followerId === followerId) {
-        await deleteDoc(docSnap.ref);
-      }
-    }
-
-    // フォローしている側の followingCount を更新
-    const followerProfileRef = doc(db, `users/${followerId}/profile/data`);
-    const followerProfile = await getDoc(followerProfileRef);
-    if (followerProfile.exists()) {
-      await updateDoc(followerProfileRef, {
+    // 並列実行で高速化
+    await Promise.all([
+      deleteDoc(followRef),
+      updateDoc(doc(db, `users/${followerId}/profile/data`), {
         'stats.followingCount': increment(-1),
-      });
-    }
-
-    // フォローされている側の followerCount を更新
-    const followingProfileRef = doc(db, `users/${followingId}/profile/data`);
-    const followingProfile = await getDoc(followingProfileRef);
-    if (followingProfile.exists()) {
-      await updateDoc(followingProfileRef, {
+      }),
+      updateDoc(doc(db, `users/${followingId}/profile/data`), {
         'stats.followerCount': increment(-1),
-      });
-    }
+      }),
+    ]);
 
     console.log(`✅ ${followerId} unfollowed ${followingId}`);
   } catch (error) {
@@ -341,17 +318,10 @@ export const unfollowUser = async (followerId: string, followingId: string): Pro
  */
 export const isFollowing = async (followerId: string, followingId: string): Promise<boolean> => {
   try {
-    const followersRef = collection(db, `users/${followingId}/followers`);
-    const querySnapshot = await getDocs(followersRef);
-
-    for (const docSnap of querySnapshot.docs) {
-      const followData = docSnap.data() as Follow;
-      if (followData.followerId === followerId) {
-        return true;
-      }
-    }
-
-    return false;
+    // 固定IDで直接チェック（1回のgetDocで超高速）
+    const followRef = doc(db, `users/${followingId}/followers/${followerId}`);
+    const followDoc = await getDoc(followRef);
+    return followDoc.exists();
   } catch (error) {
     console.error('Check follow error:', error);
     return false;

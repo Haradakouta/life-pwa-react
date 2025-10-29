@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
 import { getUserPosts } from '../../utils/post';
 import { PostCard } from './PostCard';
+import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FollowersListModal } from './FollowersListModal';
 import { FollowingListModal } from './FollowingListModal';
 import type { UserProfile } from '../../types/profile';
@@ -26,7 +27,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
 
@@ -72,17 +72,25 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const handleFollow = async () => {
     if (!user || !profile) return;
 
-    setFollowLoading(true);
-    try {
-      if (isFollowingUser) {
-        await unfollowUser(user.uid, userId);
-        setIsFollowingUser(false);
+    // 楽観的更新: 即座にUIを更新
+    const previousFollowState = isFollowingUser;
+    const previousProfile = { ...profile };
 
-        // プロフィール情報を再取得して最新の状態を反映
-        const updatedProfile = await getUserProfile(userId);
-        if (updatedProfile) {
-          setProfile(updatedProfile);
-        }
+    setIsFollowingUser(!isFollowingUser);
+    setProfile({
+      ...profile,
+      stats: {
+        ...profile.stats,
+        followerCount: isFollowingUser
+          ? profile.stats.followerCount - 1
+          : profile.stats.followerCount + 1,
+      },
+    });
+
+    // バックグラウンドでFirestoreを更新
+    try {
+      if (previousFollowState) {
+        await unfollowUser(user.uid, userId);
       } else {
         await followUser(
           user.uid,
@@ -91,37 +99,132 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           userId,
           profile.displayName
         );
-        setIsFollowingUser(true);
-
-        // プロフィール情報を再取得して最新の状態を反映
-        const updatedProfile = await getUserProfile(userId);
-        if (updatedProfile) {
-          setProfile(updatedProfile);
-        }
       }
+      console.log('✅ Follow operation completed');
     } catch (error) {
-      console.error('フォロー操作に失敗しました:', error);
-      alert('フォロー操作に失敗しました');
-    } finally {
-      setFollowLoading(false);
+      console.error('❌ Follow operation failed:', error);
+      // 失敗時は元に戻す（rollback）
+      setIsFollowingUser(previousFollowState);
+      setProfile(previousProfile);
+      alert('フォロー操作に失敗しました。もう一度お試しください。');
     }
   };
 
   if (loading) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+      <div style={{ paddingBottom: '80px' }}>
+        {/* ヘッダー スケルトン */}
         <div
           style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid var(--border)',
-            borderTop: '4px solid var(--primary)',
-            borderRadius: '50%',
-            margin: '0 auto 16px',
-            animation: 'spin 1s linear infinite',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 20px',
+            background: 'var(--card)',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <div
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: 'var(--border)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              width: '120px',
+              height: '18px',
+              background: 'var(--border)',
+              borderRadius: '4px',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div style={{ width: '24px' }} />
+        </div>
+
+        {/* カバー画像 スケルトン */}
+        <div
+          style={{
+            width: '100%',
+            height: '150px',
+            background: 'var(--border)',
+            animation: 'pulse 1.5s ease-in-out infinite',
           }}
         />
-        <div>プロフィールを読み込んでいます...</div>
+
+        {/* プロフィール情報 スケルトン */}
+        <div style={{ padding: '0 20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              marginTop: '-40px',
+              marginBottom: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'var(--border)',
+                border: '4px solid var(--card)',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            />
+            <div
+              style={{
+                width: '100px',
+                height: '32px',
+                background: 'var(--border)',
+                borderRadius: '20px',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              width: '150px',
+              height: '20px',
+              background: 'var(--border)',
+              borderRadius: '4px',
+              marginBottom: '8px',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              width: '100px',
+              height: '14px',
+              background: 'var(--border)',
+              borderRadius: '4px',
+              marginBottom: '16px',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+        </div>
+
+        {/* 投稿スケルトン */}
+        <div style={{ marginTop: '20px' }}>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </div>
+
+        <style>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.5;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -251,7 +354,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           ) : (
             <button
               onClick={handleFollow}
-              disabled={followLoading}
               style={{
                 padding: '8px 16px',
                 background: isFollowingUser ? 'var(--card)' : 'var(--primary)',
@@ -260,11 +362,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
                 color: isFollowingUser ? 'var(--text)' : 'white',
                 fontSize: '14px',
                 fontWeight: 600,
-                cursor: followLoading ? 'not-allowed' : 'pointer',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                opacity: followLoading ? 0.6 : 1,
                 transition: 'all 0.2s',
               }}
             >

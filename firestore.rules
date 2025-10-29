@@ -63,8 +63,12 @@ service cloud.firestore {
                   || (isAuthor(resource.data.authorId));
 
       // 作成: 認証済みユーザー、かつ自分のuidをauthorIdに設定
+      // 必須フィールド: content, authorId, authorName, visibility
+      // オプショナルフィールド: images, hashtags, mentions, quotedPostId, recipeData
       allow create: if isAuth()
-                    && request.resource.data.authorId == request.auth.uid;
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['content', 'authorId', 'authorName', 'visibility'])
+                    && request.resource.data.visibility in ['public', 'followers', 'private'];
 
       // 更新: 認証済みユーザーが likes/commentCount/repostCount のみ更新可能、または作成者が全フィールド更新可能
       allow update: if isAuth() && (

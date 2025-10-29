@@ -399,14 +399,18 @@ export const addLike = async (
     const likeId = likeRef.id;
 
     // いいねデータを作成
-    const likeData: Like = {
+    const likeData: any = {
       id: likeId,
       postId,
       userId,
       userName,
-      userAvatar,
       createdAt: new Date().toISOString(),
     };
+
+    // userAvatarが存在する場合のみ追加
+    if (userAvatar) {
+      likeData.userAvatar = userAvatar;
+    }
 
     // いいねを保存
     await setDoc(likeRef, likeData);
@@ -515,15 +519,19 @@ export const addComment = async (
     const commentRef = doc(collection(db, `posts/${postId}/comments`));
     const commentId = commentRef.id;
 
-    const commentData: Comment = {
+    const commentData: any = {
       id: commentId,
       postId,
       userId,
       userName,
-      userAvatar,
       content,
       createdAt: new Date().toISOString(),
     };
+
+    // userAvatarが存在する場合のみ追加
+    if (userAvatar) {
+      commentData.userAvatar = userAvatar;
+    }
 
     await setDoc(commentRef, commentData);
 
@@ -706,14 +714,18 @@ export const addRepost = async (
     const repostRef = doc(collection(db, `posts/${postId}/reposts`));
     const repostId = repostRef.id;
 
-    const repostData: Repost = {
+    const repostData: any = {
       id: repostId,
       postId,
       userId,
       userName,
-      userAvatar,
       createdAt: new Date().toISOString(),
     };
+
+    // userAvatarが存在する場合のみ追加
+    if (userAvatar) {
+      repostData.userAvatar = userAvatar;
+    }
 
     await setDoc(repostRef, repostData);
 

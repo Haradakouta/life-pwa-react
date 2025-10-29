@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-29 (セッション15: userAvatar未定義エラー修正完了！)**
+**最終更新: 2025-10-29 (セッション16: CORS設定ガイド作成！)**
 
 ## 📋 プロジェクト概要
 
@@ -1975,5 +1975,110 @@ git push && npm run deploy
   - フォロワー・フォロー中リスト表示
   - フォロー状態の可視化
 - [ ] 通知機能の実装（Phase 6）
+
+---
+
+
+### 2025-10-29 (セッション16: 継続) ✅ **CORS設定ガイド作成！**
+
+**実装内容:**
+
+#### 1. CORSエラーの継続的な問題を調査
+
+**現象:**
+- プロフィール画像（アバター）をアップロードしようとすると、CORSエラーが発生
+- エラーメッセージ:
+  ```
+  Access to XMLHttpRequest at 'https://firebasestorage.googleapis.com/v0/b/oshi-para.firebasestorage.app/o?name=avatars%2F...'
+  from origin 'https://haradakouta.github.io' has been blocked by CORS policy:
+  Response to preflight request doesn't pass access control check: It does not have HTTP ok status.
+  ```
+
+**根本原因:**
+1. **Storage Rulesがデプロイされていない可能性**
+   - コードでは `storage.rules` を修正済み
+   - しかし、Firebase側にデプロイされていない可能性が高い
+
+2. **CORS設定が正しく適用されていない可能性**
+   - Cloud Consoleで設定したが、まだ反映されていない可能性
+   - または、設定の形式が間違っている可能性
+
+#### 2. CORS_FIX_GUIDE.md の作成
+
+**内容:**
+- **ステップ1: Firebase Storage Rules を更新（Firebase Console GUI）**
+  - Firebase Console の Storage → Rules タブで直接編集
+  - 新しいパス構造（`avatars/{userId}/*`）に対応したルールをコピペ
+  - 「公開」ボタンでデプロイ
+
+- **ステップ2: CORS 設定を適用（Google Cloud Console GUI）**
+  - Cloud Storage → バケット選択 → CORS設定
+  - cors.jsonの内容をコピペして保存
+
+- **ステップ3: 確認とテスト**
+  - ブラウザキャッシュをクリア
+  - シークレットモードで確認
+  - 画像アップロードをテスト
+
+**新規ファイル:**
+- `CORS_FIX_GUIDE.md` - GUI設定手順の詳細ガイド
+
+#### 3. トラブルシューティングセクションを追加
+
+**含まれる内容:**
+- 設定の反映を待つ（5〜10分）
+- ハードリフレッシュ方法
+- Service Workerのクリア方法
+- Permission deniedエラーの対処法
+- Invalid CORS configurationエラーの対処法
+
+#### 4. チェックリストの提供
+
+**確認項目:**
+- [ ] Firebase Storage Rules を更新して「公開」した
+- [ ] Google Cloud Console で CORS 設定を保存した
+- [ ] ブラウザキャッシュをクリアした
+- [ ] シークレットモードでテストした
+- [ ] 5〜10分待った（設定反映のため）
+
+#### 5. コミット
+
+**コミット内容:**
+```bash
+git add CORS_FIX_GUIDE.md
+git commit -m "Add comprehensive CORS fix guide for GUI setup"
+git push
+# → Pushed successfully ✅
+```
+
+**結果:**
+- ✅ CORS_FIX_GUIDE.md を作成
+- ✅ GUI での設定手順を明確化（CLI不要）
+- ✅ トラブルシューティングガイドを追加
+- ✅ GitHub にプッシュ完了
+
+**変更ファイル:**
+- `CORS_FIX_GUIDE.md` (NEW) - CORS設定の完全ガイド
+- `CLAUDE.md` - セッション16の記録を追加
+
+**ユーザーが次に行うべきこと:**
+1. **Firebase Console にアクセス** (https://console.firebase.google.com/project/oshi-para/storage/rules)
+   - `CORS_FIX_GUIDE.md` のステップ1に従ってStorage Rulesを更新
+
+2. **Google Cloud Console にアクセス** (https://console.cloud.google.com/storage/browser?project=oshi-para)
+   - `CORS_FIX_GUIDE.md` のステップ2に従ってCORS設定を適用
+
+3. **ブラウザキャッシュをクリア**してテスト
+
+**注意事項:**
+- Firebase CLI ログインは別PCで行う必要がある
+- しかし、GUI設定だけで十分に対応可能
+- 設定の反映には5〜10分かかることがある
+
+**次回の予定:**
+- [ ] CORSエラーが解決したか確認
+- [ ] 引用リポスト機能（コメント付きリポスト）
+- [ ] メンション機能（@username で他ユーザーを言及）
+- [ ] Phase 4（フォロー機能）の実装
 
 ---

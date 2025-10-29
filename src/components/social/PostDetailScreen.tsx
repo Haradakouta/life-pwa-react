@@ -422,7 +422,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                     padding: '12px',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
-                    background: 'var(--bg)',
+                    background: 'var(--background)',
                     color: 'var(--text)',
                     fontFamily: 'inherit',
                     fontSize: '14px',
@@ -472,7 +472,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                     key={comment.id}
                     style={{
                       padding: '12px',
-                      background: 'var(--bg)',
+                      background: 'var(--background)',
                       borderRadius: '8px',
                       marginBottom: '12px',
                       borderLeft: '2px solid var(--primary)',
@@ -523,7 +523,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                   textAlign: 'center',
                   padding: '40px 20px',
                   color: 'var(--text-secondary)',
-                  background: 'var(--bg)',
+                  background: 'var(--background)',
                   borderRadius: '12px',
                 }}
               >

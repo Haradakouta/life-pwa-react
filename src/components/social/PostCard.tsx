@@ -337,7 +337,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           style={{
             marginBottom: '12px',
             padding: '12px',
-            background: 'var(--bg)',
+            background: 'var(--background)',
             borderRadius: '12px',
             border: '1px solid var(--border)',
             cursor: 'pointer',
@@ -347,7 +347,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             e.currentTarget.style.background = 'var(--border)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--bg)';
+            e.currentTarget.style.background = 'var(--background)';
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>

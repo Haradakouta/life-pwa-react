@@ -227,7 +227,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
               borderRadius: '12px',
               fontSize: '16px',
               color: 'var(--text)',
-              background: 'var(--bg)',
+              background: 'var(--background)',
               resize: 'vertical',
               fontFamily: 'inherit',
               marginBottom: '12px',
@@ -236,7 +236,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
 
           {/* 引用元の投稿を表示 */}
           {quotedPost && (
-            <div style={{ padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', marginBottom: '12px' }}>
+            <div style={{ padding: '12px', background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '12px', marginBottom: '12px' }}>
               <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>引用元:</div>
               <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{quotedPost.authorName}</div>
               <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px' }}>{quotedPost.content.substring(0, 100)}{quotedPost.content.length > 100 ? '...' : ''}</div>
@@ -330,7 +330,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 16px',
-                background: 'var(--bg)',
+                background: 'var(--background)',
                 border: '2px solid var(--border)',
                 borderRadius: '12px',
                 cursor: 'pointer',
@@ -344,7 +344,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
                 e.currentTarget.style.background = 'var(--border)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--bg)';
+                e.currentTarget.style.background = 'var(--background)';
               }}
             >
               <MdImage size={20} />
@@ -382,7 +382,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
                 borderRadius: '12px',
                 fontSize: '15px',
                 color: 'var(--text)',
-                background: 'var(--bg)',
+                background: 'var(--background)',
                 cursor: 'pointer',
               }}
             >

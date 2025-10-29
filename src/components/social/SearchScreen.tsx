@@ -92,7 +92,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onPostClick, onUserC
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            background: 'var(--bg)',
+            background: 'var(--background)',
             padding: '12px 16px',
             borderRadius: '24px',
             border: '1px solid var(--border)',

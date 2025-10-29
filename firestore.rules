@@ -134,17 +134,27 @@ service cloud.firestore {
     // パート4: フォロー機能
     // ========================================
 
-    // ユーザーのフォロワー一覧: users/{userId}/followers/{followId}
-    match /users/{userId}/followers/{followId} {
+    // ユーザーのフォロワー一覧: users/{userId}/followers/{followerId}
+    match /users/{userId}/followers/{followerId} {
       // 読み取り: 認証済みユーザーのみ
       allow read: if isAuth();
 
-      // 作成: 認証済みユーザーのみ
-      allow create: if isAuth();
+      // 作成: フォローするユーザー本人のみ作成可能
+      allow create: if isAuth()
+                    && request.resource.data.followerId == request.auth.uid;
 
       // 削除: フォローしたユーザー本人のみ
       allow delete: if isAuth()
                     && resource.data.followerId == request.auth.uid;
+    }
+
+    // ユーザーがフォローしている人のリスト: users/{userId}/following/{followingId}
+    match /users/{userId}/following/{followingId} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if isAuth();
+
+      // 作成・削除: 自分のfollowingリストのみ操作可能
+      allow create, delete: if isOwner(userId);
     }
 
     // ========================================

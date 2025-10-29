@@ -205,6 +205,35 @@ export const searchProfiles = async (searchTerm: string): Promise<UserProfile[]>
   }
 };
 
+/**
+ * ユーザー名からユーザーIDを取得
+ */
+export const getUserIdByUsername = async (username: string): Promise<string | null> => {
+  try {
+    const profilesRef = collection(db, 'users');
+    const querySnapshot = await getDocs(profilesRef);
+
+    for (const docSnap of querySnapshot.docs) {
+      const profileDocRef = doc(db, 'users', docSnap.id, 'profile', 'data');
+      const profileDoc = await getDoc(profileDocRef);
+
+      if (profileDoc.exists()) {
+        const profile = profileDoc.data() as UserProfile;
+
+        // usernameが完全一致
+        if (profile.username.toLowerCase() === username.toLowerCase()) {
+          return profile.uid;
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Get user ID by username error:', error);
+    return null;
+  }
+};
+
 // ============================================
 // フォロー機能
 // ============================================

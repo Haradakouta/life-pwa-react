@@ -15,6 +15,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [quotedPostId, setQuotedPostId] = useState<string | undefined>(undefined);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -39,6 +40,16 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
 
   const handlePostCreated = () => {
     fetchPosts(); // 投稿後にタイムラインを更新
+  };
+
+  const handleQuoteRepost = (postId: string) => {
+    setQuotedPostId(postId);
+    setShowCreatePost(true);
+  };
+
+  const handleCloseCreatePost = () => {
+    setShowCreatePost(false);
+    setQuotedPostId(undefined);
   };
 
   return (
@@ -222,7 +233,13 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
           // 投稿一覧
           <div>
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onPostClick={onPostClick} onUserClick={onUserClick} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onPostClick={onPostClick}
+                onUserClick={onUserClick}
+                onQuoteRepost={handleQuoteRepost}
+              />
             ))}
           </div>
         )}
@@ -231,8 +248,9 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
       {/* 投稿作成モーダル */}
       {showCreatePost && (
         <PostCreateScreen
-          onClose={() => setShowCreatePost(false)}
+          onClose={handleCloseCreatePost}
           onPostCreated={handlePostCreated}
+          quotedPostId={quotedPostId}
         />
       )}
     </div>

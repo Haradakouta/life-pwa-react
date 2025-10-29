@@ -3,17 +3,18 @@ import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
 import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
-import { getUserProfile } from '../../utils/profile';
-import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder } from 'react-icons/md';
+import { getUserProfile, getUserIdByUsername } from '../../utils/profile';
+import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote } from 'react-icons/md';
 import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
   post: Post;
   onPostClick: (postId: string) => void;
   onUserClick?: (userId: string) => void;
+  onQuoteRepost?: (postId: string) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -144,6 +145,13 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
     }
   };
 
+  const handleQuoteRepost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onQuoteRepost) {
+      onQuoteRepost(post.id);
+    }
+  };
+
   return (
     <div
       className="post-card"
@@ -246,11 +254,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             return (
               <span
                 key={index}
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
                   const username = part.substring(1);
-                  // TODO: usernameからuserIdを取得してプロフィールに遷移
                   console.log('Mention clicked:', username);
+
+                  // usernameからuserIdを取得
+                  const userId = await getUserIdByUsername(username);
+                  if (userId && onUserClick) {
+                    onUserClick(userId);
+                  } else {
+                    console.warn('User not found:', username);
+                  }
                 }}
                 style={{
                   color: 'var(--primary)',
@@ -545,6 +560,35 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           <MdRepeat size={20} />
           <span style={{ fontSize: '14px', fontWeight: 500 }}>{localRepostCount}</span>
         </button>
+
+        {/* 引用リポスト */}
+        {onQuoteRepost && (
+          <button
+            onClick={handleQuoteRepost}
+            style={{
+              background: 'none',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '8px',
+              color: 'var(--text-secondary)',
+              transition: 'background 0.2s, color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)';
+              e.currentTarget.style.color = '#4caf50';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
+          >
+            <MdFormatQuote size={20} />
+          </button>
+        )}
 
         {/* ブックマーク */}
         <button

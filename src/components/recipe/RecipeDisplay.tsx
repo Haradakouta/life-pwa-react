@@ -4,15 +4,16 @@
 import React from 'react';
 import type { Recipe } from '../../types';
 import { useRecipeStore, useStockStore, useShoppingStore } from '../../store';
-import { MdStar, MdStarBorder, MdInventory, MdShoppingCart } from 'react-icons/md';
+import { MdStar, MdStarBorder, MdInventory, MdShoppingCart, MdShare } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
 
 interface RecipeDisplayProps {
   recipe: Recipe;
+  onAttachToPost?: (recipe: Recipe) => void;
 }
 
-export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe }) => {
+export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachToPost }) => {
   const { addToHistory, addToFavorites, removeFromFavorites, favoriteRecipes } =
     useRecipeStore();
   const { addStock } = useStockStore();
@@ -164,7 +165,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe }) => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: onAttachToPost ? '1fr 1fr 1fr' : '1fr 1fr',
           gap: '8px',
         }}
       >
@@ -206,6 +207,27 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe }) => {
         >
           <MdShoppingCart size={18} /> 買い物リストへ
         </button>
+        {onAttachToPost && (
+          <button
+            onClick={() => onAttachToPost(recipe)}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              padding: '12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 500,
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <MdShare size={18} /> 投稿に添付
+          </button>
+        )}
       </div>
     </div>
   );

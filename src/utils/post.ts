@@ -180,15 +180,43 @@ export const getUserPosts = async (
   try {
     console.log(`[getUserPosts] Fetching posts for user: ${userId}`);
     const postsRef = collection(db, 'posts');
-    const q = query(
-      postsRef,
-      where('authorId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      firestoreLimit(limit)
-    );
 
-    console.log('[getUserPosts] Executing query...');
-    const querySnapshot = await getDocs(q);
+    // まずインデックスが必要なクエリを試す
+    let querySnapshot;
+    try {
+      const q = query(
+        postsRef,
+        where('authorId', '==', userId),
+        orderBy('createdAt', 'desc'),
+        firestoreLimit(limit)
+      );
+      console.log('[getUserPosts] Executing query with index...');
+      querySnapshot = await getDocs(q);
+    } catch (indexError) {
+      // インデックスエラーの場合はフォールバック
+      console.warn('[getUserPosts] Index not found, using fallback query...');
+      const q = query(
+        postsRef,
+        where('authorId', '==', userId)
+      );
+      const snapshot = await getDocs(q);
+
+      // クライアント側でソート
+      const sortedDocs = snapshot.docs.sort((a, b) => {
+        const aTime = a.data().createdAt;
+        const bTime = b.data().createdAt;
+        if (!aTime || !bTime) return 0;
+        return bTime.seconds - aTime.seconds;
+      });
+
+      // limitを適用
+      querySnapshot = {
+        docs: sortedDocs.slice(0, limit),
+        empty: sortedDocs.length === 0,
+        size: Math.min(sortedDocs.length, limit)
+      } as any;
+    }
+
     console.log(`[getUserPosts] Query returned ${querySnapshot.docs.length} documents`);
     const posts: Post[] = [];
 
@@ -230,14 +258,6 @@ export const getUserPosts = async (
     return posts;
   } catch (error) {
     console.error('[getUserPosts] ユーザーの投稿取得に失敗しました:', error);
-
-    // インデックスエラーの場合は詳細を表示
-    if (error instanceof Error && error.message.includes('index')) {
-      console.error('[getUserPosts] Firestoreインデックスが必要です。Firebaseコンソールで以下のインデックスを作成してください:');
-      console.error('- Collection: posts');
-      console.error('- Fields: authorId (Ascending), createdAt (Descending)');
-    }
-
     return [];
   }
 };

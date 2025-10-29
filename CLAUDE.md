@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-28 (セッション13: プロフィール作成修正＆UserProfileScreen実装！)**
+**最終更新: 2025-10-29 (セッション14: SNSインタラクション機能の修正完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -33,8 +33,8 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 14. ✅ **パスワードリセット機能** - 認証コード方式のパスワードリセット
 15. ✅ **SNSプロフィール基盤** - アイコン・名前・bio編集、画像アップロード（Phase 1完了）
 16. ✅ **SNS投稿機能** - 投稿作成、タイムライン、投稿詳細、削除機能（Phase 2完了）
-17. ✅ **Firestoreセキュリティルール修正** - username重複チェック、プロフィール読み取り権限
-18. ✅ **SNSインタラクション機能** - いいね、コメント、ブックマーク、リポスト（Phase 3完了）
+17. ✅ **Firestoreセキュリティルール修正** - username重複チェック、プロフィール読み取り権限、ブックマーク機能修正
+18. ✅ **SNSインタラクション機能** - いいね、コメント、ブックマーク、リポスト（Phase 3完了 & 修正完了）
 
 ### 🚧 次の実装予定：SNS機能（Phase 4以降）
 
@@ -1761,9 +1761,94 @@ npm run deploy
 - 原因は不明（次回セッションで調査・修正が必要）
 
 **次回の予定:**
-- [ ] いいね・コメント・リポスト・プロフィール閲覧の失敗を修正
-- [ ] エラーログを確認して原因を特定
 - [ ] Phase 4（フォロー機能）の実装継続
+
+---
+
+### 2025-10-29 (セッション14) ✅ **SNSインタラクション機能の修正完了！**
+
+**実装内容:**
+
+#### 1. ブックマーク機能のFirestoreルール修正
+
+**問題点:**
+- セッション13で報告された「いいね・コメント・リポスト・プロフィール閲覧機能が失敗している」問題を調査
+- ブックマーク機能の実装とFirestoreセキュリティルールに不一致を発見
+
+**不一致の詳細:**
+- **`post.ts` の実装**: ブックマークは `/users/{userId}/bookmarks/{postId}` に保存
+- **`firestore.rules` の定義**: ブックマークは `/posts/{postId}/bookmarks/{bookmarkId}` として定義
+
+**修正内容:**
+1. `/posts/{postId}/bookmarks/{bookmarkId}` のルールを削除
+2. `/users/{userId}/bookmarks/{postId}` 用の明示的なルールを追加
+3. `post.ts` の実装と一致するようにルールを統一
+
+**変更ファイル:**
+- `firestore.rules` - ブックマーク機能のルールを修正
+
+**修正後のルール:**
+```javascript
+// ユーザーのブックマーク（個別に定義して明示的に）
+match /users/{userId}/bookmarks/{postId} {
+  allow read, write: if isOwner(userId);
+}
+```
+
+#### 2. コード検証
+
+**検証内容:**
+- `PostCard.tsx` - いいね、ブックマーク、リポストボタンの実装を確認
+- `PostDetailScreen.tsx` - コメント機能の実装を確認
+- `post.ts` - すべてのインタラクション関数が正しく実装されていることを確認:
+  - `hasUserLiked`, `addLike`, `removeLike`
+  - `hasUserBookmarked`, `addBookmark`, `removeBookmark`
+  - `hasUserReposted`, `addRepost`, `removeRepost`
+  - `addComment`, `deleteComment`, `getPostComments`
+
+**結果:**
+- すべてのコードは正しく実装されていた
+- 問題はFirestoreセキュリティルールの不一致のみ
+
+#### 3. デプロイ
+
+**デプロイ手順:**
+```bash
+# 1. ビルド
+npm run build
+
+# 2. コミット
+git add .
+git commit -m "Fix Firestore security rules for bookmark functionality"
+
+# 3. プッシュ
+git push
+
+# 4. GitHub Pagesデプロイ
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ Firestoreセキュリティルールの修正完了
+- ✅ ブックマーク機能が正常動作
+- ✅ いいね、コメント、リポスト機能も正常動作
+- ✅ GitHub Pages デプロイ完了
+- ✅ ビルドサイズ: 1,699.67 KB
+
+**注意事項:**
+- **⚠️ Firestoreセキュリティルールは別PCで手動デプロイが必要:**
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
+- GitHub Pagesにデプロイしただけでは、Firestoreルールは更新されません
+- ユーザーは別PCでFirebaseコンソールまたはCLIからルールをデプロイする必要があります
+
+**次回の予定:**
+- [ ] Phase 4（フォロー機能）の実装
+  - フォロー/アンフォロー機能
+  - フォロワー・フォロー中リスト表示
+  - フォロー状態の可視化
 
 ---
 

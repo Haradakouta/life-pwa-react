@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
 import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder } from 'react-icons/md';
+import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
   post: Post;
@@ -18,6 +19,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   const [localLikes, setLocalLikes] = useState(post.likes);
   const [localRepostCount, setLocalRepostCount] = useState(post.repostCount);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [imageModalIndex, setImageModalIndex] = useState(0);
 
   // いいね・ブックマーク・リポスト状態を初期化
   useEffect(() => {
@@ -241,6 +244,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           {post.images.map((image, index) => (
             <div
               key={index}
+              onClick={(e) => {
+                e.stopPropagation();
+                setImageModalIndex(index);
+                setImageModalOpen(true);
+              }}
               style={{
                 width: '100%',
                 paddingBottom: post.images!.length === 1 ? '56.25%' : '100%', // 16:9 or 1:1
@@ -248,6 +256,14 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
                 borderRadius: '8px',
                 overflow: 'hidden',
                 background: 'var(--border)',
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
               }}
             >
               <img
@@ -414,6 +430,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           <MdShare size={20} />
         </button>
       </div>
+
+      {/* 画像モーダル */}
+      {imageModalOpen && post.images && post.images.length > 0 && (
+        <ImageModal
+          images={post.images}
+          initialIndex={imageModalIndex}
+          onClose={() => setImageModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

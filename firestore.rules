@@ -66,8 +66,18 @@ service cloud.firestore {
       allow create: if isAuth()
                     && request.resource.data.authorId == request.auth.uid;
 
-      // 更新・削除: 自分の投稿のみ
-      allow update, delete: if isAuthor(resource.data.authorId);
+      // 更新: 認証済みユーザーが likes/commentCount/repostCount のみ更新可能、または作成者が全フィールド更新可能
+      allow update: if isAuth() && (
+        // 作成者は全フィールドを更新可能
+        isAuthor(resource.data.authorId)
+        // 認証済みユーザーは likes/commentCount/repostCount のみ更新可能
+        || (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount'])
+        )
+      );
+
+      // 削除: 自分の投稿のみ
+      allow delete: if isAuthor(resource.data.authorId);
 
       // ---- 投稿のいいね（likes）サブコレクション ----
       match /likes/{likeId} {

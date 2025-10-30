@@ -44,10 +44,15 @@ service cloud.firestore {
       // - request.resource.data.uid が friendId と一致すること
       // - status が 'pending_sent' または 'pending_received' であること
       // - initiatedBy が request.auth.uid と一致すること
-      allow create: if isOwner(userId)
+      allow create: if isAuth()
                     && request.resource.data.uid == friendId
-                    && request.resource.data.status in ['pending_sent', 'pending_received']
-                    && request.resource.data.initiatedBy == request.auth.uid;
+                    && request.resource.data.initiatedBy == request.auth.uid
+                    && (
+                      // Scenario 1: Creating 'pending_sent' in own subcollection
+                      (request.auth.uid == userId && request.resource.data.status == 'pending_sent')
+                      // Scenario 2: Creating 'pending_received' in recipient's subcollection
+                      || (request.auth.uid != userId && request.resource.data.status == 'pending_received')
+                    );
 
       // 更新:
       // - 認証済みユーザーであること

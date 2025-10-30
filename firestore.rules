@@ -1,9 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ========================================
-    // 認証ユーティリティ関数
-    // ========================================
     function isAuth() {
       return request.auth != null;
     }
@@ -16,241 +13,109 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == authorId;
     }
 
-    // ========================================
-    // パート1: ユーザーデータ（プロフィール、設定）
-    // ========================================
-
-    // ========================================
-    // ユーザープロフィール
-    // ========================================
-    // 認証済みユーザーは全ユーザーのプロフィールを読み取り可能（username重複チェック等に必要）
     match /users/{userId}/profile/data {
       allow read: if isAuth();
-
-      // 作成・削除: 本人のみ
       allow create, delete: if isOwner(userId);
-
-      // 更新: 本人は全フィールド更新可能
-      //       他の認証ユーザーはstatsフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
       allow update: if isOwner(userId)
                     || (isAuth() && 
                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
                     );
     }
 
-    // ========================================
-    // ユーザー個人データ
-    // ========================================
-    // ユーザーのブックマーク（個別に定義して明示的に）
     match /users/{userId}/bookmarks/{postId} {
       allow read, write: if isOwner(userId);
     }
 
-    // ユーザーの通知（個別に定義して明示的に）
     match /users/{userId}/notifications/{notificationId} {
-      // 読み取り: 本人のみ
       allow read: if isOwner(userId);
-
-      // 作成: 認証済みユーザーなら誰でも（いいね・コメント・フォロー等で通知を送信）
-      // ただし、recipientIdは必ず通知を受け取るユーザー（userId）でなければならない
-      allow create: if isAuth()
-                    && request.resource.data.recipientId == userId;
-
-      // 更新・削除: 本人のみ（既読マークや削除）
+      allow create: if isAuth() && request.resource.data.recipientId == userId;
       allow update, delete: if isOwner(userId);
     }
 
-    // ユーザーは自分のデータのみアクセス可能
-    // 対象: settings, intakes, expenses, stocks, shopping, recipes など
+    match /users/{userId}/followers/{followerId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.followerId == request.auth.uid;
+      allow delete: if isAuth() && resource.data.followerId == request.auth.uid;
+    }
+
+    match /users/{userId}/following/{followingId} {
+      allow read: if isAuth();
+      allow create, delete: if isOwner(userId);
+    }
+
+    // Catch-all for other user subcollections
     match /users/{userId}/{document=**} {
       allow read, write: if isOwner(userId);
     }
 
-    // ========================================
-    // パート2: 認証関連
-    // ========================================
-
-    // メール確認コード（未認証ユーザーも読み書き可能、Cloud Functionsで期限管理）
     match /verificationCodes/{email} {
       allow read, write: if true;
     }
 
-    // ========================================
-    // パート3: ソーシャル投稿（posts）
-    // ========================================
-
     match /posts/{postId} {
-      // 読み取り: 認証済みユーザーなら全ての投稿を読み取り可能（プロフィール表示のため）
       allow read: if isAuth();
-
-      // 作成: 認証済みユーザー、かつ自分のuidをauthorIdに設定
-      // 必須フィールド: content, authorId, authorName, visibility
-      // オプショナルフィールド: images, hashtags, mentions, quotedPostId, recipeData
       allow create: if isAuth()
                     && request.resource.data.authorId == request.auth.uid
                     && request.resource.data.keys().hasAll(['content', 'authorId', 'authorName', 'visibility'])
                     && request.resource.data.visibility in ['public', 'followers', 'private'];
-
-      // 更新: 認証済みユーザーが likes/commentCount/repostCount/replyCount のみ更新可能、または作成者が全フィールド更新可能
       allow update: if isAuth() && (
-        // 作成者は全フィールドを更新可能
         isAuthor(resource.data.authorId)
-        // 認証済みユーザーは likes/commentCount/repostCount/replyCount のみ更新可能
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount', 'replyCount'])
         )
       );
-
-      // 削除: 自分の投稿のみ
       allow delete: if isAuthor(resource.data.authorId);
 
-      // ---- 投稿のいいね（likes）サブコレクション ----
       match /likes/{likeId} {
-        // 読み取り: 公開投稿のいいねは誰でも、followers以上は認証ユーザー
-        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
-                    || isAuth();
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のいいねのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public' || isAuth();
+        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+        allow delete: if isAuth() && resource.data.userId == request.auth.uid;
       }
 
-      // ---- 投稿のコメント（comments）サブコレクション ----
       match /comments/{commentId} {
-        // 読み取り: 公開投稿のコメントは誰でも、followers以上は認証ユーザー
-        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
-                    || isAuth();
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 更新: 自分のコメントのみ更新可能
-        allow update: if isAuth()
-                      && resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のコメントのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public' || isAuth();
+        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+        allow update: if isAuth() && resource.data.userId == request.auth.uid;
+        allow delete: if isAuth() && resource.data.userId == request.auth.uid;
       }
 
-      // ---- 投稿のリポスト（reposts）サブコレクション ----
       match /reposts/{repostId} {
-        // 読み取り: 公開投稿のリポストは誰でも、followers以上は認証ユーザー
-        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public'
-                    || isAuth();
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のリポストのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/posts/$(postId)).data.visibility == 'public' || isAuth();
+        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+        allow delete: if isAuth() && resource.data.userId == request.auth.uid;
       }
-
     }
-
-    // ========================================
-    // パート4: フォロー機能
-    // ========================================
-
-    // ユーザーのフォロワー一覧: users/{userId}/followers/{followerId}
-    match /users/{userId}/followers/{followerId} {
-      // 読み取り: 認証済みユーザーのみ
-      allow read: if isAuth();
-
-      // 作成: フォローするユーザー本人のみ作成可能
-      allow create: if isAuth()
-                    && request.resource.data.followerId == request.auth.uid;
-
-      // 削除: フォローしたユーザー本人のみ
-      allow delete: if isAuth()
-                    && resource.data.followerId == request.auth.uid;
-    }
-
-    // ユーザーがフォローしている人のリスト: users/{userId}/following/{followingId}
-    match /users/{userId}/following/{followingId} {
-      // 読み取り: 認証済みユーザーのみ
-      allow read: if isAuth();
-
-      // 作成・削除: 自分のfollowingリストのみ操作可能
-      allow create, delete: if isOwner(userId);
-    }
-
-    // ========================================
-    // パート5: レシピ共有機能
-    // ========================================
 
     match /recipes/{recipeId} {
-      // 読み取り: 公開レシピは誰でも、followers以上は認証ユーザー、プライベートは作成者のみ
       allow read: if resource.data.visibility == 'public'
                   || (isAuth() && resource.data.visibility == 'followers')
                   || (isAuthor(resource.data.authorId));
-
-      // 作成: 認証済みユーザーのみ、かつ自分のuidをauthorIdに設定
-      allow create: if isAuth()
-                    && request.resource.data.authorId == request.auth.uid;
-
-      // 更新・削除: 作成者のみ
+      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid;
       allow update, delete: if isAuthor(resource.data.authorId);
 
-      // ---- レシピのコメント（comments）サブコレクション ----
       match /comments/{commentId} {
-        // 読み取り: 公開レシピのコメントは誰でも、followers以上は認証ユーザー
-        allow read: if get(/databases/$(database)/documents/recipes/$(recipeId)).data.visibility == 'public'
-                    || isAuth();
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のコメントのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/recipes/$(recipeId)).data.visibility == 'public' || isAuth();
+        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+        allow delete: if isAuth() && resource.data.userId == request.auth.uid;
       }
 
-      // ---- レシピのいいね（likes）サブコレクション ----
       match /likes/{likeId} {
-        // 読み取り: 公開レシピのいいねは誰でも、followers以上は認証ユーザー
-        allow read: if get(/databases/$(database)/documents/recipes/$(recipeId)).data.visibility == 'public'
-                    || isAuth();
-
-        // 作成: 認証済みユーザーのみ、かつ自分のuidをuserIdに設定
-        allow create: if isAuth()
-                      && request.resource.data.userId == request.auth.uid;
-
-        // 削除: 自分のいいねのみ削除可能
-        allow delete: if isAuth()
-                      && resource.data.userId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/recipes/$(recipeId)).data.visibility == 'public' || isAuth();
+        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+        allow delete: if isAuth() && resource.data.userId == request.auth.uid;
       }
     }
 
-    // ========================================
-    // パート6: ランキング・集計データ
-    // ========================================
-
-    // 投稿ランキング（読み取り専用）
     match /rankings/posts {
       allow read: if true;
       allow write: if false;
     }
 
-    // レシピランキング（読み取り専用）
     match /rankings/recipes {
       allow read: if true;
       allow write: if false;
     }
 
-    // ========================================
-    // デフォルト: セキュリティ第一
-    // ========================================
-
-    // その他のパスは全てアクセス不可
     match /{document=**} {
       allow read, write: if false;
     }

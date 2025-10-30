@@ -4,7 +4,7 @@
 import React from 'react';
 import type { Recipe } from '../../types';
 import { useRecipeStore, useStockStore, useShoppingStore } from '../../store';
-import { MdStar, MdStarBorder, MdInventory, MdShoppingCart, MdShare } from 'react-icons/md';
+import { MdStar, MdStarBorder, MdInventory, MdShoppingCart, MdShare, MdRestaurantMenu } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
 
@@ -16,7 +16,7 @@ interface RecipeDisplayProps {
 export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachToPost }) => {
   const { addToHistory, addToFavorites, removeFromFavorites, favoriteRecipes } =
     useRecipeStore();
-  const { addStock } = useStockStore();
+  const { addStock, stocks, updateStock, deleteStock } = useStockStore();
   const { addItem } = useShoppingStore();
 
   const isFavorite = favoriteRecipes.some((fav) => fav.id === recipe.id);
@@ -65,6 +65,69 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
     });
 
     alert(`${recipe.ingredients.length}個の材料を買い物リストに追加しました！`);
+  };
+
+  const handleCookRecipe = () => {
+    // 在庫にある材料とない材料を確認
+    const missingIngredients: string[] = [];
+    const availableIngredients: { name: string; stockId: string; quantity: number }[] = [];
+
+    recipe.ingredients.forEach((ingredient) => {
+      const stock = stocks.find((s) => s.name === ingredient);
+      if (stock) {
+        availableIngredients.push({
+          name: ingredient,
+          stockId: stock.id,
+          quantity: stock.quantity,
+        });
+      } else {
+        missingIngredients.push(ingredient);
+      }
+    });
+
+    // 確認メッセージ
+    let confirmMessage = `このレシピを作りますか？\n\n`;
+    if (availableIngredients.length > 0) {
+      confirmMessage += `在庫から使用する材料（${availableIngredients.length}個）:\n`;
+      availableIngredients.forEach((ing) => {
+        confirmMessage += `・${ing.name} (残り: ${ing.quantity}個)\n`;
+      });
+    }
+    if (missingIngredients.length > 0) {
+      confirmMessage += `\n⚠️ 在庫にない材料（${missingIngredients.length}個）:\n`;
+      missingIngredients.forEach((ing) => {
+        confirmMessage += `・${ing}\n`;
+      });
+      confirmMessage += `\n※在庫にない材料は減らされません`;
+    }
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // 在庫を減らす
+    availableIngredients.forEach((ing) => {
+      if (ing.quantity > 1) {
+        // 数量が2以上なら-1する
+        updateStock(ing.stockId, { quantity: ing.quantity - 1 });
+      } else {
+        // 数量が1なら削除
+        deleteStock(ing.stockId);
+      }
+    });
+
+    let resultMessage = `レシピを作りました！\n\n`;
+    if (availableIngredients.length > 0) {
+      resultMessage += `${availableIngredients.length}個の材料を在庫から減らしました`;
+    }
+    if (missingIngredients.length > 0) {
+      resultMessage += `\n\n買い物リストに追加してください:\n`;
+      missingIngredients.forEach((ing) => {
+        resultMessage += `・${ing}\n`;
+      });
+    }
+
+    alert(resultMessage);
   };
 
   return (
@@ -165,10 +228,30 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: onAttachToPost ? '1fr 1fr 1fr' : '1fr 1fr',
+          gridTemplateColumns: onAttachToPost ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)',
           gap: '8px',
         }}
       >
+        <button
+          onClick={handleCookRecipe}
+          style={{
+            background: '#f97316',
+            color: 'white',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 500,
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            gridColumn: onAttachToPost ? 'span 2' : 'span 2',
+          }}
+        >
+          <MdRestaurantMenu size={18} /> このレシピを作る
+        </button>
         <button
           onClick={handleAddToStock}
           style={{
@@ -223,6 +306,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
+              gridColumn: 'span 2',
             }}
           >
             <MdShare size={18} /> 投稿に添付

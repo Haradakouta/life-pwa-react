@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import type { Recipe } from '../../types';
-import { useRecipeStore, useStockStore, useShoppingStore } from '../../store';
+import { useRecipeStore, useStockStore, useShoppingStore, useIntakeStore } from '../../store';
 import { MdStar, MdStarBorder, MdInventory, MdShoppingCart, MdShare, MdRestaurantMenu } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
@@ -18,6 +18,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
     useRecipeStore();
   const { addStock, stocks, updateStock, deleteStock } = useStockStore();
   const { addItem } = useShoppingStore();
+  const { addIntake } = useIntakeStore();
 
   const isFavorite = favoriteRecipes.some((fav) => fav.id === recipe.id);
 
@@ -100,6 +101,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
       });
       confirmMessage += `\n※在庫にない材料は減らされません`;
     }
+    confirmMessage += `\n\n食事記録にも追加されます。`;
 
     if (!confirm(confirmMessage)) {
       return;
@@ -116,10 +118,33 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
       }
     });
 
+    // 食事記録に追加
+    // 時刻に基づいてカテゴリを推測
+    const now = new Date();
+    const hour = now.getHours();
+    let category: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+    if (hour >= 5 && hour < 10) {
+      category = 'breakfast';
+    } else if (hour >= 10 && hour < 15) {
+      category = 'lunch';
+    } else if (hour >= 15 && hour < 21) {
+      category = 'dinner';
+    } else {
+      category = 'snack';
+    }
+
+    addIntake({
+      name: recipe.title,
+      calories: 500, // デフォルト値（後で編集可能）
+      price: 0,
+      category,
+    });
+
     let resultMessage = `レシピを作りました！\n\n`;
     if (availableIngredients.length > 0) {
-      resultMessage += `${availableIngredients.length}個の材料を在庫から減らしました`;
+      resultMessage += `${availableIngredients.length}個の材料を在庫から減らしました\n`;
     }
+    resultMessage += `食事記録に追加しました（${category === 'breakfast' ? '朝食' : category === 'lunch' ? '昼食' : category === 'dinner' ? '夕食' : '間食'}）`;
     if (missingIngredients.length > 0) {
       resultMessage += `\n\n買い物リストに追加してください:\n`;
       missingIngredients.forEach((ing) => {

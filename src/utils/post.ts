@@ -1295,3 +1295,110 @@ export const getFollowingPosts = async (userId: string, limit: number = 20): Pro
     return [];
   }
 };
+
+/**
+ * ユーザーの画像付き投稿を取得（Twitterスタイル）
+ */
+export const getUserMediaPosts = async (
+  userId: string,
+  limit: number = 20
+): Promise<Post[]> => {
+  try {
+    console.log(`[getUserMediaPosts] Fetching media posts for user: ${userId}`);
+
+    // まずユーザーの全投稿を取得
+    const allPosts = await getUserPosts(userId, 100); // 多めに取得
+
+    // 画像付き投稿のみフィルタ
+    const mediaPosts = allPosts.filter(post => post.images && post.images.length > 0);
+
+    console.log(`[getUserMediaPosts] Found ${mediaPosts.length} media posts`);
+    return mediaPosts.slice(0, limit);
+  } catch (error) {
+    console.error('[getUserMediaPosts] メディア投稿の取得に失敗しました:', error);
+    return [];
+  }
+};
+
+/**
+ * ユーザーがいいねした投稿を取得（Twitterスタイル）
+ */
+export const getUserLikedPosts = async (
+  userId: string,
+  limit: number = 20
+): Promise<Post[]> => {
+  try {
+    console.log(`[getUserLikedPosts] Fetching liked posts for user: ${userId}`);
+
+    // 全投稿を取得（効率は悪いが、Firestoreの構造上仕方ない）
+    const postsRef = collection(db, 'posts');
+    const allPostsSnapshot = await getDocs(postsRef);
+
+    const likedPosts: Post[] = [];
+
+    // 各投稿のいいねをチェック
+    for (const postDoc of allPostsSnapshot.docs) {
+      const postData = postDoc.data();
+
+      // このユーザーがいいねしているかチェック
+      const likesRef = collection(db, `posts/${postDoc.id}/likes`);
+      const likesSnapshot = await getDocs(likesRef);
+
+      let userLiked = false;
+      for (const likeDoc of likesSnapshot.docs) {
+        const likeData = likeDoc.data();
+        if (likeData.userId === userId) {
+          userLiked = true;
+          break;
+        }
+      }
+
+      if (userLiked) {
+        // 引用元の投稿を取得
+        let quotedPost: Post | undefined = undefined;
+        if (postData.quotedPostId) {
+          const quotedPostData = await getPost(postData.quotedPostId);
+          if (quotedPostData) {
+            quotedPost = { ...quotedPostData, quotedPost: undefined };
+          }
+        }
+
+        likedPosts.push({
+          id: postDoc.id,
+          content: postData.content,
+          images: postData.images || [],
+          authorId: postData.authorId,
+          authorName: postData.authorName,
+          authorAvatar: postData.authorAvatar || '',
+          likes: postData.likes || 0,
+          commentCount: postData.commentCount || 0,
+          repostCount: postData.repostCount || 0,
+          hashtags: postData.hashtags || [],
+          mentions: postData.mentions || [],
+          quotedPostId: postData.quotedPostId,
+          quotedPost,
+          recipeData: postData.recipeData,
+          visibility: postData.visibility,
+          createdAt: timestampToString(postData.createdAt),
+          updatedAt: postData.updatedAt ? timestampToString(postData.updatedAt) : undefined,
+        });
+      }
+
+      // limit達成したら終了
+      if (likedPosts.length >= limit) {
+        break;
+      }
+    }
+
+    // 時系列順にソート（いいねした順ではなく、投稿作成順）
+    likedPosts.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    console.log(`[getUserLikedPosts] Found ${likedPosts.length} liked posts`);
+    return likedPosts.slice(0, limit);
+  } catch (error) {
+    console.error('[getUserLikedPosts] いいねした投稿の取得に失敗しました:', error);
+    return [];
+  }
+};

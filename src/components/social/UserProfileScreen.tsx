@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
-import { getUserPosts } from '../../utils/post';
+import { getUserPosts, getUserMediaPosts, getUserLikedPosts } from '../../utils/post';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FollowersListModal } from './FollowersListModal';
@@ -10,6 +10,8 @@ import { FollowingListModal } from './FollowingListModal';
 import { formatCount, formatJoinDate } from '../../utils/formatNumber';
 import type { UserProfile } from '../../types/profile';
 import type { Post } from '../../types/post';
+
+type ProfileTab = 'posts' | 'replies' | 'media' | 'likes';
 
 interface UserProfileScreenProps {
   userId: string;
@@ -26,15 +28,18 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
 
   const isOwnProfile = user && user.uid === userId;
 
+  // プロフィールとフォロー状態を取得
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProfile = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -45,14 +50,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           return;
         }
         setProfile(fetchedProfile);
-
-        // 投稿一覧取得
-        console.log(`[UserProfileScreen] Fetching posts for user: ${userId}`);
-        console.log(`[UserProfileScreen] Profile stats show postCount: ${fetchedProfile.stats.postCount}`);
-        const fetchedPosts = await getUserPosts(userId);
-        console.log(`[UserProfileScreen] Received ${fetchedPosts.length} posts from getUserPosts`);
-        console.log(`[UserProfileScreen] Posts:`, fetchedPosts.map(p => ({ id: p.id, authorId: p.authorId, content: p.content.substring(0, 50) })));
-        setPosts(fetchedPosts);
 
         // フォロー状態をチェック
         if (user && user.uid !== userId) {
@@ -67,8 +64,47 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       }
     };
 
-    fetchData();
-  }, [userId, user, onBack]);
+    fetchProfile();
+  }, [userId, user]);
+
+  // タブに応じて投稿を取得
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!profile) return;
+
+      setPostsLoading(true);
+      try {
+        console.log(`[UserProfileScreen] Fetching ${activeTab} posts for user: ${userId}`);
+
+        let fetchedPosts: Post[] = [];
+
+        switch (activeTab) {
+          case 'posts':
+            fetchedPosts = await getUserPosts(userId, 20);
+            break;
+          case 'media':
+            fetchedPosts = await getUserMediaPosts(userId, 20);
+            break;
+          case 'likes':
+            fetchedPosts = await getUserLikedPosts(userId, 20);
+            break;
+          case 'replies':
+            // 返信機能は未実装
+            fetchedPosts = [];
+            break;
+        }
+
+        console.log(`[UserProfileScreen] Received ${fetchedPosts.length} ${activeTab} posts`);
+        setPosts(fetchedPosts);
+      } catch (error) {
+        console.error(`[UserProfileScreen] ${activeTab}投稿の取得に失敗しました:`, error);
+      } finally {
+        setPostsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [userId, activeTab, profile]);
 
   const handleFollow = async () => {
     if (!user || !profile) return;
@@ -508,9 +544,96 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         </div>
       </div>
 
+      {/* タブバー */}
+      <div
+        style={{
+          display: 'flex',
+          background: 'var(--card)',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: '69px',
+          zIndex: 9,
+        }}
+      >
+        <button
+          onClick={() => setActiveTab('posts')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'posts' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'posts' ? 600 : 400,
+            color: activeTab === 'posts' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          投稿
+        </button>
+        <button
+          onClick={() => setActiveTab('replies')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'replies' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'replies' ? 600 : 400,
+            color: activeTab === 'replies' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          返信
+        </button>
+        <button
+          onClick={() => setActiveTab('media')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'media' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'media' ? 600 : 400,
+            color: activeTab === 'media' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          メディア
+        </button>
+        <button
+          onClick={() => setActiveTab('likes')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'likes' ? '3px solid var(--primary)' : '3px solid transparent',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: activeTab === 'likes' ? 600 : 400,
+            color: activeTab === 'likes' ? 'var(--primary)' : 'var(--text-secondary)',
+            transition: 'all 0.2s',
+          }}
+        >
+          いいね
+        </button>
+      </div>
+
       {/* 投稿一覧 */}
-      <div style={{ marginTop: '20px' }}>
-        {posts.length === 0 ? (
+      <div style={{ marginTop: '0' }}>
+        {postsLoading ? (
+          // ローディング中はスケルトン表示
+          <div>
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
+        ) : posts.length === 0 ? (
           <div
             style={{
               textAlign: 'center',
@@ -518,10 +641,20 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               color: 'var(--text-secondary)',
             }}
           >
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
-            <div style={{ fontSize: '16px' }}>
-              {isOwnProfile ? 'まだ投稿がありません' : 'このユーザーはまだ投稿していません'}
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+              {activeTab === 'media' ? '📷' : activeTab === 'likes' ? '❤️' : activeTab === 'replies' ? '💬' : '📝'}
             </div>
+            <div style={{ fontSize: '16px' }}>
+              {activeTab === 'posts' && (isOwnProfile ? 'まだ投稿がありません' : 'このユーザーはまだ投稿していません')}
+              {activeTab === 'replies' && (isOwnProfile ? '返信はまだありません' : 'このユーザーはまだ返信していません')}
+              {activeTab === 'media' && (isOwnProfile ? '画像付き投稿はまだありません' : 'このユーザーはまだ画像を投稿していません')}
+              {activeTab === 'likes' && (isOwnProfile ? 'まだいいねした投稿がありません' : 'このユーザーのいいねは非公開です')}
+            </div>
+            {activeTab === 'replies' && (
+              <div style={{ fontSize: '14px', marginTop: '12px', color: 'var(--text-secondary)' }}>
+                ※返信機能は準備中です
+              </div>
+            )}
           </div>
         ) : (
           <div>

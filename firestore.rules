@@ -59,13 +59,24 @@ service cloud.firestore {
       // - 自分のUIDがuserIdと一致すること
       // - status の変更が 'pending_received' -> 'accepted' または 'pending_sent' -> 'accepted' であること
       // - initiatedBy は変更不可
-      allow update: if isOwner(userId)
-                    && request.resource.data.uid == friendId
-                    && (
-                      (resource.data.status == 'pending_received' && request.resource.data.status == 'accepted') ||
-                      (resource.data.status == 'pending_sent' && request.resource.data.status == 'accepted')
-                    )
-                    && request.resource.data.initiatedBy == resource.data.initiatedBy; // initiatedByは変更不可
+      allow update: if (
+                        // Owner updates their own entry (e.g., accepting a request, or sender's entry)
+                        isOwner(userId)
+                        && request.resource.data.uid == friendId
+                        && (
+                          (resource.data.status == 'pending_received' && request.resource.data.status == 'accepted') ||
+                          (resource.data.status == 'pending_sent' && request.resource.data.status == 'accepted')
+                        )
+                        && request.resource.data.initiatedBy == resource.data.initiatedBy
+                      ) || (
+                        // Accepter updates the requester's entry (from pending_sent to accepted)
+                        isAuth()
+                        && request.auth.uid == friendId // Accepter's UID matches the friendId in the path
+                        && resource.data.status == 'pending_sent' // Original status was pending_sent
+                        && request.resource.data.status == 'accepted' // New status is accepted
+                        && request.resource.data.initiatedBy == resource.data.initiatedBy // initiatedBy remains unchanged
+                        && userId == resource.data.initiatedBy // The owner of this subcollection (userId) is the initiator (requester)
+                      );
 
       // 削除: 認証済みユーザーは自分のフレンドリストから削除可能
       allow delete: if isOwner(userId);

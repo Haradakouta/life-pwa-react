@@ -45,20 +45,32 @@ export const createNotification = async (
     const notificationId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const notificationRef = doc(db, 'users', recipientId, 'notifications', notificationId);
 
-    const notificationData: Notification = {
+    const notificationData: any = {
       id: notificationId,
       type,
       recipientId,
       actorId,
       actorName,
-      actorAvatar: options?.actorAvatar,
-      postId: options?.postId,
-      postContent: options?.postContent,
-      commentId: options?.commentId,
-      commentContent: options?.commentContent,
       isRead: false,
       createdAt: new Date().toISOString(),
     };
+
+    // オプショナルフィールドは存在する場合のみ追加
+    if (options?.actorAvatar) {
+      notificationData.actorAvatar = options.actorAvatar;
+    }
+    if (options?.postId) {
+      notificationData.postId = options.postId;
+    }
+    if (options?.postContent) {
+      notificationData.postContent = options.postContent;
+    }
+    if (options?.commentId) {
+      notificationData.commentId = options.commentId;
+    }
+    if (options?.commentContent) {
+      notificationData.commentContent = options.commentContent;
+    }
 
     await setDoc(notificationRef, {
       ...notificationData,

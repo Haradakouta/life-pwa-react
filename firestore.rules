@@ -79,7 +79,11 @@ service cloud.firestore {
                       );
 
       // 削除: 認証済みユーザーは自分のフレンドリストから削除可能
-      allow delete: if isOwner(userId);
+      allow delete: if isOwner(userId)
+                    || (
+                         isAuth()
+                         && friendId == request.auth.uid
+                       );
     }
 
     // Catch-all for other user subcollections

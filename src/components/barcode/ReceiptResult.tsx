@@ -2,9 +2,9 @@
  * レシートOCR結果の確認・編集コンポーネント
  */
 import React, { useState } from 'react';
-import { useExpenseStore } from '../../store';
+import { useExpenseStore, useShoppingStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
-import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt } from 'react-icons/md';
+import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart } from 'react-icons/md';
 
 interface ReceiptResultProps {
   result: ReceiptOCRResult;
@@ -13,6 +13,7 @@ interface ReceiptResultProps {
 
 export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose }) => {
   const { addExpense } = useExpenseStore();
+  const { addItem } = useShoppingStore();
   const [items, setItems] = useState<ReceiptItem[]>(result.items);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
@@ -104,6 +105,29 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
     });
 
     alert('家計簿に登録しました！');
+    onClose();
+  };
+
+  const handleSaveToShoppingList = () => {
+    if (items.length === 0) {
+      alert('商品が1つもありません');
+      return;
+    }
+
+    if (!window.confirm(`${items.length}個の商品を買い物リストに追加しますか？`)) {
+      return;
+    }
+
+    // 各商品を買い物リストに追加
+    items.forEach((item) => {
+      addItem({
+        name: item.name,
+        quantity: item.quantity || 1,
+        price: item.price,
+      });
+    });
+
+    alert('買い物リストに追加しました！');
     onClose();
   };
 
@@ -299,7 +323,35 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       </div>
 
       {/* アクションボタン */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <button
+            onClick={handleSaveToShoppingList}
+            className="submit"
+            disabled={items.length === 0}
+            style={{
+              opacity: items.length === 0 ? 0.5 : 1,
+              background: '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <MdShoppingCart size={18} />
+            買い物リストに追加
+          </button>
+          <button
+            onClick={handleSaveToExpenses}
+            className="submit"
+            disabled={items.length === 0}
+            style={{
+              opacity: items.length === 0 ? 0.5 : 1,
+            }}
+          >
+            家計簿に登録
+          </button>
+        </div>
         <button
           onClick={onClose}
           style={{
@@ -313,16 +365,6 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           }}
         >
           キャンセル
-        </button>
-        <button
-          onClick={handleSaveToExpenses}
-          className="submit"
-          disabled={items.length === 0}
-          style={{
-            opacity: items.length === 0 ? 0.5 : 1,
-          }}
-        >
-          家計簿に登録
         </button>
       </div>
 

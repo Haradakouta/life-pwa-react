@@ -11,8 +11,9 @@ export const ShoppingForm: React.FC = () => {
   const { addItem } = useShoppingStore();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
+  const [price, setPrice] = useState('');
   const [healthWarning, setHealthWarning] = useState<HealthWarning | null>(null);
-  const [pendingItem, setPendingItem] = useState<{ name: string; quantity: number } | null>(null);
+  const [pendingItem, setPendingItem] = useState<{ name: string; quantity: number; price?: number } | null>(null);
 
   const handleSubmit = () => {
     if (!name) {
@@ -25,23 +26,25 @@ export const ShoppingForm: React.FC = () => {
     if (warning) {
       // 警告があればモーダル表示
       setHealthWarning(warning);
-      setPendingItem({ name, quantity: Number(quantity) });
+      setPendingItem({ name, quantity: Number(quantity), price: price ? Number(price) : undefined });
       return;
     }
 
     // 警告なしで追加
-    addItemToList(name, Number(quantity));
+    addItemToList(name, Number(quantity), price ? Number(price) : undefined);
   };
 
-  const addItemToList = (itemName: string, itemQuantity: number) => {
+  const addItemToList = (itemName: string, itemQuantity: number, itemPrice?: number) => {
     addItem({
       name: itemName,
       quantity: itemQuantity,
+      price: itemPrice,
     });
 
     // フォームをリセット
     setName('');
     setQuantity('1');
+    setPrice('');
   };
 
   const handleCloseModal = () => {
@@ -51,14 +54,14 @@ export const ShoppingForm: React.FC = () => {
 
   const handleAddAlternative = (alternative: string) => {
     if (pendingItem) {
-      addItemToList(alternative, pendingItem.quantity);
+      addItemToList(alternative, pendingItem.quantity, pendingItem.price);
     }
     handleCloseModal();
   };
 
   const handleContinueAnyway = () => {
     if (pendingItem) {
-      addItemToList(pendingItem.name, pendingItem.quantity);
+      addItemToList(pendingItem.name, pendingItem.quantity, pendingItem.price);
     }
     handleCloseModal();
   };
@@ -80,6 +83,13 @@ export const ShoppingForm: React.FC = () => {
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           placeholder="1"
+        />
+        <label>価格（任意）</label>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="例: 300"
         />
         <button className="submit" onClick={handleSubmit}>
           リストに追加

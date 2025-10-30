@@ -512,6 +512,14 @@ export const deletePost = async (
       throw new Error('自分の投稿のみ削除できます');
     }
 
+    // もし返信なら、親投稿のreplyCountを減らす
+    if (post.replyToPostId) {
+      const parentPostRef = doc(db, 'posts', post.replyToPostId);
+      await updateDoc(parentPostRef, {
+        replyCount: increment(-1),
+      });
+    }
+
     // 投稿を削除
     const postRef = doc(db, 'posts', postId);
     await deleteDoc(postRef);

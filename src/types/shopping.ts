@@ -5,6 +5,7 @@ export interface ShoppingItem {
   id: string;
   name: string;
   quantity: number;
+  price?: number; // 価格（円）
   checked: boolean;
   category?: ShoppingCategory;
   createdAt: string;
@@ -23,6 +24,7 @@ export type ShoppingCategory =
 export interface ShoppingFormData {
   name: string;
   quantity: number;
+  price?: number; // 価格（円）
   category?: ShoppingCategory;
 }
 

@@ -43,6 +43,7 @@ export const SocialScreen: React.FC = () => {
         userId={selectedUserId}
         onBack={handleBackToTimeline}
         onPostClick={handlePostClick}
+        onUserClick={handleUserClick} // この行を追加
       />
     );
   }

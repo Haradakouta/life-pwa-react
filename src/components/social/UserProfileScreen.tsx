@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday, MdCheck, MdClose } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
+import { getUserProfile } from '../../utils/profile';
+import { sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend, getFriendStatus } from '../../utils/friend';
 import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
-import { FollowersListModal } from './FollowersListModal';
-import { FollowingListModal } from './FollowingListModal';
+import { FriendListModal } from './FriendListModal';
 import { formatCount, formatJoinDate } from '../../utils/formatNumber';
-import type { UserProfile } from '../../types/profile';
+import type { UserProfile, Friend } from '../../types/profile';
 import type { Post } from '../../types/post';
 
 type ProfileTab = 'posts' | 'replies' | 'media' | 'likes';
@@ -33,10 +33,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowingUser, setIsFollowingUser] = useState(false);
-  const [showFollowersModal, setShowFollowersModal] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [friendStatus, setFriendStatus] = useState<Friend['status'] | 'not_friends'>('not_friends');
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
+  const [showFriendListModal, setShowFriendListModal] = useState(false);
+  const [friendListModalInitialTab, setFriendListModalInitialTab] = useState<'friends' | 'pending_sent' | 'pending_received'>('friends');
 
   const isOwnProfile = user && user.uid === userId;
 
@@ -53,8 +53,8 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         setProfile(fetchedProfile);
 
         if (user && user.uid !== userId) {
-          const following = await isFollowing(user.uid, userId);
-          setIsFollowingUser(following);
+          const status = await getFriendStatus(user.uid, userId);
+          setFriendStatus(status);
         }
       } catch (error) {
         console.error('[UserProfileScreen] プロフィールの取得に失敗しました:', error);
@@ -109,44 +109,64 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
     fetchPosts();
   }, [userId, activeTab, profile]);
 
-  const handleFollow = async () => {
+  const handleFriendAction = async (action: 'send' | 'accept' | 'decline' | 'remove') => {
     if (!user || !profile) return;
 
-    const previousFollowState = isFollowingUser;
+    const currentFriendStatus = friendStatus;
     const previousProfile = { ...profile };
 
-    setIsFollowingUser(!isFollowingUser);
-    setProfile({
-      ...profile,
-      stats: {
-        ...profile.stats,
-        followerCount: isFollowingUser
-          ? profile.stats.followerCount - 1
-          : profile.stats.followerCount + 1,
-      },
-    });
-
     try {
-      if (previousFollowState) {
-        await unfollowUser(user.uid, userId);
-      } else {
-        await followUser(
-          user.uid,
-          user.displayName || 'Anonymous',
-          user.photoURL || undefined,
-          userId,
-          profile.displayName,
-          profile.avatarUrl || undefined
-        );
+      switch (action) {
+        case 'send':
+          setFriendStatus('pending_sent');
+          await sendFriendRequest(
+            user.uid,
+            user.displayName || 'Anonymous',
+            user.photoURL || undefined,
+            userId,
+            profile.displayName,
+            profile.avatarUrl || undefined
+          );
+          break;
+        case 'accept':
+          setFriendStatus('accepted');
+          setProfile({
+            ...profile,
+            stats: {
+              ...profile.stats,
+              friendCount: profile.stats.friendCount + 1,
+            },
+          });
+          await acceptFriendRequest(
+            user.uid,
+            user.displayName || 'Anonymous',
+            user.photoURL || undefined,
+            userId,
+            profile.displayName,
+            profile.avatarUrl || undefined
+          );
+          break;
+        case 'decline':
+          setFriendStatus('not_friends');
+          await declineFriendRequest(user.uid, userId);
+          break;
+        case 'remove':
+          setFriendStatus('not_friends');
+          setProfile({
+            ...profile,
+            stats: {
+              ...profile.stats,
+              friendCount: profile.stats.friendCount - 1,
+            },
+          });
+          await removeFriend(user.uid, userId);
+          break;
       }
     } catch (error: any) {
-      // Log the entire error object for debugging
-      console.error('DUMPING FULL FOLLOW/UNFOLLOW ERROR:', error);
-
-      // Revert UI changes
-      setIsFollowingUser(previousFollowState);
+      console.error('DUMPING FULL FRIEND ACTION ERROR:', error);
+      setFriendStatus(currentFriendStatus); // Revert UI on error
       setProfile(previousProfile);
-      alert(`フォロー操作に失敗しました.\n\nエラー: ${error.message || '不明なエラー'}`);
+      alert(`フレンド操作に失敗しました.\n\nエラー: ${error.message || '不明なエラー'}`);
     }
   };
 
@@ -213,9 +233,33 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               設定画面から編集できます
             </div>
           ) : (
-            <button onClick={handleFollow} style={{ padding: '8px 16px', background: isFollowingUser ? 'var(--card)' : 'var(--primary)', border: isFollowingUser ? '2px solid var(--border)' : 'none', borderRadius: '20px', color: isFollowingUser ? 'var(--text)' : 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
-              {isFollowingUser ? <><MdPersonRemove size={16} /> フォロー中</> : <><MdPersonAdd size={16} /> フォロー</>}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {friendStatus === 'not_friends' && (
+                <button onClick={() => handleFriendAction('send')} style={{ padding: '8px 16px', background: 'var(--primary)', border: 'none', borderRadius: '20px', color: 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                  <MdPersonAdd size={16} /> フレンド申請
+                </button>
+              )}
+              {friendStatus === 'pending_sent' && (
+                <button disabled style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  申請中
+                </button>
+              )}
+              {friendStatus === 'pending_received' && (
+                <>
+                  <button onClick={() => handleFriendAction('accept')} style={{ padding: '8px 16px', background: 'var(--primary)', border: 'none', borderRadius: '20px', color: 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <MdCheck size={16} /> 承認
+                  </button>
+                  <button onClick={() => handleFriendAction('decline')} style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <MdClose size={16} /> 拒否
+                  </button>
+                </>
+              )}
+              {friendStatus === 'accepted' && (
+                <button onClick={() => handleFriendAction('remove')} style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                  フレンド
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -233,8 +277,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
 
         <div style={{ display: 'flex', gap: '16px', padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
           <div><span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>{formatCount(profile.stats.postCount)}</span><span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>投稿</span></div>
-          <div onClick={() => setShowFollowersModal(true)} style={{ cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}><span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>{formatCount(profile.stats.followerCount)}</span><span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フォロワー</span></div>
-          <div onClick={() => setShowFollowingModal(true)} style={{ cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}><span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>{formatCount(profile.stats.followingCount)}</span><span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フォロー中</span></div>
+          <div onClick={() => { setShowFriendListModal(true); setFriendListModalInitialTab('friends'); }} style={{ cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}><span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>{formatCount(profile.stats.friendCount)}</span><span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フレンド</span></div>
         </div>
       </div>
 
@@ -249,8 +292,14 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         {postsLoading ? (<div><PostCardSkeleton /><PostCardSkeleton /></div>) : posts.length === 0 ? (<div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}><div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeTab === 'media' ? '📷' : activeTab === 'likes' ? '❤️' : activeTab === 'replies' ? '💬' : '📝'}</div><div style={{ fontSize: '16px' }}>{activeTab === 'posts' && (isOwnProfile ? 'まだ投稿がありません' : 'このユーザーはまだ投稿していません')}{activeTab === 'replies' && (isOwnProfile ? '返信はまだありません' : 'このユーザーはまだ返信していません')}{activeTab === 'media' && (isOwnProfile ? '画像付き投稿はまだありません' : 'このユーザーはまだ画像を投稿していません')}{activeTab === 'likes' && (isOwnProfile ? 'まだいいねした投稿がありません' : 'このユーザーのいいねは非公開です')}</div></div>) : (<div>{activeTab === 'posts' && pinnedPost && (<PostCard key={pinnedPost.id} post={pinnedPost} onPostClick={onPostClick} onUserClick={onUserClick} showPinButton={!!isOwnProfile} onPinToggle={handlePinToggle} />)}{posts.map((post) => (<PostCard key={post.id} post={post} onPostClick={onPostClick} onUserClick={onUserClick} showPinButton={!!isOwnProfile && activeTab === 'posts'} onPinToggle={handlePinToggle} />))}</div>)}
       </div>
 
-      {showFollowersModal && <FollowersListModal userId={userId} onClose={() => setShowFollowersModal(false)} onNavigateToProfile={onUserClick} />}
-      {showFollowingModal && <FollowingListModal userId={userId} onClose={() => setShowFollowingModal(false)} onNavigateToProfile={onUserClick} />}
+      {showFriendListModal && (
+        <FriendListModal
+          userId={userId}
+          onClose={() => setShowFriendListModal(false)}
+          onNavigateToProfile={onUserClick}
+          initialTab={friendListModalInitialTab}
+        />
+      )}
     </div>
   );
 };

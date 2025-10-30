@@ -4,9 +4,10 @@ import { PostDetailScreen } from './PostDetailScreen';
 import { UserProfileScreen } from './UserProfileScreen';
 import { SearchScreen } from './SearchScreen';
 import NotificationScreen from './NotificationScreen';
-import { MdHome, MdSearch, MdNotifications } from 'react-icons/md';
+import { ConversationListScreen } from './ConversationListScreen';
+import { MdHome, MdSearch, MdNotifications, MdChat } from 'react-icons/md';
 
-type SocialTab = 'timeline' | 'search' | 'notifications';
+type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm';
 type View = 'main' | 'post-detail' | 'profile';
 
 export const SocialScreen: React.FC = () => {
@@ -140,6 +141,28 @@ export const SocialScreen: React.FC = () => {
           <MdNotifications size={20} />
           通知
         </button>
+        <button
+          onClick={() => setCurrentTab('dm')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: currentTab === 'dm' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: currentTab === 'dm' ? 'var(--primary)' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            fontSize: '15px',
+            fontWeight: currentTab === 'dm' ? 600 : 400,
+          }}
+        >
+          <MdChat size={20} />
+          DM
+        </button>
       </div>
 
       {/* タブコンテンツ */}
@@ -152,6 +175,12 @@ export const SocialScreen: React.FC = () => {
       {currentTab === 'notifications' && (
         <NotificationScreen
           onNavigateToPost={handlePostClick}
+          onNavigateToProfile={handleUserClick}
+        />
+      )}
+      {currentTab === 'dm' && (
+        <ConversationListScreen
+          onBack={handleBackToTimeline}
           onNavigateToProfile={handleUserClick}
         />
       )}

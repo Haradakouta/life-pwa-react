@@ -32,15 +32,38 @@ service cloud.firestore {
       allow update, delete: if isOwner(userId);
     }
 
-    match /users/{userId}/followers/{followerId} {
-      allow read: if isAuth();
-      allow create: if isAuth() && request.resource.data.followerId == request.auth.uid;
-      allow delete: if isAuth() && resource.data.followerId == request.auth.uid;
-    }
+    
 
-    match /users/{userId}/following/{followingId} {
-      allow read: if isAuth();
-      allow create, delete: if isOwner(userId);
+    match /users/{userId}/friends/{friendId} {
+      // 読み取り: 認証済みユーザーは自分のフレンドリストを読み取り可能
+      allow read: if isOwner(userId);
+
+      // 作成:
+      // - 認証済みユーザーであること
+      // - 自分のUIDがuserIdと一致すること
+      // - request.resource.data.uid が friendId と一致すること
+      // - status が 'pending_sent' または 'pending_received' であること
+      // - initiatedBy が request.auth.uid と一致すること
+      allow create: if isOwner(userId)
+                    && request.resource.data.uid == friendId
+                    && request.resource.data.status in ['pending_sent', 'pending_received']
+                    && request.resource.data.initiatedBy == request.auth.uid;
+
+      // 更新:
+      // - 認証済みユーザーであること
+      // - 自分のUIDがuserIdと一致すること
+      // - status の変更が 'pending_received' -> 'accepted' または 'pending_sent' -> 'accepted' であること
+      // - initiatedBy は変更不可
+      allow update: if isOwner(userId)
+                    && request.resource.data.uid == friendId
+                    && (
+                      (resource.data.status == 'pending_received' && request.resource.data.status == 'accepted') ||
+                      (resource.data.status == 'pending_sent' && request.resource.data.status == 'accepted')
+                    )
+                    && request.resource.data.initiatedBy == resource.data.initiatedBy; // initiatedByは変更不可
+
+      // 削除: 認証済みユーザーは自分のフレンドリストから削除可能
+      allow delete: if isOwner(userId);
     }
 
     // Catch-all for other user subcollections
@@ -114,6 +137,48 @@ service cloud.firestore {
     match /rankings/recipes {
       allow read: if true;
       allow write: if false;
+    }
+
+    match /conversations/{conversationId} {
+      // Helper function to check if the current user is a participant
+      function isParticipant() {
+        return isAuth() && request.auth.uid in resource.data.participants;
+      }
+
+      // Read: Only participants can read the conversation
+      allow read: if isParticipant();
+
+      // Create: Authenticated users can create a conversation
+      // Ensure participants array has exactly 2 UIDs and includes the creator
+      allow create: if isAuth()
+                    && request.resource.data.participants is list
+                    && request.resource.data.participants.size() == 2
+                    && request.auth.uid in request.resource.data.participants;
+
+      // Update: Only participants can update lastMessage and lastMessageTimestamp
+      allow update: if isParticipant()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastMessageTimestamp']);
+
+      // Delete: Not allowed (conversations persist)
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Read: Only participants of the parent conversation can read messages
+        allow read: if isParticipant();
+
+        // Create: Only participants of the parent conversation can send messages
+        // Ensure senderId matches the authenticated user
+        allow create: if isParticipant()
+                      && request.resource.data.senderId == request.auth.uid;
+
+        // Update: Only the sender can mark their own message as read
+        allow update: if isParticipant()
+                      && request.resource.data.senderId == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+
+        // Delete: Not allowed (messages persist)
+        allow delete: if false;
+      }
     }
 
     match /{document=**} {

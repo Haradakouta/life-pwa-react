@@ -19,8 +19,7 @@ export interface UserProfile {
 
 export interface UserStats {
   postCount: number; // 投稿数
-  followerCount: number; // フォロワー数
-  followingCount: number; // フォロー中の数
+  friendCount: number; // フレンド数
   recipeCount: number; // レシピ投稿数
   likeCount: number; // いいね獲得数
 }
@@ -33,21 +32,13 @@ export interface ProfileFormData {
   isPublic: boolean;
 }
 
-export interface Follow {
-  id: string;
-  followerId: string;
-  followerName: string;
-  followerAvatar?: string;
-  followingId: string;
-  followingName: string;
-  createdAt: string;
-}
-
-export interface Follower {
+export interface Friend {
   uid: string;
   displayName: string;
   username: string;
   avatarUrl?: string;
-  bio?: string;
-  isFollowing: boolean; // 自分がこのユーザーをフォローしているか
+  status: 'pending_sent' | 'pending_received' | 'accepted';
+  initiatedBy: string; // リクエストを送信したユーザーのUID
+  createdAt: string;
+  acceptedAt?: string;
 }

@@ -349,8 +349,10 @@ export const getNotificationIcon = (type: NotificationType): string => {
       return '💭';
     case 'reply':
       return '↩️';
-    case 'follow':
-      return '👤';
+    case 'friend_request':
+      return '🤝'; // 友達リクエストのアイコン
+    case 'friend_accept':
+      return '✅'; // 友達承認のアイコン
     case 'mention':
       return '@';
     default:
@@ -377,8 +379,10 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${actor.name}さんがあなたの投稿を引用しました`;
       case 'reply':
         return `${actor.name}さんがあなたの投稿に返信しました`;
-      case 'follow':
-        return `${actor.name}さんがあなたをフォローしました`;
+      case 'friend_request':
+        return `${actor.name}さんからフレンドリクエストが届きました`;
+      case 'friend_accept':
+        return `${actor.name}さんがフレンドリクエストを承認しました`;
       case 'mention':
         return `${actor.name}さんがあなたをメンションしました`;
       default:
@@ -399,8 +403,10 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${firstActor.name}さんと他${othersCount}人があなたの投稿を引用しました`;
       case 'reply':
         return `${firstActor.name}さんと他${othersCount}人があなたの投稿に返信しました`;
-      case 'follow':
-        return `${firstActor.name}さんと他${othersCount}人があなたをフォローしました`;
+      case 'friend_request':
+        return `${firstActor.name}さんと他${othersCount}人からフレンドリクエストが届きました`;
+      case 'friend_accept':
+        return `${firstActor.name}さんと他${othersCount}人がフレンドリクエストを承認しました`;
       case 'mention':
         return `${firstActor.name}さんと他${othersCount}人があなたをメンションしました`;
       default:

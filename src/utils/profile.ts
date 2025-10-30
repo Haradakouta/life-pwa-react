@@ -6,6 +6,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs, deleteDoc, 
 import { updateProfile } from 'firebase/auth';
 import { db, auth } from '../config/firebase';
 import type { UserProfile, UserStats, Follow, Follower } from '../types/profile';
+import { createNotification } from './notification';
 
 /**
  * 初期プロフィールを作成
@@ -294,6 +295,19 @@ export const followUser = async (
       'stats.followerCount': increment(1),
     });
     console.log(`✅ [followUser] Target's followerCount updated`);
+
+    // ステップ4: フォロー通知を送信
+    console.log(`[followUser] Creating follow notification...`);
+    await createNotification(
+      followingId,
+      followerId,
+      followerName,
+      'follow',
+      {
+        actorAvatar: followerAvatar,
+      }
+    );
+    console.log(`✅ [followUser] Follow notification created`);
 
     console.log(`✅ [followUser] Complete: ${followerId} → ${followingId}`);
   } catch (error: any) {

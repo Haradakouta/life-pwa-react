@@ -3,6 +3,7 @@ import { TimelineScreen } from './TimelineScreen';
 import { PostDetailScreen } from './PostDetailScreen';
 import { UserProfileScreen } from './UserProfileScreen';
 import { SearchScreen } from './SearchScreen';
+import NotificationScreen from './NotificationScreen';
 import { MdHome, MdSearch, MdNotifications } from 'react-icons/md';
 
 type SocialTab = 'timeline' | 'search' | 'notifications';
@@ -148,11 +149,10 @@ export const SocialScreen: React.FC = () => {
         <SearchScreen onPostClick={handlePostClick} onUserClick={handleUserClick} />
       )}
       {currentTab === 'notifications' && (
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          <MdNotifications size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-          <div style={{ fontSize: '16px', marginBottom: '8px' }}>通知機能</div>
-          <div style={{ fontSize: '14px' }}>Phase 6で実装予定</div>
-        </div>
+        <NotificationScreen
+          onNavigateToPost={handlePostClick}
+          onNavigateToProfile={handleUserClick}
+        />
       )}
     </div>
   );

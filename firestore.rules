@@ -44,6 +44,20 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // ユーザーの通知（個別に定義して明示的に）
+    match /users/{userId}/notifications/{notificationId} {
+      // 読み取り: 本人のみ
+      allow read: if isOwner(userId);
+
+      // 作成: 認証済みユーザーなら誰でも（いいね・コメント・フォロー等で通知を送信）
+      // ただし、recipientIdは必ず通知を受け取るユーザー（userId）でなければならない
+      allow create: if isAuth()
+                    && request.resource.data.recipientId == userId;
+
+      // 更新・削除: 本人のみ（既読マークや削除）
+      allow update, delete: if isOwner(userId);
+    }
+
     // ユーザーは自分のデータのみアクセス可能
     // 対象: settings, intakes, expenses, stocks, shopping, recipes など
     match /users/{userId}/{document=**} {

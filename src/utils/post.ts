@@ -18,6 +18,7 @@ import { db } from '../config/firebase';
 import type { Post, PostFormData, Like, Comment, Bookmark, Repost, Recipe, RecipeFormData } from '../types/post';
 import { uploadPostImage } from './imageUpload';
 import { getUserProfile, getFollowing } from './profile';
+import { createNotification } from './notification';
 
 /**
  * ハッシュタグを抽出する
@@ -38,6 +39,35 @@ export const extractMentions = (content: string): string[] => {
 
   // "@"を除去してユニークな配列を返す
   return [...new Set(matches.map((mention) => mention.substring(1)))];
+};
+
+/**
+ * usernameからuserIdを取得するヘルパー関数
+ */
+const getUserIdFromUsername = async (username: string): Promise<string | null> => {
+  try {
+    // usersコレクション全体をスキャンして、一致するusernameを持つプロフィールを探す
+    // Note: 本番環境では、usernameをキーとした別のコレクションを作成する方が効率的
+    const usersRef = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersRef);
+
+    for (const userDoc of usersSnapshot.docs) {
+      const profileRef = doc(db, 'users', userDoc.id, 'profile', 'data');
+      const profileSnap = await getDoc(profileRef);
+
+      if (profileSnap.exists()) {
+        const profileData = profileSnap.data();
+        if (profileData.username === username) {
+          return userDoc.id;
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting userId from username:', error);
+    return null;
+  }
 };
 
 /**
@@ -135,6 +165,26 @@ export const createPost = async (
     await updateDoc(profileRef, {
       'stats.postCount': increment(1),
     });
+
+    // メンションされたユーザーに通知を送信
+    if (mentions.length > 0) {
+      for (const username of mentions) {
+        const mentionedUserId = await getUserIdFromUsername(username);
+        if (mentionedUserId && mentionedUserId !== userId) {
+          await createNotification(
+            mentionedUserId,
+            userId,
+            profile.displayName,
+            'mention',
+            {
+              actorAvatar: profile.avatarUrl,
+              postId,
+              postContent: data.content,
+            }
+          );
+        }
+      }
+    }
 
     console.log('投稿を作成しました:', postId);
     return postId;
@@ -560,6 +610,23 @@ export const addLike = async (
       likes: increment(1),
     });
 
+    // 投稿の作成者に通知を送信（自分自身へのいいねは除く）
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      const postData = postSnap.data();
+      await createNotification(
+        postData.authorId,
+        userId,
+        userName,
+        'like',
+        {
+          actorAvatar: userAvatar,
+          postId,
+          postContent: postData.content,
+        }
+      );
+    }
+
     console.log('いいねを追加しました');
   } catch (error) {
     console.error('いいねの追加に失敗しました:', error);
@@ -679,6 +746,24 @@ export const addComment = async (
     await updateDoc(postRef, {
       commentCount: increment(1),
     });
+
+    // 投稿の作成者に通知を送信（自分自身へのコメントは除く）
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      const postData = postSnap.data();
+      await createNotification(
+        postData.authorId,
+        userId,
+        userName,
+        'comment',
+        {
+          actorAvatar: userAvatar,
+          postId,
+          postContent: postData.content,
+          commentContent: content,
+        }
+      );
+    }
 
     console.log('コメントを追加しました');
   } catch (error) {
@@ -873,6 +958,23 @@ export const addRepost = async (
     await updateDoc(postRef, {
       repostCount: increment(1),
     });
+
+    // 投稿の作成者に通知を送信（自分自身へのリポストは除く）
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      const postData = postSnap.data();
+      await createNotification(
+        postData.authorId,
+        userId,
+        userName,
+        'repost',
+        {
+          actorAvatar: userAvatar,
+          postId,
+          postContent: postData.content,
+        }
+      );
+    }
 
     console.log('リポストを追加しました');
   } catch (error) {

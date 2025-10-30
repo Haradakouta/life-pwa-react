@@ -493,20 +493,10 @@ export const updatePost = async (
 /**
  * 相対時間を取得
  */
-export const getRelativeTime = (dateString: string): string => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'たった今';
-  if (diffMins < 60) return `${diffMins}分前`;
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}時間前`;
-  if (diffMins < 43200) return `${Math.floor(diffMins / 1440)}日前`;
-
-  // 30日以上前は日付を表示
-  return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
-};
+// ============================================
+// 時間フォーマット（再エクスポート）
+// ============================================
+export { formatRelativeTime as getRelativeTime } from './formatNumber';
 
 // ============================================
 // いいね機能

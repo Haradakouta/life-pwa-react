@@ -4,6 +4,7 @@ import type { Post } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
 import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
 import { getUserProfile, getUserIdByUsername } from '../../utils/profile';
+import { formatCount } from '../../utils/formatNumber';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote } from 'react-icons/md';
 import { ImageModal } from '../common/ImageModal';
 
@@ -551,7 +552,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           }}
         >
           {liked ? <MdFavorite size={20} /> : <MdFavoriteBorder size={20} />}
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{localLikes}</span>
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(localLikes)}</span>
         </button>
 
         {/* コメント */}
@@ -579,7 +580,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           }}
         >
           <MdComment size={20} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{post.commentCount}</span>
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(post.commentCount)}</span>
         </button>
 
         {/* リポスト */}
@@ -608,7 +609,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           }}
         >
           <MdRepeat size={20} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{localRepostCount}</span>
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(localRepostCount)}</span>
         </button>
 
         {/* 引用リポスト */}

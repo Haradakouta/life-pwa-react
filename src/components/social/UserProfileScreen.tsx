@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
 import { getUserPosts } from '../../utils/post';
@@ -7,6 +7,7 @@ import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FollowersListModal } from './FollowersListModal';
 import { FollowingListModal } from './FollowingListModal';
+import { formatCount, formatJoinDate } from '../../utils/formatNumber';
 import type { UserProfile } from '../../types/profile';
 import type { Post } from '../../types/post';
 
@@ -415,26 +416,39 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           </div>
         )}
 
-        {/* ウェブサイト */}
-        {profile.websiteUrl && (
-          <a
-            href={profile.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* ウェブサイトと参加日 */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
+          {profile.websiteUrl && (
+            <a
+              href={profile.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '14px',
+                color: 'var(--primary)',
+                textDecoration: 'none',
+              }}
+            >
+              <MdLink size={16} />
+              {profile.websiteUrl.replace(/^https?:\/\//, '')}
+            </a>
+          )}
+          <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
               fontSize: '14px',
-              color: 'var(--primary)',
-              textDecoration: 'none',
-              marginBottom: '12px',
+              color: 'var(--text-secondary)',
             }}
           >
-            <MdLink size={16} />
-            {profile.websiteUrl.replace(/^https?:\/\//, '')}
-          </a>
-        )}
+            <MdCalendarToday size={16} />
+            {formatJoinDate(profile.createdAt)}
+          </div>
+        </div>
 
         {/* 統計情報 */}
         <div
@@ -447,7 +461,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         >
           <div>
             <span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>
-              {profile.stats.postCount}
+              {formatCount(profile.stats.postCount)}
             </span>
             <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>投稿</span>
           </div>
@@ -467,7 +481,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
             }}
           >
             <span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>
-              {profile.stats.followerCount}
+              {formatCount(profile.stats.followerCount)}
             </span>
             <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フォロワー</span>
           </div>
@@ -487,7 +501,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
             }}
           >
             <span style={{ fontWeight: 700, color: 'var(--text)', marginRight: '4px' }}>
-              {profile.stats.followingCount}
+              {formatCount(profile.stats.followingCount)}
             </span>
             <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>フォロー中</span>
           </div>

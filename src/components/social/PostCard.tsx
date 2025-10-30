@@ -365,6 +365,22 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         )}
       </div>
 
+      {/* 返信先の表示 */}
+      {post.replyToUserName && (
+        <div
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '14px',
+            marginBottom: '8px',
+          }}
+        >
+          <span style={{ marginRight: '4px' }}>💬</span>
+          <span>
+            {post.replyToUserName}さんへの返信
+          </span>
+        </div>
+      )}
+
       {/* 本文（メンション対応） */}
       <div
         style={{

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
-import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getPost } from '../../utils/post';
+import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FollowersListModal } from './FollowersListModal';
@@ -107,8 +107,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
             setPinnedPost(null);
             break;
           case 'replies':
-            // 返信機能は未実装
-            fetchedPosts = [];
+            fetchedPosts = await getUserReplies(userId, 20);
             setPinnedPost(null);
             break;
         }
@@ -681,11 +680,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               {activeTab === 'media' && (isOwnProfile ? '画像付き投稿はまだありません' : 'このユーザーはまだ画像を投稿していません')}
               {activeTab === 'likes' && (isOwnProfile ? 'まだいいねした投稿がありません' : 'このユーザーのいいねは非公開です')}
             </div>
-            {activeTab === 'replies' && (
-              <div style={{ fontSize: '14px', marginTop: '12px', color: 'var(--text-secondary)' }}>
-                ※返信機能は準備中です
-              </div>
-            )}
           </div>
         ) : (
           <div>

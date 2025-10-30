@@ -91,6 +91,7 @@ export const createPost = async (
       likes: 0,
       commentCount: 0,
       repostCount: 0,
+      replyCount: 0,
       hashtags,
       visibility: data.visibility,
       createdAt: serverTimestamp(),
@@ -106,6 +107,13 @@ export const createPost = async (
       postData.quotedPostId = data.quotedPostId;
     }
 
+    // 返信の場合
+    if (data.replyToPostId) {
+      postData.replyToPostId = data.replyToPostId;
+      postData.replyToUserId = data.replyToUserId;
+      postData.replyToUserName = data.replyToUserName;
+    }
+
     // レシピデータがあれば追加
     if (data.recipeData) {
       postData.recipeData = data.recipeData;
@@ -113,6 +121,14 @@ export const createPost = async (
 
     // Firestoreに保存
     await setDoc(postRef, postData);
+
+    // 返信の場合、親投稿のreplyCountを増やす
+    if (data.replyToPostId) {
+      const parentPostRef = doc(db, 'posts', data.replyToPostId);
+      await updateDoc(parentPostRef, {
+        replyCount: increment(1),
+      });
+    }
 
     // ユーザーの投稿数を更新
     const profileRef = doc(db, 'users', userId, 'profile', 'data');
@@ -161,12 +177,17 @@ export const getPost = async (postId: string): Promise<Post | null> => {
       likes: data.likes || 0,
       commentCount: data.commentCount || 0,
       repostCount: data.repostCount || 0,
+      replyCount: data.replyCount || 0,
       hashtags: data.hashtags || [],
       mentions: data.mentions || [],
       quotedPostId: data.quotedPostId,
       quotedPost,
+      replyToPostId: data.replyToPostId,
+      replyToUserId: data.replyToUserId,
+      replyToUserName: data.replyToUserName,
       recipeData: data.recipeData,
       visibility: data.visibility,
+      isPinned: data.isPinned || false,
       createdAt: timestampToString(data.createdAt),
       updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
     };
@@ -1483,5 +1504,196 @@ export const unpinPost = async (userId: string, postId: string): Promise<void> =
   } catch (error: any) {
     console.error(`❌ [unpinPost] Error:`, error);
     throw new Error(`ピン留め解除に失敗しました: ${error.message || '不明なエラー'}`);
+  }
+};
+
+/**
+ * 投稿への返信一覧を取得
+ */
+export const getPostReplies = async (
+  postId: string,
+  limit: number = 50
+): Promise<Post[]> => {
+  try {
+    console.log(`[getPostReplies] Fetching replies for post: ${postId}`);
+    const postsRef = collection(db, 'posts');
+
+    const q = query(
+      postsRef,
+      where('replyToPostId', '==', postId),
+      orderBy('createdAt', 'asc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const replies: Post[] = [];
+
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data();
+      const post: Post = {
+        id: docSnap.id,
+        content: data.content,
+        images: data.images || [],
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar || '',
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        repostCount: data.repostCount || 0,
+        replyCount: data.replyCount || 0,
+        hashtags: data.hashtags || [],
+        mentions: data.mentions || [],
+        quotedPostId: data.quotedPostId,
+        replyToPostId: data.replyToPostId,
+        replyToUserId: data.replyToUserId,
+        replyToUserName: data.replyToUserName,
+        recipeData: data.recipeData,
+        visibility: data.visibility,
+        isPinned: data.isPinned || false,
+        createdAt: timestampToString(data.createdAt),
+        updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+      };
+      replies.push(post);
+    }
+
+    console.log(`[getPostReplies] Found ${replies.length} replies`);
+    return replies;
+  } catch (error) {
+    console.error('[getPostReplies] Error:', error);
+    return [];
+  }
+};
+
+/**
+ * ユーザーの返信一覧を取得
+ */
+export const getUserReplies = async (
+  userId: string,
+  limit: number = 20
+): Promise<Post[]> => {
+  try {
+    console.log(`[getUserReplies] Fetching replies for user: ${userId}`);
+    const postsRef = collection(db, 'posts');
+
+    const q = query(
+      postsRef,
+      where('authorId', '==', userId),
+      where('replyToPostId', '!=', null),
+      orderBy('replyToPostId'),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const replies: Post[] = [];
+
+    for (const docSnap of querySnapshot.docs) {
+      const data = docSnap.data();
+      const post: Post = {
+        id: docSnap.id,
+        content: data.content,
+        images: data.images || [],
+        authorId: data.authorId,
+        authorName: data.authorName,
+        authorAvatar: data.authorAvatar || '',
+        likes: data.likes || 0,
+        commentCount: data.commentCount || 0,
+        repostCount: data.repostCount || 0,
+        replyCount: data.replyCount || 0,
+        hashtags: data.hashtags || [],
+        mentions: data.mentions || [],
+        quotedPostId: data.quotedPostId,
+        replyToPostId: data.replyToPostId,
+        replyToUserId: data.replyToUserId,
+        replyToUserName: data.replyToUserName,
+        recipeData: data.recipeData,
+        visibility: data.visibility,
+        isPinned: data.isPinned || false,
+        createdAt: timestampToString(data.createdAt),
+        updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+      };
+      replies.push(post);
+    }
+
+    console.log(`[getUserReplies] Found ${replies.length} replies`);
+    return replies;
+  } catch (error) {
+    console.error('[getUserReplies] Error:', error);
+    // フォールバック: authorIdのみでフィルタリング
+    try {
+      const postsRefFallback = collection(db, 'posts');
+      const q = query(
+        postsRefFallback,
+        where('authorId', '==', userId),
+        orderBy('createdAt', 'desc'),
+        firestoreLimit(limit)
+      );
+      const querySnapshot = await getDocs(q);
+      const allPosts: Post[] = [];
+
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        // replyToPostIdが存在するもののみ
+        if (data.replyToPostId) {
+          const post: Post = {
+            id: docSnap.id,
+            content: data.content,
+            images: data.images || [],
+            authorId: data.authorId,
+            authorName: data.authorName,
+            authorAvatar: data.authorAvatar || '',
+            likes: data.likes || 0,
+            commentCount: data.commentCount || 0,
+            repostCount: data.repostCount || 0,
+            replyCount: data.replyCount || 0,
+            hashtags: data.hashtags || [],
+            mentions: data.mentions || [],
+            quotedPostId: data.quotedPostId,
+            replyToPostId: data.replyToPostId,
+            replyToUserId: data.replyToUserId,
+            replyToUserName: data.replyToUserName,
+            recipeData: data.recipeData,
+            visibility: data.visibility,
+            isPinned: data.isPinned || false,
+            createdAt: timestampToString(data.createdAt),
+            updatedAt: data.updatedAt ? timestampToString(data.updatedAt) : undefined,
+          };
+          allPosts.push(post);
+        }
+      }
+
+      console.log(`[getUserReplies] Fallback: Found ${allPosts.length} replies`);
+      return allPosts.slice(0, limit);
+    } catch (fallbackError) {
+      console.error('[getUserReplies] Fallback also failed:', fallbackError);
+      return [];
+    }
+  }
+};
+
+/**
+ * 投稿のスレッド（親投稿 + すべての返信）を取得
+ */
+export const getPostThread = async (postId: string): Promise<{
+  mainPost: Post | null;
+  replies: Post[];
+}> => {
+  try {
+    console.log(`[getPostThread] Fetching thread for post: ${postId}`);
+
+    // メイン投稿を取得
+    const mainPost = await getPost(postId);
+    if (!mainPost) {
+      return { mainPost: null, replies: [] };
+    }
+
+    // 返信を取得
+    const replies = await getPostReplies(postId, 100);
+
+    console.log(`[getPostThread] Found thread with ${replies.length} replies`);
+    return { mainPost, replies };
+  } catch (error) {
+    console.error('[getPostThread] Error:', error);
+    return { mainPost: null, replies: [] };
   }
 };

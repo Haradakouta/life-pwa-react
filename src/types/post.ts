@@ -8,10 +8,14 @@ export interface Post {
   likes: number;
   commentCount: number;
   repostCount: number;
+  replyCount?: number; // 返信数（オプショナル）
   hashtags?: string[];
   mentions?: string[]; // メンションされたユーザーID配列
   quotedPostId?: string; // 引用元の投稿ID
   quotedPost?: Post; // 引用元の投稿（取得時に埋め込み）
+  replyToPostId?: string; // 返信先の投稿ID
+  replyToUserId?: string; // 返信先のユーザーID
+  replyToUserName?: string; // 返信先のユーザー名
   recipeData?: RecipeData; // レシピデータ（投稿に含まれる場合）
   visibility: 'public' | 'followers' | 'private';
   isPinned?: boolean; // プロフィールに固定されているか（Twitter機能）
@@ -36,6 +40,9 @@ export interface PostFormData {
   images: File[];
   visibility: 'public' | 'followers' | 'private';
   quotedPostId?: string; // 引用元の投稿ID
+  replyToPostId?: string; // 返信先の投稿ID
+  replyToUserId?: string; // 返信先のユーザーID
+  replyToUserName?: string; // 返信先のユーザー名
   recipeData?: RecipeData; // レシピデータ
 }
 

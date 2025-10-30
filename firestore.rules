@@ -31,9 +31,14 @@ service cloud.firestore {
       allow create, delete: if isOwner(userId);
 
       // 更新: 本人は全フィールド更新可能
-      //       他の認証ユーザーはstatsフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
+      //       他の認証ユーザーはstatsフィールドまたはstatsのサブフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
       allow update: if isOwner(userId)
-                    || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats']));
+                    || (isAuth() && (
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
+                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount'])
+                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followingCount'])
+                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount', 'stats.followingCount'])
+                    ));
     }
 
     // ========================================
@@ -91,13 +96,13 @@ service cloud.firestore {
                     && request.resource.data.keys().hasAll(['content', 'authorId', 'authorName', 'visibility'])
                     && request.resource.data.visibility in ['public', 'followers', 'private'];
 
-      // 更新: 認証済みユーザーが likes/commentCount/repostCount のみ更新可能、または作成者が全フィールド更新可能
+      // 更新: 認証済みユーザーが likes/commentCount/repostCount/replyCount のみ更新可能、または作成者が全フィールド更新可能
       allow update: if isAuth() && (
         // 作成者は全フィールドを更新可能
         isAuthor(resource.data.authorId)
-        // 認証済みユーザーは likes/commentCount/repostCount のみ更新可能
+        // 認証済みユーザーは likes/commentCount/repostCount/replyCount のみ更新可能
         || (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount'])
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount', 'replyCount'])
         )
       );
 

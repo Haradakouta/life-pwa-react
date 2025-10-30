@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MdNotifications, MdCheckCircle, MdDelete, MdMoreVert } from 'react-icons/md';
-import { auth } from '../../config/firebase';
+import { useAuth } from '../../hooks/useAuth';
 import {
   groupNotifications,
   markNotificationAsRead,
@@ -26,11 +26,10 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({
   onNavigateToPost,
   onNavigateToProfile,
 }) => {
+  const { user } = useAuth();
   const [groupedNotifications, setGroupedNotifications] = useState<NotificationGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
-
-  const user = auth.currentUser;
 
   useEffect(() => {
     if (!user) return;

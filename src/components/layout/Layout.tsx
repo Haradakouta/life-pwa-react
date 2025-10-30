@@ -16,6 +16,7 @@ import { ReportScreen } from '../report/ReportScreen';
 import { ExpenseScreen } from '../expense/ExpenseScreen';
 import { BadgeScreen } from '../badges/BadgeScreen';
 import { SocialScreen } from '../social/SocialScreen';
+import { AdminScreen } from '../admin/AdminScreen';
 
 export const Layout: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -61,6 +62,8 @@ export const Layout: React.FC = () => {
         return <ExpenseScreen />;
       case 'badges':
         return <BadgeScreen />;
+      case 'admin':
+        return <AdminScreen onBack={() => setCurrentScreen('home')} />;
       default:
         return <Dashboard onNavigate={setCurrentScreen} />;
     }
@@ -68,7 +71,7 @@ export const Layout: React.FC = () => {
 
   return (
     <>
-      <Header title={getScreenTitle(currentScreen)} />
+      <Header title={getScreenTitle(currentScreen)} onNavigate={setCurrentScreen} />
       <main>{renderScreen()}</main>
       <BottomNav currentScreen={currentScreen} onNavigate={setCurrentScreen} />
     </>

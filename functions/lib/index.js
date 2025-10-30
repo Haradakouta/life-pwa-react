@@ -1,23 +1,20 @@
 "use strict";
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmail = void 0;
+exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmail = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 admin.initializeApp();
-// Gmailを使ったメール送信の設定
-// 本番環境では環境変数から取得
+const db = admin.firestore();
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: ((_a = functions.config().gmail) === null || _a === void 0 ? void 0 : _a.email) || process.env.GMAIL_EMAIL,
-        pass: ((_b = functions.config().gmail) === null || _b === void 0 ? void 0 : _b.password) || process.env.GMAIL_APP_PASSWORD,
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD,
     },
 });
-// メール確認コード送信
-exports.sendVerificationEmail = functions.https.onCall(async (data, context) => {
-    const { email, code } = data;
+exports.sendVerificationEmail = functions.https.onCall(async (request) => {
+    const { email, code } = request.data;
     if (!email || !code) {
         throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
     }
@@ -197,9 +194,8 @@ https://haradakouta.github.io/life-pwa-react/
         throw new functions.https.HttpsError('internal', 'メール送信に失敗しました');
     }
 });
-// パスワードリセット用のメール送信
-exports.sendPasswordResetEmail = functions.https.onCall(async (data, context) => {
-    const { email, code } = data;
+exports.sendPasswordResetEmail = functions.https.onCall(async (request) => {
+    const { email, code } = request.data;
     if (!email || !code) {
         throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
     }
@@ -337,9 +333,8 @@ https://haradakouta.github.io/life-pwa-react/
         throw new functions.https.HttpsError('internal', 'パスワードリセットメール送信に失敗しました');
     }
 });
-// パスワードをリセット（Firebase Admin SDKを使用）
-exports.resetPassword = functions.https.onCall(async (data, context) => {
-    const { email, newPassword } = data;
+exports.resetPassword = functions.https.onCall(async (request) => {
+    const { email, newPassword } = request.data;
     if (!email || !newPassword) {
         throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと新しいパスワードが必要です');
     }
@@ -347,12 +342,8 @@ exports.resetPassword = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'パスワードは6文字以上で入力してください');
     }
     try {
-        // メールアドレスからユーザーを取得
         const userRecord = await admin.auth().getUserByEmail(email);
-        // パスワードを更新
-        await admin.auth().updateUser(userRecord.uid, {
-            password: newPassword,
-        });
+        await admin.auth().updateUser(userRecord.uid, { password: newPassword });
         console.log(`Password reset successful for user: ${userRecord.uid}`);
         return { success: true };
     }
@@ -363,5 +354,76 @@ exports.resetPassword = functions.https.onCall(async (data, context) => {
         }
         throw new functions.https.HttpsError('internal', 'パスワードのリセットに失敗しました');
     }
+});
+async function deleteCollection(collectionPath, batchSize) {
+    const collectionRef = db.collection(collectionPath);
+    const query = collectionRef.orderBy('__name__').limit(batchSize);
+    return new Promise((resolve, reject) => {
+        deleteQueryBatch(query, resolve).catch(reject);
+    });
+}
+async function deleteQueryBatch(query, resolve) {
+    const snapshot = await query.get();
+    const batchSize = snapshot.size;
+    if (batchSize === 0) {
+        resolve();
+        return;
+    }
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+    process.nextTick(() => {
+        deleteQueryBatch(query, resolve);
+    });
+}
+exports.deleteAllFollows = functions.https.onCall({ timeoutSeconds: 540, memory: '1GiB', region: 'us-central1' }, async (request) => {
+    if (!request.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    }
+    console.log('Starting to delete all follow/following relationships.');
+    const usersSnapshot = await db.collection('users').get();
+    for (const userDoc of usersSnapshot.docs) {
+        await deleteCollection(`users/${userDoc.id}/followers`, 100);
+        await deleteCollection(`users/${userDoc.id}/following`, 100);
+        const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
+        try {
+            await profileRef.update({
+                'stats.followerCount': 0,
+                'stats.followingCount': 0,
+            });
+        }
+        catch (e) {
+            console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
+        }
+    }
+    console.log('Finished deleting all follow/following relationships and resetting stats.');
+    return { result: 'All follow data deleted successfully.' };
+});
+exports.deleteAllPosts = functions.https.onCall({ timeoutSeconds: 540, memory: '1GiB', region: 'us-central1' }, async (request) => {
+    if (!request.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    }
+    console.log('Starting to delete all posts and their subcollections.');
+    const postsSnapshot = await db.collection('posts').get();
+    for (const postDoc of postsSnapshot.docs) {
+        await deleteCollection(`posts/${postDoc.id}/likes`, 100);
+        await deleteCollection(`posts/${postDoc.id}/comments`, 100);
+        await deleteCollection(`posts/${postDoc.id}/reposts`, 100);
+        await postDoc.ref.delete();
+    }
+    const usersSnapshot = await db.collection('users').get();
+    for (const userDoc of usersSnapshot.docs) {
+        const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
+        try {
+            await profileRef.update({ 'stats.postCount': 0 });
+        }
+        catch (e) {
+            console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
+        }
+    }
+    console.log('Finished deleting all posts and resetting post counts.');
+    return { result: 'All posts deleted successfully.' };
 });
 //# sourceMappingURL=index.js.map

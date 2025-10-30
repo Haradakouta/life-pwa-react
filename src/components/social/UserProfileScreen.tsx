@@ -140,9 +140,13 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         );
       }
     } catch (error: any) {
+      // Log the entire error object for debugging
+      console.error('DUMPING FULL FOLLOW/UNFOLLOW ERROR:', error);
+
+      // Revert UI changes
       setIsFollowingUser(previousFollowState);
       setProfile(previousProfile);
-      alert(`フォロー操作に失敗しました。\n\nエラー: ${error.message || '不明なエラー'}`);
+      alert(`フォロー操作に失敗しました.\n\nエラー: ${error.message || '不明なエラー'}`);
     }
   };
 

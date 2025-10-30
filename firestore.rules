@@ -31,14 +31,11 @@ service cloud.firestore {
       allow create, delete: if isOwner(userId);
 
       // 更新: 本人は全フィールド更新可能
-      //       他の認証ユーザーはstatsフィールドまたはstatsのサブフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
+      //       他の認証ユーザーはstatsフィールドのみ更新可能（フォロー機能でfollowerCount/followingCountを更新するため）
       allow update: if isOwner(userId)
-                    || (isAuth() && (
+                    || (isAuth() && 
                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
-                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount'])
-                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followingCount'])
-                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount', 'stats.followingCount'])
-                    ));
+                    );
     }
 
     // ========================================

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
-import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted } from '../../utils/post';
+import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted, pinPost, unpinPost } from '../../utils/post';
 import { getUserProfile, getUserIdByUsername } from '../../utils/profile';
 import { formatCount } from '../../utils/formatNumber';
-import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote } from 'react-icons/md';
+import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote, MdPushPin, MdMoreVert } from 'react-icons/md';
 import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
@@ -13,9 +13,11 @@ interface PostCardProps {
   onPostClick: (postId: string) => void;
   onUserClick?: (userId: string) => void;
   onQuoteRepost?: (postId: string) => void;
+  showPinButton?: boolean; // 自分のプロフィール画面でのみtrue
+  onPinToggle?: () => void; // ピン留め後にプロフィールをリフレッシュ
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost, showPinButton = false, onPinToggle }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -26,6 +28,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [imageModalIndex, setImageModalIndex] = useState(0);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showPinMenu, setShowPinMenu] = useState(false);
 
   // いいね・ブックマーク・リポスト状態を初期化
   useEffect(() => {
@@ -153,6 +156,31 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
     }
   };
 
+  const handlePinToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+      if (post.isPinned) {
+        await unpinPost(user.uid, post.id);
+        alert('ピン留めを解除しました');
+      } else {
+        await pinPost(user.uid, post.id);
+        alert('投稿をピン留めしました');
+      }
+      setShowPinMenu(false);
+      if (onPinToggle) {
+        onPinToggle();
+      }
+    } catch (error) {
+      console.error('ピン留め操作エラー:', error);
+      alert('ピン留め操作に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div
       className="post-card"
@@ -175,6 +203,24 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
       }}
     >
+      {/* ピン留めインジケーター */}
+      {post.isPinned && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--primary)',
+            fontSize: '13px',
+            fontWeight: 600,
+            marginBottom: '12px',
+          }}
+        >
+          <MdPushPin size={16} />
+          <span>ピン留めされた投稿</span>
+        </div>
+      )}
+
       {/* ヘッダー（プロフィール情報） */}
       <div
         onClick={(e) => {
@@ -236,6 +282,87 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             {getRelativeTime(post.createdAt)}
           </div>
         </div>
+
+        {/* ピン留めボタン（自分のプロフィール画面でのみ表示） */}
+        {showPinButton && (
+          <div style={{ marginLeft: 'auto', position: 'relative' }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPinMenu(!showPinMenu);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-secondary)',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--border)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none';
+              }}
+            >
+              <MdMoreVert size={20} />
+            </button>
+
+            {/* ピン留めメニュー */}
+            {showPinMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  minWidth: '180px',
+                  zIndex: 10,
+                }}
+              >
+                <button
+                  onClick={handlePinToggle}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--text)',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    transition: 'background 0.2s',
+                    opacity: isLoading ? 0.6 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.currentTarget.style.background = 'var(--border)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'none';
+                  }}
+                >
+                  <MdPushPin size={18} />
+                  <span>{post.isPinned ? 'ピン留めを解除' : 'プロフィールにピン留め'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 本文（メンション対応） */}

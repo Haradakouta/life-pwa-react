@@ -12,6 +12,7 @@ export interface UserProfile {
   coverUrl?: string; // カバー画像URL
   websiteUrl?: string; // WebサイトURL
   isPublic: boolean; // 公開/非公開
+  pinnedPostId?: string; // ピン留めされた投稿ID（Twitter機能）
   createdAt: string; // アカウント作成日
   stats: UserStats;
 }

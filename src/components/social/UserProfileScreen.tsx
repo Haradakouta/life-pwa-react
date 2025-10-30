@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, followUser, unfollowUser, isFollowing } from '../../utils/profile';
-import { getUserPosts, getUserMediaPosts, getUserLikedPosts } from '../../utils/post';
+import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getPost } from '../../utils/post';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FollowersListModal } from './FollowersListModal';
@@ -27,6 +27,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [pinnedPost, setPinnedPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,16 +82,34 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         switch (activeTab) {
           case 'posts':
             fetchedPosts = await getUserPosts(userId, 20);
+
+            // ピン留めされた投稿を取得
+            if (profile.pinnedPostId) {
+              try {
+                const pinned = await getPost(profile.pinnedPostId);
+                setPinnedPost(pinned);
+                // ピン留め投稿を通常の投稿リストから除外
+                fetchedPosts = fetchedPosts.filter(p => p.id !== profile.pinnedPostId);
+              } catch (error) {
+                console.error('[UserProfileScreen] ピン留め投稿の取得に失敗:', error);
+                setPinnedPost(null);
+              }
+            } else {
+              setPinnedPost(null);
+            }
             break;
           case 'media':
             fetchedPosts = await getUserMediaPosts(userId, 20);
+            setPinnedPost(null);
             break;
           case 'likes':
             fetchedPosts = await getUserLikedPosts(userId, 20);
+            setPinnedPost(null);
             break;
           case 'replies':
             // 返信機能は未実装
             fetchedPosts = [];
+            setPinnedPost(null);
             break;
         }
 
@@ -151,6 +170,18 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       // 詳細なエラーメッセージを表示
       const errorMsg = error.message || error.code || '不明なエラー';
       alert(`フォロー操作に失敗しました。\n\nエラー: ${errorMsg}\n\nもう一度お試しください。`);
+    }
+  };
+
+  const handlePinToggle = async () => {
+    // ピン留め後、プロフィールと投稿を再取得
+    try {
+      const updatedProfile = await getUserProfile(userId);
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+      }
+    } catch (error) {
+      console.error('[UserProfileScreen] プロフィールの再取得に失敗:', error);
     }
   };
 
@@ -658,6 +689,21 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           </div>
         ) : (
           <div>
+            {/* ピン留め投稿を最上部に表示（postsタブのみ） */}
+            {activeTab === 'posts' && pinnedPost && (
+              <PostCard
+                key={pinnedPost.id}
+                post={pinnedPost}
+                onPostClick={onPostClick}
+                onUserClick={(clickedUserId) => {
+                  console.log('User clicked:', clickedUserId, 'Current userId:', userId);
+                }}
+                showPinButton={!!isOwnProfile}
+                onPinToggle={handlePinToggle}
+              />
+            )}
+
+            {/* 通常の投稿一覧 */}
             {posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -668,6 +714,8 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
                   // （既に表示中のプロフィールの場合は何もしない）
                   console.log('User clicked:', clickedUserId, 'Current userId:', userId);
                 }}
+                showPinButton={!!isOwnProfile && activeTab === 'posts'}
+                onPinToggle={handlePinToggle}
               />
             ))}
           </div>

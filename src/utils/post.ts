@@ -1402,3 +1402,86 @@ export const getUserLikedPosts = async (
     return [];
   }
 };
+
+// ============================================
+// ピン留め機能（Twitter機能）
+// ============================================
+
+/**
+ * 投稿をプロフィールにピン留めする
+ */
+export const pinPost = async (userId: string, postId: string): Promise<void> => {
+  try {
+    console.log(`[pinPost] Pinning post ${postId} for user ${userId}`);
+
+    // 投稿の存在確認
+    const post = await getPost(postId);
+    if (!post) {
+      throw new Error('投稿が見つかりません');
+    }
+
+    // 自分の投稿のみピン留め可能
+    if (post.authorId !== userId) {
+      throw new Error('自分の投稿のみピン留めできます');
+    }
+
+    // 古いピン留めを解除（存在する場合）
+    const profileRef = doc(db, `users/${userId}/profile/data`);
+    const profileDoc = await getDoc(profileRef);
+
+    if (profileDoc.exists()) {
+      const profileData = profileDoc.data();
+      const oldPinnedPostId = profileData.pinnedPostId;
+
+      // 古いピン留め投稿のisPinnedをfalseに
+      if (oldPinnedPostId) {
+        const oldPostRef = doc(db, 'posts', oldPinnedPostId);
+        await updateDoc(oldPostRef, {
+          isPinned: false,
+        });
+      }
+    }
+
+    // プロフィールのpinnedPostIdを更新
+    await updateDoc(profileRef, {
+      pinnedPostId: postId,
+    });
+
+    // 投稿のisPinnedをtrueに
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      isPinned: true,
+    });
+
+    console.log(`✅ [pinPost] Post ${postId} pinned successfully`);
+  } catch (error: any) {
+    console.error(`❌ [pinPost] Error:`, error);
+    throw new Error(`ピン留めに失敗しました: ${error.message || '不明なエラー'}`);
+  }
+};
+
+/**
+ * 投稿のピン留めを解除する
+ */
+export const unpinPost = async (userId: string, postId: string): Promise<void> => {
+  try {
+    console.log(`[unpinPost] Unpinning post ${postId} for user ${userId}`);
+
+    // プロフィールのpinnedPostIdをクリア
+    const profileRef = doc(db, `users/${userId}/profile/data`);
+    await updateDoc(profileRef, {
+      pinnedPostId: null,
+    });
+
+    // 投稿のisPinnedをfalseに
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      isPinned: false,
+    });
+
+    console.log(`✅ [unpinPost] Post ${postId} unpinned successfully`);
+  } catch (error: any) {
+    console.error(`❌ [unpinPost] Error:`, error);
+    throw new Error(`ピン留め解除に失敗しました: ${error.message || '不明なエラー'}`);
+  }
+};

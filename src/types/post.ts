@@ -14,6 +14,7 @@ export interface Post {
   quotedPost?: Post; // 引用元の投稿（取得時に埋め込み）
   recipeData?: RecipeData; // レシピデータ（投稿に含まれる場合）
   visibility: 'public' | 'followers' | 'private';
+  isPinned?: boolean; // プロフィールに固定されているか（Twitter機能）
   createdAt: string;
   updatedAt?: string;
 }

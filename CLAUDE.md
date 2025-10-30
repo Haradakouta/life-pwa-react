@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-30 (セッション17: Phase 6 通知機能完全実装！)**
+**最終更新: 2025-10-30 (セッション18: SNS関連バグ修正完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -2319,6 +2319,155 @@ npm run deploy
 - [ ] 人気レシピランキング
 - [ ] トレンドハッシュタグ
 - [ ] パフォーマンス最適化（バンドルサイズ削減）
+
+---
+
+### 2025-10-30 (セッション18) ✅ **SNS関連バグ修正完了！**
+
+**実装内容:**
+
+#### 1. フォロー/アンフォロー機能のバグ修正
+
+**問題点:**
+- `followerAvatar`が`undefined`の場合、Firestoreが`setDoc()`でエラーを発生
+- エラーメッセージ: `Unsupported field value: undefined (found in field followerAvatar)`
+
+**修正内容:**
+- `profile.ts`: `followerAvatar`が`undefined`の場合は、フィールド自体を追加しないように修正
+- Firestoreは`undefined`値を許可しないため、条件付きで追加
+
+```typescript
+const followData: any = {
+  id: followerId,
+  followerId,
+  followerName,
+  followingId,
+  followingName,
+  createdAt: new Date().toISOString(),
+};
+
+// followerAvatarが存在する場合のみ追加
+if (followerAvatar) {
+  followData.followerAvatar = followerAvatar;
+}
+```
+
+#### 2. プロフィール画面で投稿が表示されない問題を修正
+
+**問題点:**
+- `getUserPosts()`で権限エラー: `Missing or insufficient permissions`
+- Firestoreルールが厳しすぎて、他のユーザーの投稿を読み取れない
+
+**修正内容:**
+- `firestore.rules`: 投稿の読み取りを認証済みユーザー全員に許可
+- いいね・コメント・リポストの読み取りも認証済みユーザーに許可
+
+```javascript
+match /posts/{postId} {
+  // 読み取り: 認証済みユーザーなら全ての投稿を読み取り可能（プロフィール表示のため）
+  allow read: if isAuth();
+
+  // いいね・コメント・リポストも同様
+  match /likes/{likeId} {
+    allow read: if isAuth();
+  }
+  match /comments/{commentId} {
+    allow read: if isAuth();
+  }
+  match /reposts/{repostId} {
+    allow read: if isAuth();
+  }
+}
+```
+
+#### 3. 通知機能の修正
+
+**問題点:**
+- `NotificationScreen.tsx`で`auth.currentUser`を直接使用
+- React の状態管理システムを通さないため、ユーザー状態が正しく取得できない
+
+**修正内容:**
+- `useAuth()`フックを使用するように変更
+
+```typescript
+// ❌ 修正前
+const user = auth.currentUser;
+
+// ✅ 修正後
+const { user } = useAuth();
+```
+
+#### 4. Firestore ルールの完全修正
+
+**主な修正箇所:**
+
+1. **投稿の`replyCount`フィールド更新を許可**
+```javascript
+allow update: if isAuth() && (
+  isAuthor(resource.data.authorId)
+  || (
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount', 'repostCount', 'replyCount'])
+  )
+);
+```
+
+2. **プロフィールの統計フィールド更新を許可**
+```javascript
+allow update: if isOwner(userId)
+              || (isAuth() && (
+                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
+                || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount'])
+                || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followingCount'])
+                || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats.followerCount', 'stats.followingCount'])
+              ));
+```
+
+#### 5. デスクトップにルールファイルを作成
+
+**新規ファイル:**
+- `C:\Users\231002\Desktop\firestore-rules.txt` - 最新のFirestoreルール
+
+**使用方法:**
+1. Firebaseコンソール → Firestore Database → ルール
+2. `firestore-rules.txt` の内容を全てコピー
+3. Firebaseに貼り付けて「公開」ボタンをクリック
+
+**変更ファイル:**
+- `src/utils/profile.ts` - `followUser()`関数を修正
+- `src/utils/post.ts` - 投稿取得関数を修正（セッション17で対応済み）
+- `src/components/social/NotificationScreen.tsx` - `useAuth()`を使用
+- `firestore.rules` - セキュリティルールを完全修正
+- `C:\Users\231002\Desktop\firestore-rules.txt` - ルールファイルを作成
+
+**デプロイ:**
+```bash
+git add -A
+git commit -m "Fix SNS bugs: followerAvatar undefined & 投稿取得権限エラー"
+git push
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ followerAvatar undefinedエラーの修正
+- ✅ プロフィール画面での投稿表示の修正
+- ✅ 通知機能の修正
+- ✅ Firestoreセキュリティルールの完全修正
+- ✅ ビルド成功（バンドルサイズ: 1,768KB）
+- ✅ GitHub Pages デプロイ完了
+
+**注意事項:**
+- ⚠️ Firestoreセキュリティルールは別PCで手動デプロイが必要:
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
+- または、Firebaseコンソールで `firestore-rules.txt` の内容を貼り付けて「公開」
+
+**次回の予定:**
+- [ ] Phase 7（ランキング機能）の実装
+- [ ] パフォーマンス最適化（バンドルサイズ削減）
+- [ ] 収入管理機能
 
 ---
 

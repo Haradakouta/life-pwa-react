@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-29 (セッション16: CORS設定ガイド作成！)**
+**最終更新: 2025-10-29 (セッション16: Firebase Storage有効化 & Phase 4完了！)**
 
 ## 📋 プロジェクト概要
 
@@ -36,21 +36,31 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 17. ✅ **Firestoreセキュリティルール修正** - username重複チェック、プロフィール読み取り権限、ブックマーク機能修正
 18. ✅ **SNSインタラクション機能** - いいね、コメント、ブックマーク、リポスト（Phase 3完了 & 修正完了）
 
-### 🚧 次の実装予定：SNS機能（Phase 4以降）
+### ✅ SNS機能 ほぼ完全実装！
 
-**Phase 4: フォロー機能**
-- [ ] フォロー/アンフォロー機能
-- [ ] フォロワー・フォロー中リスト表示
-- [ ] フォロー状態の可視化
+**Phase 4: フォロー機能** ✅ **完了！**
+- ✅ フォロー/アンフォロー機能
+- ✅ フォロワー・フォロー中リスト表示（モーダル）
+- ✅ フォロー状態の可視化
+- ✅ 楽観的更新（Optimistic Updates）
 
-**Phase 5: レシピ共有機能**
-- [ ] レシピ投稿機能
-- [ ] レシピリスト表示
-- [ ] レシピのいいね・コメント機能
+**Phase 5: リプライ・引用・メンション** ✅ **完了！**
+- ✅ リプライ機能（スレッド表示）
+- ✅ 引用リポスト機能
+- ✅ メンション機能（@username）
+- ✅ レシピ添付機能
+- ✅ ピン留め機能
+
+**プロフィール機能** ✅ **完了！**
+- ✅ プロフィールタブ（Posts / Media / Likes / Replies）
+- ✅ Twitter風の数値フォーマット
+- ✅ 参加日の表示
+- ✅ ピン留め投稿の表示
 
 **Phase 6: 通知機能**
 - [ ] いいね・コメント通知
 - [ ] フォロー通知
+- [ ] メンション通知
 - [ ] 通知管理画面
 
 **Phase 7: ランキング機能**
@@ -2089,5 +2099,128 @@ git push
 - [ ] 引用リポスト機能（コメント付きリポスト）
 - [ ] メンション機能（@username で他ユーザーを言及）
 - [ ] Phase 4（フォロー機能）の実装
+
+---
+
+### 2025-10-29 (セッション16: 完結) ✅ **Firebase Storage有効化成功 & Phase 4-5完了！**
+
+**実装内容:**
+
+#### 1. Firebase Storage 有効化の問題を特定・解決
+
+**問題の原因:**
+- Firebase Storageが有効化されていなかった
+- バケット `oshi-para.firebasestorage.app` が存在しなかった
+- CORSエラーの根本原因はStorageが無効だったため
+
+**解決方法:**
+1. **FIREBASE_STORAGE_SETUP.md を作成**
+   - Firebase Console で Storage を有効化する手順を詳細に記載
+   - 本番環境モード、Tokyo リージョンを推奨
+   - Storage Rules の設定方法を記載
+
+2. **CORS_FIX_GUIDE.md を更新**
+   - Storage有効化の確認を追加
+   - Firebase SDK使用時はCORS設定が不要であることを明記
+
+3. **ユーザーが Firebase Console で Storage を有効化**
+   - 「始める」ボタンをクリック
+   - 本番環境モード選択
+   - asia-northeast1 (Tokyo) を選択
+   - Storage Rules を設定
+   - **成功！** ✅
+
+**新規ファイル:**
+- `FIREBASE_STORAGE_SETUP.md` - Storage有効化の完全ガイド
+- `CORS_FIX_GUIDE.md` - 更新（Storage確認を追加）
+
+#### 2. 別PCでの大量の開発進捗（57コミット！）
+
+**Phase 4: フォロー機能の完全実装:**
+- フォロー/アンフォロー機能
+- フォロワー・フォロー中リスト（モーダル表示）
+- 楽観的更新（Optimistic Updates）による高速なUI更新
+- フォロー重複防止
+- フォロワー数のリアルタイム更新
+
+**Phase 5: リプライ・引用・メンション機能の完全実装:**
+- **リプライ機能:**
+  - `replyToPostId`, `replyToUserId`, `replyToUserName` フィールド追加
+  - 返信スレッドの表示
+  - プロフィールの「Replies」タブ
+  - 「Replying to @username」インジケーター
+
+- **引用リポスト機能:**
+  - `quotedPostId`, `quotedPost` フィールド追加
+  - 引用元の投稿を埋め込み表示
+  - レシピデータの引用サポート
+
+- **メンション機能:**
+  - `mentions` フィールド追加（ユーザーID配列）
+  - `@username` で他のユーザーをメンション可能
+
+- **レシピ添付機能:**
+  - `recipeData` フィールド追加
+  - 投稿にレシピ（材料・手順）を添付可能
+  - レシピの表示機能
+
+- **ピン留め機能:**
+  - `isPinned` フィールド追加
+  - プロフィールのトップに投稿を固定表示
+  - ピン/アンピン切り替え
+
+**プロフィール機能の大幅拡張:**
+- プロフィールタブ（Posts / Media / Likes / Replies）
+- Twitter風の数値フォーマット（1.2K, 3.4M など）
+- 参加日（Joined）の表示
+- ピン留め投稿の優先表示
+
+**新規ファイル:**
+- `src/components/common/PostCardSkeleton.tsx` - ローディングUI
+- `src/components/social/FollowersListModal.tsx` - フォロワーリスト
+- `src/components/social/FollowingListModal.tsx` - フォロー中リスト
+- `src/utils/formatNumber.ts` - Twitter風数値フォーマット
+
+**変更ファイル:**
+- `firestore.rules` - フォロー機能のルール追加
+- `src/types/post.ts` - replyCount, mentions, quotedPostId, quotedPost, replyToPostId, replyToUserId, replyToUserName, recipeData, isPinned 追加
+- `src/types/profile.ts` - joinedAt フィールド追加
+- `src/utils/post.ts` - getUserReplies, getPostReplies, getPostThread, pinPost, unpinPost などの関数追加（564行追加！）
+- `src/utils/profile.ts` - フォロー機能の関数を大幅に追加
+- `src/components/social/PostCard.tsx` - リプライ・引用・メンション表示を追加
+- `src/components/social/PostDetailScreen.tsx` - スレッド表示を追加
+- `src/components/social/TimelineScreen.tsx` - ローディングUIを改善
+- `src/components/social/UserProfileScreen.tsx` - タブ機能、ピン留め表示を追加
+
+**デプロイ:**
+```bash
+# 別PCで実施済み（57コミット）
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ Firebase Storage 有効化成功
+- ✅ 画像アップロード機能が正常動作
+- ✅ Phase 4（フォロー機能）完全実装
+- ✅ Phase 5（リプライ・引用・メンション）完全実装
+- ✅ プロフィール機能の大幅拡張
+- ✅ Twitter/X とほぼ同等の機能を実装完了
+- ✅ 過去2日間で57コミット、2,268行追加
+
+**技術的ハイライト:**
+- Firestore サブコレクション活用（followers, following）
+- 楽観的更新（Optimistic Updates）でUX向上
+- Firestoreインデックス不要のフォールバッククエリ実装
+- Twitter/X風のUIデザイン統一
+
+**次回の予定:**
+- [ ] Phase 6（通知機能）の実装
+- [ ] Phase 7（ランキング機能）の実装
+- [ ] パフォーマンス最適化（バンドルサイズ削減）
+- [ ] PWA機能の強化
+
+**開発スピードが驚異的！** 🚀
 
 ---

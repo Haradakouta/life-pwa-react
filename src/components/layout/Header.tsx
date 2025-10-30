@@ -3,9 +3,11 @@
  */
 import React from 'react';
 
+import type { Screen } from './BottomNav';
+
 interface HeaderProps {
   title: string;
-  onNavigate: (screen: string) => void;
+  onNavigate: (screen: Screen) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ title, onNavigate }) => {

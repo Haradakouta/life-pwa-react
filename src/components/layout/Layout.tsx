@@ -34,6 +34,7 @@ export const Layout: React.FC = () => {
       recipe: 'AIレシピ',
       expense: '家計簿',
       badges: 'アチーブメント',
+      admin: '管理者パネル',
     };
     return titles[screen];
   };

@@ -263,15 +263,19 @@ export const followUser = async (
       return;
     }
 
-    const followData: Follow = {
+    const followData: any = {
       id: followerId,
       followerId,
       followerName,
-      followerAvatar,
       followingId,
       followingName,
       createdAt: new Date().toISOString(),
     };
+
+    // followerAvatarが存在する場合のみ追加
+    if (followerAvatar) {
+      followData.followerAvatar = followerAvatar;
+    }
 
     console.log(`[followUser] Creating follow document...`);
     console.log(`[followUser] Follow data:`, followData);

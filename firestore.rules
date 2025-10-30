@@ -83,10 +83,8 @@ service cloud.firestore {
     // ========================================
 
     match /posts/{postId} {
-      // 読み取り: 公開投稿は誰でも、followers投稿は認証済みユーザー、プライベートは作成者のみ
-      allow read: if resource.data.visibility == 'public'
-                  || (isAuth() && resource.data.visibility == 'followers')
-                  || (isAuthor(resource.data.authorId));
+      // 読み取り: 認証済みユーザーなら全ての投稿を読み取り可能（プロフィール表示のため）
+      allow read: if isAuth();
 
       // 作成: 認証済みユーザー、かつ自分のuidをauthorIdに設定
       // 必須フィールド: content, authorId, authorName, visibility

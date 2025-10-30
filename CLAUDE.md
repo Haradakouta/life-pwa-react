@@ -1,6 +1,6 @@
 # Claude Code 開発メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-10-29 (セッション16: Firebase Storage有効化 & Phase 4完了！)**
+**最終更新: 2025-10-30 (セッション17: Phase 6 通知機能完全実装！)**
 
 ## 📋 プロジェクト概要
 
@@ -57,11 +57,14 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 - ✅ 参加日の表示
 - ✅ ピン留め投稿の表示
 
-**Phase 6: 通知機能**
-- [ ] いいね・コメント通知
-- [ ] フォロー通知
-- [ ] メンション通知
-- [ ] 通知管理画面
+**Phase 6: 通知機能** ✅ **完了！**
+- ✅ いいね・コメント通知
+- ✅ リポスト通知
+- ✅ フォロー通知
+- ✅ メンション通知
+- ✅ 通知管理画面
+- ✅ リアルタイム更新
+- ✅ グルーピング表示
 
 **Phase 7: ランキング機能**
 - [ ] 人気投稿ランキング
@@ -2099,6 +2102,223 @@ git push
 - [ ] 引用リポスト機能（コメント付きリポスト）
 - [ ] メンション機能（@username で他ユーザーを言及）
 - [ ] Phase 4（フォロー機能）の実装
+
+---
+
+### 2025-10-30 (セッション17) ✅ **Phase 6: 通知機能完全実装！**
+
+**実装内容:**
+
+#### 1. 通知の型定義とインターフェース
+
+**新規ファイル:** `src/types/notification.ts`
+
+**NotificationType:**
+- `'like'` - いいね
+- `'comment'` - コメント
+- `'repost'` - リポスト
+- `'quote'` - 引用リポスト
+- `'reply'` - リプライ
+- `'follow'` - フォロー
+- `'mention'` - メンション
+
+**Notification インターフェース:**
+- recipientId: 通知を受け取るユーザーのID
+- actorId: 通知を発生させたユーザーのID
+- postId, postContent: 関連する投稿情報
+- commentId, commentContent: コメント情報
+- isRead: 既読フラグ
+- createdAt: 通知作成日時
+
+**NotificationGroup インターフェース:**
+- actors: 複数のアクター（いいねした人たち）
+- latestNotification: 最新の通知
+- count: 通知の数
+- isRead: グループ全体の既読状態
+
+#### 2. 通知ユーティリティ関数
+
+**新規ファイル:** `src/utils/notification.ts`
+
+**主要関数:**
+- `createNotification()` - 通知を作成（自分自身への通知は作成しない）
+- `getUserNotifications()` - ユーザーの通知一覧を取得（最新50件）
+- `groupNotifications()` - 通知をグルーピング（同じ投稿への複数アクションをまとめる）
+- `markNotificationAsRead()` - 通知を既読にする
+- `markAllNotificationsAsRead()` - 全ての通知を既読にする
+- `deleteNotification()` - 通知を削除
+- `deleteAllNotifications()` - 全ての通知を削除
+- `getUnreadNotificationCount()` - 未読通知数を取得
+- `subscribeToUnreadCount()` - 未読通知数をリアルタイム監視
+- `subscribeToNotifications()` - 通知をリアルタイム監視
+- `getNotificationIcon()` - 通知のアイコンを取得（絵文字）
+- `getNotificationMessage()` - 通知メッセージを生成（日本語）
+
+**技術的特徴:**
+- Firestoreサブコレクション: `users/{userId}/notifications/{notificationId}`
+- `onSnapshot`によるリアルタイム更新
+- グルーピングロジック: type + postId でまとめる
+- 最新の通知順にソート
+
+#### 3. NotificationScreen コンポーネント
+
+**新規ファイル:** `src/components/social/NotificationScreen.tsx`
+
+**主要機能:**
+- リアルタイム通知更新（`subscribeToNotifications`）
+- グルーピング表示（複数人のいいねをまとめる）
+- 通知クリックで投稿詳細またはプロフィールへ遷移
+- 未読通知の背景色変更（青い背景）
+- 通知クリック時に自動的に既読マーク
+- ヘッダーメニュー（すべて既読、すべて削除）
+
+**UI要素:**
+- 通知タイプアイコン（❤️💬🔁💭↩️👤@）
+- アクターのアバター表示（最大3人、それ以上は+Xと表示）
+- 通知メッセージ（「Xさんと他5人があなたの投稿にいいねしました」）
+- 投稿プレビュー（本文の一部を表示）
+- コメントプレビュー（コメント内容を表示）
+- 相対時間表示（「3時間前」など）
+
+**空の状態:**
+- 通知がない場合の専用UI
+- 大きなアイコンと説明テキスト
+
+#### 4. 通知トリガーの実装
+
+**いいね通知（post.ts:addLike）:**
+```typescript
+await createNotification(
+  postData.authorId,
+  userId,
+  userName,
+  'like',
+  { actorAvatar: userAvatar, postId, postContent: postData.content }
+);
+```
+
+**コメント通知（post.ts:addComment）:**
+```typescript
+await createNotification(
+  postData.authorId,
+  userId,
+  userName,
+  'comment',
+  { actorAvatar: userAvatar, postId, postContent: postData.content, commentContent: content }
+);
+```
+
+**リポスト通知（post.ts:addRepost）:**
+```typescript
+await createNotification(
+  postData.authorId,
+  userId,
+  userName,
+  'repost',
+  { actorAvatar: userAvatar, postId, postContent: postData.content }
+);
+```
+
+**フォロー通知（profile.ts:followUser）:**
+```typescript
+await createNotification(
+  followingId,
+  followerId,
+  followerName,
+  'follow',
+  { actorAvatar: followerAvatar }
+);
+```
+
+**メンション通知（post.ts:createPost）:**
+```typescript
+// メンションされたユーザーごとに通知を送信
+for (const username of mentions) {
+  const mentionedUserId = await getUserIdFromUsername(username);
+  if (mentionedUserId && mentionedUserId !== userId) {
+    await createNotification(
+      mentionedUserId,
+      userId,
+      profile.displayName,
+      'mention',
+      { actorAvatar: profile.avatarUrl, postId, postContent: data.content }
+    );
+  }
+}
+```
+
+**ヘルパー関数追加:**
+- `getUserIdFromUsername()` - usernameからuserIdを取得（メンション通知用）
+
+#### 5. Firestoreセキュリティルールの更新
+
+**新規ルール:** `firestore.rules`
+
+```javascript
+match /users/{userId}/notifications/{notificationId} {
+  // 読み取り: 本人のみ
+  allow read: if isOwner(userId);
+
+  // 作成: 認証済みユーザーなら誰でも（いいね・コメント・フォロー等で通知を送信）
+  // ただし、recipientIdは必ず通知を受け取るユーザー（userId）でなければならない
+  allow create: if isAuth() && request.resource.data.recipientId == userId;
+
+  // 更新・削除: 本人のみ（既読マークや削除）
+  allow update, delete: if isOwner(userId);
+}
+```
+
+**セキュリティの特徴:**
+- 通知の読み取りは本人のみ
+- 他のユーザーが通知を作成できる（いいね、コメント等）
+- ただし、recipientIdは必ず通知を受け取るユーザーでなければならない
+- 更新・削除は本人のみ
+
+#### 6. SocialScreenへの統合
+
+**変更ファイル:** `src/components/social/SocialScreen.tsx`
+
+**実装内容:**
+- NotificationScreenのimport追加
+- 通知タブが選択されたときにNotificationScreenを表示
+- onNavigateToPost, onNavigateToProfileプロパティを渡す
+- 通知タブのプレースホルダーを削除
+
+**デプロイ:**
+```bash
+npm run build
+npm run deploy
+# → Published ✅
+```
+
+**結果:**
+- ✅ Phase 6（通知機能）完全実装
+- ✅ リアルタイム通知更新
+- ✅ 通知のグルーピング表示
+- ✅ 5種類の通知トリガー（いいね、コメント、リポスト、フォロー、メンション）
+- ✅ Firestoreセキュリティルール更新
+- ✅ ビルド成功（バンドルサイズ: 1,768KB）
+- ✅ GitHub Pages デプロイ完了
+
+**技術的ハイライト:**
+- Firestoreサブコレクションで効率的にデータ管理
+- `onSnapshot`でリアルタイム更新を実現
+- 通知のグルーピングでUX向上（Twitter/X風）
+- セキュリティルールで適切なアクセス制御
+- usernameからuserIdを取得する変換ロジック
+
+**注意事項:**
+- ⚠️ Firestoreセキュリティルールは別PCで手動デプロイが必要:
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
+- ⚠️ `getUserIdFromUsername`は全usersコレクションをスキャンするため、パフォーマンス最適化の余地あり（usernameインデックス作成推奨）
+
+**次回の予定（Phase 7: ランキング機能）:**
+- [ ] 人気投稿ランキング
+- [ ] 人気レシピランキング
+- [ ] トレンドハッシュタグ
+- [ ] パフォーマンス最適化（バンドルサイズ削減）
 
 ---
 

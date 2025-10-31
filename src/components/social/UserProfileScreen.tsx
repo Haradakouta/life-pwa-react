@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdEdit, MdPersonAdd, MdLink, MdCalendarToday, MdCheck, MdClose } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdPersonAdd, MdLink, MdCalendarToday, MdCheck, MdClose, MdChat } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
 import { sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend, getFriendStatus } from '../../utils/friend';
+import { getOrCreateConversation } from '../../utils/chat';
 import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
@@ -18,6 +19,7 @@ interface UserProfileScreenProps {
   onBack: () => void;
   onPostClick: (postId: string) => void;
   onUserClick: (userId: string) => void;
+  onNavigateToDM: (conversationId: string, participantIds: string[]) => void;
 }
 
 export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
@@ -25,6 +27,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   onBack,
   onPostClick,
   onUserClick,
+  onNavigateToDM,
 }) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -170,6 +173,17 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
     }
   };
 
+  const handleSendMessageClick = async () => {
+    if (!user || !profile) return;
+    try {
+      const conversationId = await getOrCreateConversation(user.uid, profile.uid);
+      onNavigateToDM(conversationId, [user.uid, profile.uid]);
+    } catch (error) {
+      console.error('Failed to start DM:', error);
+      alert('DMの開始に失敗しました。');
+    }
+  };
+
   const handlePinToggle = async () => {
     try {
       const updatedProfile = await getUserProfile(userId);
@@ -255,9 +269,14 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
                 </>
               )}
               {friendStatus === 'accepted' && (
-                <button onClick={() => handleFriendAction('remove')} style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
-                  フレンド
-                </button>
+                <>
+                  <button onClick={handleSendMessageClick} style={{ padding: '8px 16px', background: 'var(--primary)', border: 'none', borderRadius: '20px', color: 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <MdChat size={16} /> メッセージ
+                  </button>
+                  <button onClick={() => handleFriendAction('remove')} style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    フレンド解除
+                  </button>
+                </>
               )}
             </div>
           )}

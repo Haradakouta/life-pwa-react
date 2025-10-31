@@ -5,16 +5,19 @@ import { UserProfileScreen } from './UserProfileScreen';
 import { SearchScreen } from './SearchScreen';
 import NotificationScreen from './NotificationScreen';
 import { ConversationListScreen } from './ConversationListScreen';
+import { ChatScreen } from './ChatScreen';
 import { MdHome, MdSearch, MdNotifications, MdChat } from 'react-icons/md';
 
 type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm';
-type View = 'main' | 'post-detail' | 'profile';
+type View = 'main' | 'post-detail' | 'profile' | 'chat';
 
 export const SocialScreen: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<SocialTab>('timeline');
   const [currentView, setCurrentView] = useState<View>('main');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
 
   const handlePostClick = (postId: string) => {
     setSelectedPostId(postId);
@@ -26,16 +29,36 @@ export const SocialScreen: React.FC = () => {
     setCurrentView('profile');
   };
 
+  const handleNavigateToDM = (conversationId: string, participantIds: string[]) => {
+    setSelectedConversationId(conversationId);
+    setSelectedParticipantIds(participantIds);
+    setCurrentView('chat');
+  };
+
   const handleBackToTimeline = () => {
     setCurrentView('main');
     setSelectedPostId(null);
     setSelectedUserId(null);
+    setSelectedConversationId(null);
+    setSelectedParticipantIds([]);
   };
 
   const handlePostDeleted = () => {
     setCurrentView('main');
     setSelectedPostId(null);
   };
+
+  // Chat画面
+  if (currentView === 'chat' && selectedConversationId) {
+    return (
+      <ChatScreen
+        conversationId={selectedConversationId}
+        participants={selectedParticipantIds}
+        onBack={handleBackToTimeline}
+        onNavigateToProfile={handleUserClick}
+      />
+    );
+  }
 
   // プロフィール画面
   if (currentView === 'profile' && selectedUserId) {
@@ -44,7 +67,8 @@ export const SocialScreen: React.FC = () => {
         userId={selectedUserId}
         onBack={handleBackToTimeline}
         onPostClick={handlePostClick}
-        onUserClick={handleUserClick} // この行を追加
+        onUserClick={handleUserClick}
+        onNavigateToDM={handleNavigateToDM}
       />
     );
   }

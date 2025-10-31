@@ -104,10 +104,18 @@ export const ConversationListScreen: React.FC<ConversationListScreenProps> = ({
       ) : (
         conversations.map((conv) => {
           const otherParticipant = conv.participantProfiles?.find(p => p.uid !== user?.uid);
+          const unreadCount = user && conv.unreadCount ? conv.unreadCount[user.uid] : 0;
           return (
             <div
               key={conv.id}
-              style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px 16px',
+                borderBottom: '1px solid var(--border)',
+                cursor: 'pointer',
+                backgroundColor: unreadCount > 0 ? 'rgba(29, 155, 240, 0.05)' : 'transparent'
+              }}
               onClick={() => handleConversationClick(conv.id, conv.participants)}
             >
               <img
@@ -115,15 +123,40 @@ export const ConversationListScreen: React.FC<ConversationListScreenProps> = ({
                 alt={otherParticipant?.displayName}
                 style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '12px' }}
               />
-              <div style={{ flexGrow: 1 }}>
-                <div style={{ fontWeight: 600, color: 'var(--text)' }}>{otherParticipant?.displayName || 'Unknown User'}</div>
-                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{conv.lastMessage || '会話を開始'}</div>
-              </div>
-              {conv.lastMessageTimestamp && (
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {new Date(conv.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <div style={{ flexGrow: 1, overflow: 'hidden' }}>
+                <div style={{ fontWeight: unreadCount > 0 ? 700 : 600, color: 'var(--text)' }}>
+                  {otherParticipant?.displayName || 'Unknown User'}
                 </div>
-              )}
+                <div style={{
+                  fontSize: '14px',
+                  color: unreadCount > 0 ? 'var(--text)' : 'var(--text-secondary)',
+                  fontWeight: unreadCount > 0 ? 'bold' : 'normal',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {conv.lastMessage || '会話を開始'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: '10px' }}>
+                {conv.lastMessageTimestamp && (
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                    {new Date(conv.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                )}
+                {unreadCount > 0 && (
+                  <div style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'white',
+                    borderRadius: '10px',
+                    padding: '0 6px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}>
+                    {unreadCount}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })

@@ -2,7 +2,7 @@
  * チャット（DM）機能関連のユーティリティ関数
  */
 
-import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, onSnapshot, increment } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Unsubscribe } from 'firebase/firestore';
 
@@ -25,6 +25,7 @@ export interface Conversation {
   lastMessage?: string;
   lastMessageTimestamp?: string; // ISO 8601 string
   createdAt: string; // ISO 8601 string
+  unreadCount: { [userId: string]: number };
 }
 
 // ============================================
@@ -48,6 +49,7 @@ export const getOrCreateConversation = async (user1Id: string, user2Id: string):
       id: conversationId,
       participants,
       createdAt: new Date().toISOString(),
+      unreadCount: { [user1Id]: 0, [user2Id]: 0 },
     };
     await setDoc(conversationRef, newConversation);
     console.log('✅ New conversation created:', conversationId);
@@ -149,12 +151,22 @@ export const sendMessage = async (conversationId: string, senderId: string, cont
 
     await setDoc(newMessageRef, message);
 
-    // 会話の最終メッセージを更新
+    // 会話の最終メッセージと未読件数を更新
     const conversationRef = doc(db, 'conversations', conversationId);
-    await updateDoc(conversationRef, {
-      lastMessage: content,
-      lastMessageTimestamp: timestamp,
-    });
+    const conversationSnap = await getDoc(conversationRef);
+    if (conversationSnap.exists()) {
+      const conversationData = conversationSnap.data();
+      const recipientId = conversationData.participants.find((p: string) => p !== senderId);
+
+      if (recipientId) {
+        const updateData = {
+          lastMessage: content,
+          lastMessageTimestamp: timestamp,
+          [`unreadCount.${recipientId}`]: increment(1),
+        };
+        await updateDoc(conversationRef, updateData);
+      }
+    }
 
     console.log('✅ Message sent:', conversationId, message.id);
   } catch (error) {

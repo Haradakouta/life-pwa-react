@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { MdArrowBack, MdSend } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import { sendMessage, subscribeToMessages } from '../../utils/chat';
 import type { Message } from '../../utils/chat';
 import { getUserProfile } from '../../utils/profile';
@@ -48,6 +50,19 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const markAsRead = async () => {
+      const conversationRef = doc(db, 'conversations', conversationId);
+      await updateDoc(conversationRef, {
+        [`unreadCount.${user.uid}`]: 0
+      });
+    };
+
+    markAsRead();
+  }, [conversationId, user]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() === '' || !user) return;

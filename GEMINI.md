@@ -1,5 +1,45 @@
 # Gemini CLI Session Summary
 
+## Session Summary: 2025年10月31日金曜日 (DM Feature Polish & Bug Fixing)
+
+### 1. Git Repository Reset
+- **Status:** Completed.
+- **Details:**
+  - The session began by addressing a repository state issue where a previous "friend feature" implementation had been overwritten by an incorrect merge.
+  - Initial attempts to fix this by resetting the branch and fixing subsequent build errors were aborted at the user's request.
+  - Per user instruction, the local repository was deleted and re-cloned to ensure a completely fresh start from the remote's `main` branch. This established a clean baseline for new feature work.
+
+### 2. DM Feature - Profile "Message" Button
+- **Status:** Implemented and pushed.
+- **Details:**
+  - Modified `UserProfileScreen.tsx` to display a "Message" button for users who are friends (`friendStatus === 'accepted'`).
+  - The "Message" button onClick handler (`handleSendMessageClick`) now initiates a DM by calling `getOrCreateConversation`.
+  - Implemented the necessary prop drilling for the navigation handler (`onNavigateToDM`) from `SocialScreen.tsx` down to `UserProfileScreen.tsx`.
+  - The `SocialScreen` component was updated to handle the new `'chat'` view state, rendering the `ChatScreen` when a DM is initiated.
+
+### 3. DM Feature - Unread Message Count
+- **Status:** Implemented and pushed.
+- **Details:**
+  - **Data Model:** The `Conversation` type in `utils/chat.ts` was updated to include an `unreadCount` map (`{ [userId: string]: number }`). New conversations now initialize this with a count of 0 for both participants.
+  - **Backend Logic:** The `sendMessage` function in `utils/chat.ts` was updated to atomically increment the `unreadCount` for the recipient on each new message, using `firebase/firestore`'s `increment()` operation.
+  - **Frontend Logic:** `ChatScreen.tsx` was updated with a `useEffect` hook to reset the current user's `unreadCount` to 0 for the conversation upon component mount, effectively marking messages as "read".
+  - **UI:** `ConversationListScreen.tsx` was updated to display a badge with the number of unread messages for each conversation, and to style the conversation item differently if it contains unread messages.
+
+### 4. Bugfix: "Failed to start DM"
+- **Status:** A fix has been implemented and pushed. **User action required.**
+- **Details:**
+  - The user reported a `FirebaseError: Missing or insufficient permissions` error when trying to start a new conversation.
+  - Analysis determined the cause to be a flaw in the `firestore.rules` `read` rule for the `/conversations/{conversationId}` path. The rule did not permit the application to check for the *existence* of a conversation document before creating it, leading to a permission denial.
+  - The rule was corrected to `allow read: if (exists(/databases/$(database)/documents/conversations/$(conversationId)) == false) || isParticipant();`. This allows the existence check to proceed and only enforces participant-only reads on documents that actually exist.
+  - The corrected `firestore.rules` file has been pushed to the repository.
+
+## Current Task / Next Steps for User
+
+- **Deploy Firestore Rules:** The user must deploy the updated security rules to Firebase using the command: `firebase deploy --only firestore:rules`.
+- **Test DM Creation:** After deployment, the user should test the "Message" button on a friend's profile again to confirm the permission error is resolved.
+
+---
+
 ## Last Session Date: 2025年10月30日木曜日
 
 ## Project Status Overview

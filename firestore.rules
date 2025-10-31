@@ -164,7 +164,10 @@ service cloud.firestore {
         return request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
       }
 
-      allow read: if isParticipant();
+      // Allow read only if the document doesn't exist yet, or if the user is a participant.
+      // This is crucial for getOrCreateConversation to be able to check for existence.
+      allow read: if (exists(/databases/$(database)/documents/conversations/$(conversationId)) == false) || isParticipant();
+
       allow create: if isAuth()
                     && request.resource.data.participants.size() == 2
                     && request.auth.uid in request.resource.data.participants;

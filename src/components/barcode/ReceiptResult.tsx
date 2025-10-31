@@ -2,9 +2,9 @@
  * レシートOCR結果の確認・編集コンポーネント
  */
 import React, { useState } from 'react';
-import { useExpenseStore, useShoppingStore } from '../../store';
+import { useExpenseStore, useShoppingStore, useStockStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
-import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart } from 'react-icons/md';
+import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart, MdInventory, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
 
 interface ReceiptResultProps {
   result: ReceiptOCRResult;
@@ -14,12 +14,15 @@ interface ReceiptResultProps {
 export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose }) => {
   const { addExpense } = useExpenseStore();
   const { addItem } = useShoppingStore();
+  const { addStock } = useStockStore();
   const [items, setItems] = useState<ReceiptItem[]>(result.items);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set(items.map((_, i) => i)));
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+  const selectedCount = selectedIndices.size;
 
   const handleEdit = (index: number) => {
     const item = items[index];
@@ -131,6 +134,63 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
     onClose();
   };
 
+  const handleToggleSelect = (index: number) => {
+    const newSelected = new Set(selectedIndices);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedIndices(newSelected);
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedIndices.size === items.length) {
+      // 全選択解除
+      setSelectedIndices(new Set());
+    } else {
+      // 全選択
+      setSelectedIndices(new Set(items.map((_, i) => i)));
+    }
+  };
+
+  const handleSaveToStock = () => {
+    if (selectedCount === 0) {
+      alert('商品を選択してください');
+      return;
+    }
+
+    if (!window.confirm(`選択した${selectedCount}個の商品を在庫に追加しますか？`)) {
+      return;
+    }
+
+    // 7日後の日付をデフォルト賞味期限として設定
+    const daysRemaining = 7;
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + daysRemaining);
+    const expiryDateStr = expiryDate.toISOString().split('T')[0];
+
+    // 選択された商品のみを在庫に追加
+    let addedCount = 0;
+    items.forEach((item, index) => {
+      if (selectedIndices.has(index)) {
+        const quantity = item.quantity || 1;
+        for (let i = 0; i < quantity; i++) {
+          addStock({
+            name: item.name,
+            quantity: 1,
+            daysRemaining: daysRemaining,
+            price: item.price,
+          });
+          addedCount++;
+        }
+      }
+    });
+
+    alert(`${addedCount}個の商品を在庫に追加しました！\n賞味期限は${expiryDateStr}（${daysRemaining}日後）に設定されています。`);
+    onClose();
+  };
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('ja-JP').format(amount);
   };
@@ -142,24 +202,44 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           <MdReceipt size={20} />
           レシート内容
         </h3>
-        <button
-          onClick={handleAddNew}
-          style={{
-            background: '#10b981',
-            color: 'white',
-            border: 'none',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
-        >
-          <MdAdd size={18} />
-          追加
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleToggleSelectAll}
+            style={{
+              background: selectedCount === items.length ? '#3b82f6' : '#6b7280',
+              color: 'white',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            {selectedCount === items.length ? <MdCheckBox size={18} /> : <MdCheckBoxOutlineBlank size={18} />}
+            {selectedCount === items.length ? '全解除' : '全選択'}
+          </button>
+          <button
+            onClick={handleAddNew}
+            style={{
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <MdAdd size={18} />
+            追加
+          </button>
+        </div>
       </div>
 
       {/* 店名と日付 */}
@@ -260,6 +340,21 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
                 </div>
               ) : (
                 <>
+                  <button
+                    onClick={() => handleToggleSelect(index)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      marginRight: '8px',
+                      color: selectedIndices.has(index) ? '#3b82f6' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {selectedIndices.has(index) ? <MdCheckBox size={24} /> : <MdCheckBoxOutlineBlank size={24} />}
+                  </button>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500, marginBottom: '4px' }}>{item.name}</div>
                     {item.quantity && item.quantity > 1 && (
@@ -324,6 +419,24 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
 
       {/* アクションボタン */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button
+          onClick={handleSaveToStock}
+          className="submit"
+          disabled={selectedCount === 0}
+          style={{
+            opacity: selectedCount === 0 ? 0.5 : 1,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            fontSize: '15px',
+            fontWeight: 600,
+          }}
+        >
+          <MdInventory size={20} />
+          選択した商品を在庫へ追加 ({selectedCount}個)
+        </button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button
             onClick={handleSaveToShoppingList}

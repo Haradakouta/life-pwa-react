@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdEdit, MdPersonAdd, MdPersonRemove, MdLink, MdCalendarToday, MdCheck, MdClose } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdPersonAdd, MdLink, MdCalendarToday, MdCheck, MdClose } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
 import { sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend, getFriendStatus } from '../../utils/friend';
@@ -297,6 +297,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           userId={userId}
           onClose={() => setShowFriendListModal(false)}
           onNavigateToProfile={onUserClick}
+          onNavigateToDM={() => {}}
           initialTab={friendListModalInitialTab}
         />
       )}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { MdChatBubbleOutline, MdArrowBack } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { getConversations, subscribeToConversations, Conversation } from '../../utils/chat';
+import { subscribeToConversations } from '../../utils/chat';
+import type { Conversation } from '../../utils/chat';
 import { getUserProfile } from '../../utils/profile';
 import { ChatScreen } from './ChatScreen';
 

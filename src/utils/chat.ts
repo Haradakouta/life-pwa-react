@@ -2,7 +2,7 @@
  * チャット（DM）機能関連のユーティリティ関数
  */
 
-import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Unsubscribe } from 'firebase/firestore';
 

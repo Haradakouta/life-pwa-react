@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { MdArrowBack, MdSend } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { sendMessage, subscribeToMessages, Message } from '../../utils/chat';
+import { sendMessage, subscribeToMessages } from '../../utils/chat';
+import type { Message } from '../../utils/chat';
 import { getUserProfile } from '../../utils/profile';
 
 interface ChatScreenProps {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdClose, MdPersonAdd, MdCheck, MdClose as MdDecline, MdChatBubbleOutline } from 'react-icons/md';
+import { MdClose, MdCheck, MdClose as MdDecline, MdChatBubbleOutline } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getFriends, sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend } from '../../utils/friend';
 import { getOrCreateConversation } from '../../utils/chat';
@@ -17,6 +17,7 @@ export const FriendListModal: React.FC<FriendListModalProps> = ({
   userId,
   onClose,
   onNavigateToProfile,
+  onNavigateToDM,
   initialTab = 'friends',
 }) => {
   const { user } = useAuth();

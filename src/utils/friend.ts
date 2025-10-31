@@ -2,9 +2,9 @@
  * フレンド機能関連のユーティリティ関数
  */
 
-import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs, increment, writeBatch, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, increment, writeBatch } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { UserProfile, Friend } from '../types/profile'; // Friend型は後で定義
+import type { Friend } from '../types/profile';
 import { createNotification } from './notification';
 import { getUserProfile } from './profile'; // プロフィール取得関数を再利用
 
@@ -70,8 +70,8 @@ export const acceptFriendRequest = async (
   accepterName: string,
   accepterAvatar: string | undefined,
   requesterId: string,
-  requesterName: string,
-  requesterAvatar: string | undefined
+  _requesterName: string,
+  _requesterAvatar: string | undefined
 ): Promise<void> => {
   console.log(`[acceptFriendRequest] Accepting request: ${accepterId} accepts ${requesterId}`);
   try {

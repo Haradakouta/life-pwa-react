@@ -8,6 +8,7 @@ export type NotificationType =
   | 'repost'         // リポスト
   | 'quote'          // 引用リポスト
   | 'reply'          // リプライ
+  | 'follow'         // フォロー
   | 'friend_request' // フレンドリクエスト
   | 'friend_accept'  // フレンド承認
   | 'mention';       // メンション

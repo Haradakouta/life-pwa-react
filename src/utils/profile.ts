@@ -2,11 +2,10 @@
  * プロフィール操作関連のユーティリティ関数
  */
 
-import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs, increment, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, getDocs } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db, auth } from '../config/firebase';
 import type { UserProfile, UserStats } from '../types/profile';
-import { createNotification } from './notification';
 
 /**
  * 初期プロフィールを作成

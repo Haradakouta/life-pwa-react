@@ -13,7 +13,7 @@ interface RegisterFlowProps {
 type Step = 'email' | 'code' | 'profile' | 'health';
 
 export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
-  const { updateSettings } = useSettingsStore();
+  const { updateSettings, settings } = useSettingsStore();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [inputCode, setInputCode] = useState('');
@@ -160,7 +160,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       // 健康情報を設定に保存
       if (age || height || weight) {
         try {
-          const healthSettings: { age?: number; height?: number; weight?: number } = {};
+          const healthSettings: Partial<typeof settings> = {};
           if (age && age.trim() !== '') healthSettings.age = Number(age);
           if (height && height.trim() !== '') healthSettings.height = Number(height);
           if (weight && weight.trim() !== '') healthSettings.weight = Number(weight);

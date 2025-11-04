@@ -2,6 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/global.css';
+import { setupErrorHandlers } from './utils/errorLogger';
+
+// エラーハンドラーを設定
+setupErrorHandlers();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

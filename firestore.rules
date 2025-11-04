@@ -183,6 +183,13 @@ service cloud.firestore {
       }
     }
 
+    // エラーログ（誰でも書き込み可能、管理者のみ読み取り可能）
+    match /errorLogs/{logId} {
+      allow create: if true; // 誰でもエラーログを書き込める
+      allow read: if isAuth(); // 認証済みユーザーは読み取り可能（管理者のみを想定）
+      allow update, delete: if false; // 更新・削除は不可
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

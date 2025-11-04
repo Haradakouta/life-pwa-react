@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
-import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack } from 'react-icons/md';
+import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack, MdHealthAndSafety } from 'react-icons/md';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { generateVerificationCode, saveVerificationCode, verifyCode, sendVerificationEmail } from '../../utils/emailVerification';
 import { createUserProfile } from '../../utils/profile';
+import { useSettingsStore } from '../../store';
 
 interface RegisterFlowProps {
   onBack: () => void;
 }
 
-type Step = 'email' | 'code' | 'profile';
+type Step = 'email' | 'code' | 'profile' | 'health';
 
 export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
+  const { updateSettings } = useSettingsStore();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [age, setAge] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -74,7 +79,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
     }
   };
 
-  // ステップ3: ユーザー名・パスワード入力 → アカウント作成
+  // ステップ3: ユーザー名・パスワード入力
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -94,6 +99,14 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       return;
     }
 
+    // ステップ4へ
+    setStep('health');
+  };
+
+  // ステップ4: 健康情報入力 → アカウント作成
+  const handleHealthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
@@ -123,7 +136,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           console.log(`📝 プロフィール作成試行 ${retryCount + 1}/${maxRetries}...`);
           await createUserProfile(user.uid, email, username);
           profileCreated = true;
-          console.log('✅ アカウント作成完了:', user.uid);
+          console.log('✅ プロフィール作成完了:', user.uid);
         } catch (profileErr: any) {
           retryCount++;
           console.error(`❌ プロフィール作成失敗（試行 ${retryCount}/${maxRetries}）:`, profileErr);
@@ -143,6 +156,24 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           }
         }
       }
+
+      // 健康情報を設定に保存
+      if (age || height || weight) {
+        try {
+          const healthSettings: { age?: number; height?: number; weight?: number } = {};
+          if (age && age.trim() !== '') healthSettings.age = Number(age);
+          if (height && height.trim() !== '') healthSettings.height = Number(height);
+          if (weight && weight.trim() !== '') healthSettings.weight = Number(weight);
+          
+          await updateSettings(healthSettings);
+          console.log('✅ 健康情報を保存しました');
+        } catch (healthErr: any) {
+          console.error('健康情報の保存に失敗しました:', healthErr);
+          // エラーは無視して続行（必須ではない）
+        }
+      }
+
+      console.log('✅ アカウント作成完了:', user.uid);
 
       // ログイン画面に戻る（自動的にログイン状態になる）
       onBack();
@@ -185,11 +216,13 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   return (
     <div className="register-flow">
       <div className="progress-bar">
-        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile'].includes(step) ? 'completed' : ''}`}>1</div>
+        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile', 'health'].includes(step) ? 'completed' : ''}`}>1</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'code' ? 'active' : step === 'profile' ? 'completed' : ''}`}>2</div>
+        <div className={`progress-step ${step === 'code' ? 'active' : ['profile', 'health'].includes(step) ? 'completed' : ''}`}>2</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'profile' ? 'active' : ''}`}>3</div>
+        <div className={`progress-step ${step === 'profile' ? 'active' : step === 'health' ? 'completed' : ''}`}>3</div>
+        <div className="progress-line" />
+        <div className={`progress-step ${step === 'health' ? 'active' : ''}`}>4</div>
       </div>
 
       {/* ステップ1: メールアドレス入力 */}
@@ -310,7 +343,78 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? '次へ...' : '次へ'}
+          </button>
+        </form>
+      )}
+
+      {/* ステップ4: 健康情報入力（オプション） */}
+      {step === 'health' && (
+        <form onSubmit={handleHealthSubmit} className="step-form">
+          <h2>
+            <MdHealthAndSafety /> 健康情報を設定
+          </h2>
+          <p className="step-description">
+            AI健康アドバイスの精度向上のため、年齢・身長・体重を設定してください（任意）
+          </p>
+
+          <div className="form-group">
+            <label>
+              <MdHealthAndSafety /> 年齢（歳）
+            </label>
+            <input
+              type="number"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="例: 30"
+              min="1"
+              max="150"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <MdHealthAndSafety /> 身長（cm）
+            </label>
+            <input
+              type="number"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              placeholder="例: 170"
+              min="1"
+              max="300"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <MdHealthAndSafety /> 体重（kg）
+            </label>
+            <input
+              type="number"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="例: 65"
+              min="1"
+              max="500"
+              step="0.1"
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="submit-button" disabled={loading}>
             {loading ? 'アカウント作成中...' : '登録完了'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleHealthSubmit}
+            className="link-button"
+            disabled={loading}
+            style={{ textAlign: 'center' }}
+          >
+            スキップして登録
           </button>
         </form>
       )}

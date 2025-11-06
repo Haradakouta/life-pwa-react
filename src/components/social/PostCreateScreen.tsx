@@ -153,67 +153,59 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        background: 'var(--card)',
         zIndex: 1000,
-        padding: '16px',
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      onClick={onClose}
     >
+      {/* ヘッダー */}
       <div
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderBottom: '1px solid var(--border)',
           background: 'var(--card)',
-          borderRadius: '16px',
-          width: '100%',
-          maxWidth: '600px',
-          maxHeight: '90vh',
-          overflow: 'auto',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          backdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* ヘッダー */}
-        <div
+        <button
+          onClick={onClose}
           style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '8px',
+            borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--border)',
+            justifyContent: 'center',
+            color: 'var(--text)',
+            transition: 'background-color 0.2s ease-out',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(15, 20, 25, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
-            投稿を作成
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-secondary)',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--border)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
-            }}
-          >
-            <MdClose size={24} />
-          </button>
-        </div>
+          <MdClose size={20} />
+        </button>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+          投稿を作成
+        </h2>
+        <div style={{ width: '36px' }} /> {/* 中央揃えのためのスペーサー */}
+      </div>
 
         {/* 本体 */}
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: '16px', flex: 1, overflowY: 'auto' }}>
           {/* テキスト入力 */}
           <textarea
             value={content}
@@ -221,16 +213,16 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
             placeholder="今何してる？"
             style={{
               width: '100%',
-              minHeight: '120px',
+              minHeight: '200px',
               padding: '12px',
-              border: '2px solid var(--border)',
-              borderRadius: '12px',
-              fontSize: '16px',
+              border: 'none',
+              fontSize: '20px',
               color: 'var(--text)',
-              background: 'var(--background)',
-              resize: 'vertical',
+              background: 'transparent',
+              resize: 'none',
               fontFamily: 'inherit',
               marginBottom: '12px',
+              outline: 'none',
             }}
           />
 
@@ -256,8 +248,8 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
           <div
             style={{
               textAlign: 'right',
-              fontSize: '14px',
-              color: content.length > MAX_CHARS ? '#f44336' : 'var(--text-secondary)',
+              fontSize: '13px',
+              color: content.length > MAX_CHARS ? '#f4212e' : 'var(--text-secondary)',
               marginBottom: '16px',
             }}
           >
@@ -270,8 +262,10 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                gap: '12px',
+                gap: '2px',
                 marginBottom: '16px',
+                borderRadius: '16px',
+                overflow: 'hidden',
               }}
             >
               {imagePreviews.map((preview, index) => (
@@ -280,7 +274,7 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
                   style={{
                     position: 'relative',
                     paddingBottom: '100%',
-                    borderRadius: '12px',
+                    borderRadius: '0',
                     overflow: 'hidden',
                     background: 'var(--border)',
                   }}
@@ -411,36 +405,47 @@ export const PostCreateScreen: React.FC<PostCreateScreenProps> = ({
           )}
 
           {/* 投稿ボタン */}
-          <button
-            onClick={handleSubmit}
-            disabled={loading || !content.trim() || content.length > MAX_CHARS}
+          <div
             style={{
-              width: '100%',
-              padding: '14px',
-              background: loading || !content.trim() || content.length > MAX_CHARS
-                ? 'var(--border)'
-                : 'linear-gradient(135deg, var(--primary), #81c784)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 600,
-              cursor: loading || !content.trim() || content.length > MAX_CHARS ? 'not-allowed' : 'pointer',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && content.trim() && content.length <= MAX_CHARS) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
+              position: 'sticky',
+              bottom: 0,
+              padding: '16px',
+              background: 'var(--card)',
+              borderTop: '1px solid var(--border)',
             }}
           >
-            {loading ? '投稿中...' : '投稿する'}
-          </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !content.trim() || content.length > MAX_CHARS}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: loading || !content.trim() || content.length > MAX_CHARS
+                  ? 'var(--border)'
+                  : 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '24px',
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: loading || !content.trim() || content.length > MAX_CHARS ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.2s ease-out',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && content.trim() && content.length <= MAX_CHARS) {
+                  e.currentTarget.style.backgroundColor = 'var(--primary-dark)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && content.trim() && content.length <= MAX_CHARS) {
+                  e.currentTarget.style.backgroundColor = 'var(--primary)';
+                }
+              }}
+            >
+              {loading ? '投稿中...' : '投稿する'}
+            </button>
+          </div>
         </div>
-      </div>
     </div>
   );
 };

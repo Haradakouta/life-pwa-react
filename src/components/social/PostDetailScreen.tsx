@@ -6,6 +6,7 @@ import { getUserProfile } from '../../utils/profile';
 import type { Post, Comment } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
 import { PostCard } from './PostCard';
+import { AvatarWithFrame } from '../common/AvatarWithFrame';
 
 interface PostDetailScreenProps {
   postId: string;
@@ -187,19 +188,21 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   const isAuthor = user && post.authorId === user.uid;
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
+    <div style={{ paddingBottom: '80px', background: 'var(--card)' }}>
       {/* ヘッダー */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 20px',
+          padding: '12px 16px',
           background: 'var(--card)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
           top: 0,
           zIndex: 10,
+          backdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
         }}
       >
         <button
@@ -214,18 +217,18 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             color: 'var(--text)',
-            transition: 'background 0.2s',
+            transition: 'background-color 0.2s ease-out',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--border)';
+            e.currentTarget.style.backgroundColor = 'rgba(15, 20, 25, 0.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <MdArrowBack size={24} />
+          <MdArrowBack size={20} />
         </button>
-        <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
           投稿
         </h2>
         {isAuthor && (
@@ -240,23 +243,23 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#f44336',
-              transition: 'background 0.2s',
+              color: '#f4212e',
+              transition: 'background-color 0.2s ease-out',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#ffebee';
+              e.currentTarget.style.backgroundColor = 'rgba(244, 33, 46, 0.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <MdDelete size={24} />
+            <MdDelete size={20} />
           </button>
         )}
       </div>
 
       {/* 投稿本体 */}
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '16px', background: 'var(--card)' }}>
         {/* プロフィール情報 */}
         <div
           onClick={() => onUserClick(post.authorId)}
@@ -265,35 +268,24 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
             alignItems: 'center',
             marginBottom: '16px',
             cursor: 'pointer',
-            padding: '8px',
-            marginLeft: '-8px',
+            padding: '4px',
+            marginLeft: '-4px',
             borderRadius: '8px',
-            transition: 'background 0.2s',
+            transition: 'background-color 0.15s ease-out',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--border)';
+            e.currentTarget.style.backgroundColor = 'var(--background)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <div
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: post.authorAvatar
-                ? `url(${post.authorAvatar}) center/cover`
-                : 'linear-gradient(135deg, var(--primary), #81c784)',
-              marginRight: '12px',
-              flexShrink: 0,
-            }}
-          />
+          <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '16px' }}>
+            <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: '15px' }}>
               {post.authorName}
             </div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
               {getRelativeTime(post.createdAt)}
             </div>
           </div>
@@ -303,9 +295,10 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
         <div
           style={{
             color: 'var(--text)',
-            fontSize: '16px',
-            lineHeight: '1.6',
+            fontSize: '15px',
+            lineHeight: '1.5',
             marginBottom: '20px',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
           }}
@@ -318,9 +311,10 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           <div
             style={{
               marginBottom: '20px',
+              marginLeft: '52px', // アバターの幅 + マージンに合わせる
               padding: '20px',
               background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(129, 199, 132, 0.05))',
-              borderRadius: '12px',
+              borderRadius: '16px',
               border: '2px solid var(--primary)',
             }}
           >
@@ -386,10 +380,25 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           <div
             style={{
               marginBottom: '20px',
+              marginLeft: '52px', // アバターの幅 + マージンに合わせる
               padding: '16px',
               background: 'var(--background)',
-              borderRadius: '12px',
+              borderRadius: '16px',
               border: '1px solid var(--border)',
+              cursor: 'pointer',
+              transition: 'background-color 0.15s ease-out, border-color 0.15s ease-out',
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPostClick?.(post.quotedPost!.id);
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--border)';
+              e.currentTarget.style.borderColor = 'var(--text-secondary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--background)';
+              e.currentTarget.style.borderColor = 'var(--border)';
             }}
           >
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
@@ -485,8 +494,11 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                   : post.images.length === 2
                   ? 'repeat(2, 1fr)'
                   : 'repeat(2, 1fr)',
-              gap: '12px',
+              gap: '2px',
               marginBottom: '24px',
+              marginLeft: '52px', // アバターの幅 + マージンに合わせる
+              borderRadius: '16px',
+              overflow: 'hidden',
             }}
           >
             {post.images.map((image, index) => (
@@ -523,10 +535,13 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '32px',
-            padding: '16px 0',
+            justifyContent: 'space-between',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
+            marginTop: '12px',
+            padding: '12px 0',
             borderTop: '1px solid var(--border)',
             borderBottom: '1px solid var(--border)',
+            maxWidth: '425px', // X風の最大幅
           }}
         >
           {/* いいね */}
@@ -537,23 +552,24 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
               border: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '4px',
               cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '12px',
-              color: liked ? '#e91e63' : 'var(--text-secondary)',
-              transition: 'background 0.2s',
-              fontSize: '16px',
+              padding: '8px',
+              borderRadius: '50%',
+              color: liked ? '#f4212e' : 'var(--text-secondary)',
+              transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(233, 30, 99, 0.1)';
+              e.currentTarget.style.backgroundColor = liked ? 'rgba(244, 33, 46, 0.1)' : 'rgba(29, 155, 240, 0.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            {liked ? <MdFavorite size={24} /> : <MdFavoriteBorder size={24} />}
-            <span style={{ fontWeight: 600 }}>{localLikes}</span>
+            {liked ? <MdFavorite size={18.75} /> : <MdFavoriteBorder size={18.75} />}
+            {localLikes > 0 && (
+              <span style={{ fontSize: '13px', fontWeight: 400, marginLeft: '4px' }}>{localLikes}</span>
+            )}
           </button>
 
           {/* コメント */}
@@ -561,13 +577,24 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '4px',
               color: 'var(--text-secondary)',
-              fontSize: '16px',
+              fontSize: '13px',
+              padding: '8px',
+              borderRadius: '50%',
+              transition: 'background-color 0.2s ease-out',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(29, 155, 240, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <MdComment size={24} />
-            <span style={{ fontWeight: 600 }}>{post.commentCount}</span>
+            <MdComment size={18.75} />
+            {post.commentCount > 0 && (
+              <span style={{ fontWeight: 400, marginLeft: '4px' }}>{post.commentCount}</span>
+            )}
           </div>
         </div>
 

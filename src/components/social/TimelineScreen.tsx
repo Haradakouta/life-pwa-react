@@ -64,23 +64,25 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
   };
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
+    <div style={{ paddingBottom: '80px', background: 'var(--card)' }}>
       {/* ヘッダー */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 20px',
+          padding: '12px 16px',
           background: 'var(--card)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
           top: 0,
           zIndex: 10,
+          backdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
         }}
       >
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
-          タイムライン
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+          ホーム
         </h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* 更新ボタン */}
@@ -97,44 +99,44 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
               alignItems: 'center',
               justifyContent: 'center',
               color: 'var(--text-secondary)',
-              transition: 'background 0.2s',
+              transition: 'background-color 0.2s ease-out',
             }}
             onMouseEnter={(e) => {
               if (!loading) {
-                e.currentTarget.style.background = 'var(--border)';
+                e.currentTarget.style.backgroundColor = 'rgba(15, 20, 25, 0.1)';
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <MdRefresh size={24} />
+            <MdRefresh size={20} />
           </button>
           {/* 投稿作成ボタン */}
           <button
             onClick={() => setShowCreatePost(true)}
             style={{
-              background: 'linear-gradient(135deg, var(--primary), #81c784)',
+              background: 'var(--primary)',
               border: 'none',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
+              borderRadius: '24px',
+              padding: '8px 16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               color: 'white',
-              boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)',
-              transition: 'transform 0.2s',
+              fontWeight: 700,
+              fontSize: '15px',
+              transition: 'background-color 0.2s ease-out',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.backgroundColor = 'var(--primary-dark)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = 'var(--primary)';
             }}
           >
-            <MdAdd size={24} />
+            投稿
           </button>
         </div>
       </div>
@@ -146,7 +148,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
           background: 'var(--card)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
-          top: '69px',
+          top: '57px', // ヘッダーの高さに合わせる
           zIndex: 9,
         }}
       >
@@ -157,16 +159,25 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
             padding: '16px',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'all' ? '3px solid var(--primary)' : '3px solid transparent',
+            borderBottom: activeTab === 'all' ? '4px solid var(--primary)' : '4px solid transparent',
             cursor: 'pointer',
             fontSize: '15px',
-            fontWeight: activeTab === 'all' ? 600 : 400,
-            color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-secondary)',
-            transition: 'all 0.2s',
+            fontWeight: activeTab === 'all' ? 700 : 500,
+            color: activeTab === 'all' ? 'var(--text)' : 'var(--text-secondary)',
+            transition: 'all 0.2s ease-out',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            position: 'relative',
+          }}
+          onMouseEnter={(e) => {
+            if (activeTab !== 'all') {
+              e.currentTarget.style.backgroundColor = 'rgba(15, 20, 25, 0.1)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
           <MdPublic size={20} />
@@ -178,16 +189,25 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
             padding: '16px',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'following' ? '3px solid var(--primary)' : '3px solid transparent',
+            borderBottom: activeTab === 'following' ? '4px solid var(--primary)' : '4px solid transparent',
             cursor: 'pointer',
             fontSize: '15px',
-            fontWeight: activeTab === 'following' ? 600 : 400,
-            color: activeTab === 'following' ? 'var(--primary)' : 'var(--text-secondary)',
-            transition: 'all 0.2s',
+            fontWeight: activeTab === 'following' ? 700 : 500,
+            color: activeTab === 'following' ? 'var(--text)' : 'var(--text-secondary)',
+            transition: 'all 0.2s ease-out',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            position: 'relative',
+          }}
+          onMouseEnter={(e) => {
+            if (activeTab !== 'following') {
+              e.currentTarget.style.backgroundColor = 'rgba(15, 20, 25, 0.1)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
           <MdPeople size={20} />
@@ -195,7 +215,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
       </div>
 
       {/* 本体 */}
-      <div style={{ padding: '16px' }}>
+      <div style={{ background: 'var(--card)' }}>
         {error ? (
           // エラー表示
           <div

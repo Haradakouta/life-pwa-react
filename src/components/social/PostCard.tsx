@@ -207,20 +207,16 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
       onClick={() => onPostClick(post.id)}
       style={{
         background: 'var(--card)',
-        borderRadius: '12px',
-        padding: '16px',
-        marginBottom: '12px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        padding: '12px 16px',
+        borderBottom: '1px solid var(--border)',
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'background-color 0.15s ease-out',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+        e.currentTarget.style.backgroundColor = 'var(--background)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        e.currentTarget.style.backgroundColor = 'var(--card)';
       }}
     >
       {/* ピン留めインジケーター */}
@@ -270,10 +266,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
       >
         <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginBottom: '2px' }}>
             <div
               style={{
-                fontWeight: 600,
+                fontWeight: 700,
                 color: 'var(--text)',
                 fontSize: '15px',
                 overflow: 'hidden',
@@ -283,17 +279,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             >
               {post.authorName}
             </div>
+            <div
+              style={{
+                color: 'var(--text-secondary)',
+                fontSize: '15px',
+              }}
+            >
+              · {getRelativeTime(post.createdAt)}
+            </div>
             {authorTitle && (
               <TitleBadge title={authorTitle} size="small" showName={true} />
             )}
-          </div>
-          <div
-            style={{
-              color: 'var(--text-secondary)',
-              fontSize: '13px',
-            }}
-          >
-            {getRelativeTime(post.createdAt)}
           </div>
         </div>
 
@@ -384,8 +380,9 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         <div
           style={{
             color: 'var(--text-secondary)',
-            fontSize: '14px',
+            fontSize: '13px',
             marginBottom: '8px',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
           }}
         >
           <span style={{ marginRight: '4px' }}>💬</span>
@@ -402,6 +399,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           fontSize: '15px',
           lineHeight: '1.5',
           marginBottom: '12px',
+          marginLeft: '52px', // アバターの幅 + マージンに合わせる
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
         }}
@@ -444,9 +442,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         <div
           style={{
             marginBottom: '12px',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
             padding: '16px',
             background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(129, 199, 132, 0.05))',
-            borderRadius: '12px',
+            borderRadius: '16px',
             border: '2px solid var(--primary)',
           }}
         >
@@ -522,18 +521,21 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           }}
           style={{
             marginBottom: '12px',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
             padding: '12px',
             background: 'var(--background)',
-            borderRadius: '12px',
+            borderRadius: '16px',
             border: '1px solid var(--border)',
             cursor: 'pointer',
-            transition: 'background 0.2s',
+            transition: 'background-color 0.15s ease-out, border-color 0.15s ease-out',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--border)';
+            e.currentTarget.style.backgroundColor = 'var(--border)';
+            e.currentTarget.style.borderColor = 'var(--text-secondary)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--background)';
+            e.currentTarget.style.backgroundColor = 'var(--background)';
+            e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -630,8 +632,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
                 : post.images.length === 2
                   ? 'repeat(2, 1fr)'
                   : 'repeat(2, 1fr)',
-            gap: '8px',
-            marginBottom: '16px',
+            gap: '2px',
+            marginBottom: '12px',
+            marginLeft: '52px', // アバターの幅 + マージンに合わせる
+            borderRadius: '16px',
+            overflow: 'hidden',
           }}
         >
           {post.images.map((image, index) => (
@@ -646,11 +651,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
                 width: '100%',
                 paddingBottom: post.images!.length === 1 ? '56.25%' : '100%', // 16:9 or 1:1
                 position: 'relative',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                background: 'var(--border)',
-                cursor: 'pointer',
-                transition: 'opacity 0.2s',
+                  borderRadius: '0',
+                  overflow: 'hidden',
+                  background: 'var(--border)',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.opacity = '0.9';
@@ -681,9 +686,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '24px',
-          paddingTop: '12px',
-          borderTop: '1px solid var(--border)',
+          justifyContent: 'space-between',
+          marginLeft: '52px', // アバターの幅 + マージンに合わせる
+          marginTop: '12px',
+          maxWidth: '425px', // X風の最大幅
         }}
       >
         {/* いいね */}
@@ -694,22 +700,25 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
-            color: liked ? '#e91e63' : 'var(--text-secondary)',
-            transition: 'background 0.2s, color 0.2s',
+            padding: '8px',
+            borderRadius: '50%',
+            color: liked ? '#f4212e' : 'var(--text-secondary)',
+            transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
+            position: 'relative',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(233, 30, 99, 0.1)';
+            e.currentTarget.style.backgroundColor = liked ? 'rgba(244, 33, 46, 0.1)' : 'rgba(29, 155, 240, 0.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          {liked ? <MdFavorite size={20} /> : <MdFavoriteBorder size={20} />}
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(localLikes)}</span>
+          {liked ? <MdFavorite size={18.75} /> : <MdFavoriteBorder size={18.75} />}
+          {localLikes > 0 && (
+            <span style={{ fontSize: '13px', fontWeight: 400, marginLeft: '4px' }}>{formatCount(localLikes)}</span>
+          )}
         </button>
 
         {/* コメント */}
@@ -720,24 +729,26 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
+            padding: '8px',
+            borderRadius: '50%',
             color: 'var(--text-secondary)',
-            transition: 'background 0.2s',
+            transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(33, 150, 243, 0.1)';
-            e.currentTarget.style.color = '#2196f3';
+            e.currentTarget.style.backgroundColor = 'rgba(29, 155, 240, 0.1)';
+            e.currentTarget.style.color = '#1d9bf0';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
             e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
-          <MdComment size={20} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(post.commentCount)}</span>
+          <MdComment size={18.75} />
+          {post.commentCount > 0 && (
+            <span style={{ fontSize: '13px', fontWeight: 400, marginLeft: '4px' }}>{formatCount(post.commentCount)}</span>
+          )}
         </button>
 
         {/* リポスト */}
@@ -748,25 +759,27 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
-            color: reposted ? '#4caf50' : 'var(--text-secondary)',
-            transition: 'background 0.2s, color 0.2s',
+            padding: '8px',
+            borderRadius: '50%',
+            color: reposted ? '#00ba7c' : 'var(--text-secondary)',
+            transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
             opacity: isLoading ? 0.6 : 1,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)';
-            if (!reposted) e.currentTarget.style.color = '#4caf50';
+            e.currentTarget.style.backgroundColor = 'rgba(0, 186, 124, 0.1)';
+            if (!reposted) e.currentTarget.style.color = '#00ba7c';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
             if (!reposted) e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
-          <MdRepeat size={20} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{formatCount(localRepostCount)}</span>
+          <MdRepeat size={18.75} />
+          {localRepostCount > 0 && (
+            <span style={{ fontSize: '13px', fontWeight: 400, marginLeft: '4px' }}>{formatCount(localRepostCount)}</span>
+          )}
         </button>
 
         {/* 引用リポスト */}
@@ -778,23 +791,23 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               border: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: '8px',
+              padding: '8px',
+              borderRadius: '50%',
               color: 'var(--text-secondary)',
-              transition: 'background 0.2s, color 0.2s',
+              transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)';
-              e.currentTarget.style.color = '#4caf50';
+              e.currentTarget.style.backgroundColor = 'rgba(0, 186, 124, 0.1)';
+              e.currentTarget.style.color = '#00ba7c';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.backgroundColor = 'transparent';
               e.currentTarget.style.color = 'var(--text-secondary)';
             }}
           >
-            <MdFormatQuote size={20} />
+            <MdFormatQuote size={18.75} />
           </button>
         )}
 
@@ -806,24 +819,24 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
-            color: bookmarked ? '#ff9800' : 'var(--text-secondary)',
-            transition: 'background 0.2s, color 0.2s',
+            padding: '8px',
+            borderRadius: '50%',
+            color: bookmarked ? '#1d9bf0' : 'var(--text-secondary)',
+            transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
             opacity: isLoading ? 0.6 : 1,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 152, 0, 0.1)';
-            if (!bookmarked) e.currentTarget.style.color = '#ff9800';
+            e.currentTarget.style.backgroundColor = 'rgba(29, 155, 240, 0.1)';
+            if (!bookmarked) e.currentTarget.style.color = '#1d9bf0';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
             if (!bookmarked) e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
-          {bookmarked ? <MdBookmark size={20} /> : <MdBookmarkBorder size={20} />}
+          {bookmarked ? <MdBookmark size={18.75} /> : <MdBookmarkBorder size={18.75} />}
         </button>
 
         {/* 共有 */}
@@ -834,22 +847,23 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
+            padding: '8px',
+            borderRadius: '50%',
             color: 'var(--text-secondary)',
-            transition: 'background 0.2s',
-            marginLeft: 'auto',
+            transition: 'background-color 0.2s ease-out',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(158, 158, 158, 0.1)';
+            e.currentTarget.style.backgroundColor = 'rgba(29, 155, 240, 0.1)';
+            e.currentTarget.style.color = '#1d9bf0';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none';
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
-          <MdShare size={20} />
+          <MdShare size={18.75} />
         </button>
       </div>
 

@@ -138,6 +138,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
       calories: 500, // デフォルト値（後で編集可能）
       price: 0,
       category,
+      source: 'recipe', // AIレシピ由来であることを識別
     });
 
     let resultMessage = `レシピを作りました！\n\n`;

@@ -122,7 +122,7 @@ export const Layout: React.FC = () => {
 
   return (
     <>
-      <Header title={getScreenTitle(currentScreen)} onNavigate={handleNavigate} />
+      <Header title={getScreenTitle(currentScreen)} currentScreen={currentScreen} onNavigate={handleNavigate} />
       <main 
         className={`screen-transition ${isTransitioning ? 'transitioning' : ''}`}
         style={{

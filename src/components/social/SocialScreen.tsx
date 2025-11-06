@@ -82,6 +82,7 @@ export const SocialScreen: React.FC = () => {
         onBack={handleBackToTimeline}
         onPostDeleted={handlePostDeleted}
         onUserClick={handleUserClick}
+        onPostClick={handlePostClick}
       />
     );
   }
@@ -120,7 +121,6 @@ export const SocialScreen: React.FC = () => {
           }}
         >
           <MdHome size={20} />
-          タイムライン
         </button>
         <button
           onClick={() => setCurrentTab('search')}
@@ -142,7 +142,6 @@ export const SocialScreen: React.FC = () => {
           }}
         >
           <MdSearch size={20} />
-          検索
         </button>
         <button
           onClick={() => setCurrentTab('notifications')}
@@ -164,7 +163,6 @@ export const SocialScreen: React.FC = () => {
           }}
         >
           <MdNotifications size={20} />
-          通知
         </button>
         <button
           onClick={() => setCurrentTab('dm')}
@@ -186,7 +184,6 @@ export const SocialScreen: React.FC = () => {
           }}
         >
           <MdChat size={20} />
-          DM
         </button>
         <button
           onClick={() => setCurrentTab('ranking')}
@@ -208,7 +205,6 @@ export const SocialScreen: React.FC = () => {
           }}
         >
           <MdTrendingUp size={20} />
-          ランキング
         </button>
       </div>
 

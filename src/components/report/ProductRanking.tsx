@@ -8,10 +8,14 @@ export const ProductRanking: React.FC = () => {
   const { intakes } = useIntakeStore();
 
   const ranking = useMemo(() => {
-    // 商品名ごとに購入回数を集計
+    // 商品名ごとに購入回数を集計（AIレシピ由来のintakesは除外）
     const productCount = new Map<string, number>();
 
     intakes.forEach((intake) => {
+      // AIレシピ由来のintakesは除外（よく買う商品TOP5には含めない）
+      if (intake.source === 'recipe') {
+        return;
+      }
       const count = productCount.get(intake.name) || 0;
       productCount.set(intake.name, count + 1);
     });

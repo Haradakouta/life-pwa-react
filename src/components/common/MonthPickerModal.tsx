@@ -32,6 +32,16 @@ export const MonthPickerModal: React.FC<MonthPickerModalProps> = ({
       className="modal-backdrop"
       onClick={onClose}
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        zIndex: 9999,
+        background: 'rgba(0, 0, 0, 0.5)',
         animation: 'fadeIn 0.2s ease',
       }}
     >
@@ -40,6 +50,7 @@ export const MonthPickerModal: React.FC<MonthPickerModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: '400px',
+          width: '100%',
           animation: 'slideUp 0.3s ease',
         }}
       >

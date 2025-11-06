@@ -28,6 +28,7 @@ export interface StockFormData {
   name: string;
   quantity: number;
   daysRemaining: number;
+  expiryDate?: string; // 賞味期限（ISO 8601形式）
   price?: number;
   category?: StockCategory;
 }

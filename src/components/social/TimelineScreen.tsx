@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdAdd, MdRefresh } from 'react-icons/md';
+import { MdAdd, MdRefresh, MdPublic, MdPeople } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { PostCard } from './PostCard';
 import { PostCreateScreen } from './PostCreateScreen';
@@ -163,9 +163,13 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
             fontWeight: activeTab === 'all' ? 600 : 400,
             color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-secondary)',
             transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
-          すべて
+          <MdPublic size={20} />
         </button>
         <button
           onClick={() => setActiveTab('following')}
@@ -180,9 +184,13 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
             fontWeight: activeTab === 'following' ? 600 : 400,
             color: activeTab === 'following' ? 'var(--primary)' : 'var(--text-secondary)',
             transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
-          フォロー中
+          <MdPeople size={20} />
         </button>
       </div>
 

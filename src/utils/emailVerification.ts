@@ -5,12 +5,19 @@
 import { collection, doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
-// 6桁のランダムコードを生成
+/**
+ * 6桁のランダムな確認コードを生成
+ * @returns 100000から999999の範囲のランダムな6桁の数字文字列
+ */
 export const generateVerificationCode = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// 確認コードをFirestoreに保存（有効期限10分）
+/**
+ * 確認コードをFirestoreに保存（有効期限10分）
+ * @param email - メールアドレス
+ * @param code - 確認コード
+ */
 export const saveVerificationCode = async (email: string, code: string) => {
   const codeDoc = doc(collection(db, 'verificationCodes'), email);
   const expiresAt = new Date();
@@ -24,7 +31,12 @@ export const saveVerificationCode = async (email: string, code: string) => {
   });
 };
 
-// 確認コードを検証
+/**
+ * 確認コードを検証
+ * @param email - メールアドレス
+ * @param inputCode - 入力された確認コード
+ * @returns 検証結果（有効性とエラーメッセージ）
+ */
 export const verifyCode = async (email: string, inputCode: string): Promise<{ valid: boolean; error?: string }> => {
   try {
     const codeDoc = doc(collection(db, 'verificationCodes'), email);
@@ -57,7 +69,12 @@ export const verifyCode = async (email: string, inputCode: string): Promise<{ va
   }
 };
 
-// メール送信（Cloud Functionsを使用）
+/**
+ * メール送信（Cloud Functionsを使用）
+ * @param email - 送信先メールアドレス
+ * @param code - 確認コード
+ * @throws メール送信に失敗した場合
+ */
 export const sendVerificationEmail = async (email: string, code: string) => {
   try {
     // onRequest関数は直接HTTPリクエストで呼び出す
@@ -78,11 +95,13 @@ export const sendVerificationEmail = async (email: string, code: string) => {
 
     const result = await response.json();
     console.log(`✅ Verification email sent to ${email}`, result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to send email via Cloud Functions:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
     console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
+      message: errorMessage,
+      stack: errorStack,
     });
 
     // フォールバック: 開発モードとしてコンソールに表示
@@ -131,7 +150,11 @@ https://haradakouta.github.io/life-pwa-react/
   }
 };
 
-// パスワードリセット用のメール送信
+/**
+ * パスワードリセット用のメール送信
+ * @param email - 送信先メールアドレス
+ * @param code - 確認コード
+ */
 export const sendPasswordResetEmail = async (email: string, code: string) => {
   try {
     // Cloud Functionを呼び出す（リージョン: us-central1）
@@ -145,12 +168,15 @@ export const sendPasswordResetEmail = async (email: string, code: string) => {
     const result = await sendEmail({ email, code });
 
     console.log(`✅ Password reset email sent to ${email}`, result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to send password reset email via Cloud Functions:', error);
+    const errorCode = error && typeof error === 'object' && 'code' in error ? String(error.code) : undefined;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetails = error && typeof error === 'object' && 'details' in error ? error.details : undefined;
     console.error('Error details:', {
-      code: error.code,
-      message: error.message,
-      details: error.details,
+      code: errorCode,
+      message: errorMessage,
+      details: errorDetails,
     });
 
     // フォールバック: 開発モードとしてコンソールに表示
@@ -184,7 +210,12 @@ https://haradakouta.github.io/life-pwa-react/
   }
 };
 
-// パスワードをリセット（Cloud Functionsを使用）
+/**
+ * パスワードをリセット（Cloud Functionsを使用）
+ * @param email - メールアドレス
+ * @param newPassword - 新しいパスワード
+ * @returns リセット結果（成功・失敗とエラーメッセージ）
+ */
 export const resetPasswordWithCode = async (email: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
   try {
     // Cloud Functionを呼び出す（リージョン: us-central1）
@@ -199,8 +230,9 @@ export const resetPasswordWithCode = async (email: string, newPassword: string):
 
     console.log(`✅ Password reset successful for ${email}`, result);
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to reset password via Cloud Functions:', error);
-    return { success: false, error: error.message || 'パスワードのリセットに失敗しました' };
+    const errorMessage = error instanceof Error ? error.message : 'パスワードのリセットに失敗しました';
+    return { success: false, error: errorMessage };
   }
 };

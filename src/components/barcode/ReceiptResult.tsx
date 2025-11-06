@@ -2,7 +2,7 @@
  * レシートOCR結果の確認・編集コンポーネント
  */
 import React, { useState } from 'react';
-import { useExpenseStore, useShoppingStore, useStockStore } from '../../store';
+import { useExpenseStore, useShoppingStore, useStockStore, useIntakeStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
 import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart, MdInventory, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
 
@@ -15,6 +15,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
   const { addExpense } = useExpenseStore();
   const { addItem } = useShoppingStore();
   const { addStock } = useStockStore();
+  const { addIntake } = useIntakeStore();
   const [items, setItems] = useState<ReceiptItem[]>(result.items);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
@@ -94,15 +95,23 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
 
     const today = new Date().toISOString();
 
-    // 各商品を支出として登録
+    // 各商品を支出として登録し、よく買う商品TOP5に反映するためintakesにも追加
     items.forEach((item) => {
       const quantity = item.quantity || 1;
       for (let i = 0; i < quantity; i++) {
         addExpense({
+          type: 'expense', // 支出
           category: 'food', // デフォルトで食費
           amount: item.price,
           memo: item.name,
           date: result.date || today,
+        });
+        // よく買う商品TOP5に反映するため、商品名をintakesにも追加
+        addIntake({
+          name: item.name,
+          calories: 0, // カロリー情報がない場合は0
+          price: item.price,
+          source: 'receipt', // レシート由来であることを識別
         });
       }
     });

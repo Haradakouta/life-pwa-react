@@ -101,7 +101,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
       } else if (onBack) {
         onBack();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('都道府県設定エラー:', error);
       setError('都道府県の設定に失敗しました');
     } finally {

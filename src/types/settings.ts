@@ -9,6 +9,7 @@ export interface Settings {
   age?: number; // 年齢（AI健康アドバイスの精度向上用）
   height?: number; // 身長（cm）（AI健康アドバイスの精度向上用）
   weight?: number; // 体重（kg）（AI健康アドバイスの精度向上用）
+  savings?: number; // 貯金額（円）
 }
 
 export interface SettingsFormData {

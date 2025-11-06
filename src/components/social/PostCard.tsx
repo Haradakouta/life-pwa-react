@@ -10,7 +10,7 @@ import type { Title } from '../../types/title';
 import { TitleBadge } from '../common/TitleBadge';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote, MdPushPin, MdMoreVert } from 'react-icons/md';
 import React from 'react';
-import { getUserCosmetics, getCosmeticById } from '../../utils/cosmetic';
+import { AvatarWithFrame } from '../common/AvatarWithFrame';
 import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
@@ -268,7 +268,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           e.currentTarget.style.background = 'none';
         }}
       >
-        <AuthorAvatarWithFrame authorId={post.authorId} avatarUrl={post.authorAvatar} />
+        <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <div
@@ -865,110 +865,3 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   );
 };
 
-const AuthorAvatarWithFrame: React.FC<{ authorId: string; avatarUrl?: string }> = ({ authorId, avatarUrl }) => {
-  const [frameUrl, setFrameUrl] = React.useState<string | undefined>(undefined);
-  const [inlineStyle, setInlineStyle] = React.useState<React.CSSProperties | undefined>(undefined);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const data = await getUserCosmetics(authorId);
-        if (!mounted || !data?.equippedFrame) {
-          setFrameUrl(undefined);
-          setInlineStyle(undefined);
-          return;
-        }
-        const cosmetic = getCosmeticById(data.equippedFrame);
-        let url = cosmetic?.data.frameUrl as string | undefined;
-        const style = cosmetic?.data.frameStyle as React.CSSProperties | undefined;
-
-        // BASE_URLを正しく取得
-        const base = import.meta.env.BASE_URL || '/';
-
-        if (!url) {
-          // frameUrlが定義されていない場合は、IDや名前から推測
-          const candidates: string[] = [];
-          const names = [data.equippedFrame, cosmetic?.name || '', cosmetic?.id || ''].filter(Boolean);
-          const exts = ['png', 'webp', 'jpg', 'jpeg'];
-          for (const n of names) {
-            const safe = n.toString().toLowerCase().replace(/\s+/g, '_').replace(/[\u3000]/g, '_');
-            for (const ext of exts) {
-              candidates.push(`${base}frames/${safe}.${ext}`);
-              candidates.push(`${base}frames/frame_${safe}.${ext}`);
-            }
-          }
-          console.log('[PostCard] フレーム画像候補:', candidates);
-          url = await findFirstExistingImage(candidates);
-          console.log('[PostCard] 見つかったフレーム画像:', url);
-        } else {
-          // frameUrlが定義されている場合、BASE_URLを考慮して正しいパスに変換
-          if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            // 相対パスの場合
-            if (!url.startsWith(base)) {
-              // BASE_URLが含まれていない場合は追加
-              url = `${base}${url.replace(/^\//, '')}`;
-            }
-          }
-          console.log('[PostCard] フレームURL:', url);
-        }
-        setFrameUrl(url || undefined);
-        setInlineStyle(style);
-      } catch (e) {
-        console.error('フレーム取得エラー:', e);
-      }
-    })();
-    return () => { mounted = false; };
-  }, [authorId]);
-
-  const iconSize = 40; // アイコンサイズを少し小さく
-  const frameExtra = 17; // フレーム分の追加サイズ（外側に広がる）を拡大
-  const containerSize = 48 + frameExtra * 2; // コンテナサイズは元のアイコンサイズ基準
-  const iconOffset = (containerSize - iconSize) / 2; // アイコンを中央に配置するオフセット
-  return (
-    <div style={{ position: 'relative', width: `${containerSize}px`, height: `${containerSize}px`, marginRight: '12px', flexShrink: 0 }}>
-      {/* フレーム（背景/下層） */}
-      {frameUrl ? (
-        <img
-          src={frameUrl}
-          alt="frame"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
-        />
-      ) : inlineStyle ? (
-        <div
-          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1, ...inlineStyle }}
-        />
-      ) : null}
-      {/* アイコン（上層、少し小さく） */}
-      <div
-        style={{
-          position: 'absolute',
-          left: `${iconOffset}px`,
-          top: `${iconOffset}px`,
-          width: `${iconSize}px`,
-          height: `${iconSize}px`,
-          borderRadius: '0px',
-          background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'linear-gradient(135deg, var(--primary), #81c784)',
-          zIndex: 2,
-        }}
-      />
-    </div>
-  );
-};
-
-async function findFirstExistingImage(candidates: string[]): Promise<string | undefined> {
-  for (const src of candidates) {
-    const ok = await imageExists(src);
-    if (ok) return src;
-  }
-  return undefined;
-}
-
-function imageExists(src: string): Promise<boolean> {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = src;
-  });
-}

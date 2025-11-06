@@ -106,7 +106,7 @@ export const equipCosmetic = async (
     }
     
     const userDataRef = doc(db, `users/${userId}/cosmetics`, 'data');
-    const updateData: any = {};
+    const updateData: Record<string, string> = {};
     
     if (type === 'frame') {
       updateData.equippedFrame = cosmeticId;

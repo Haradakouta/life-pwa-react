@@ -135,6 +135,27 @@ export const createPost = async (
     // 引用リポストの場合
     if (data.quotedPostId) {
       postData.quotedPostId = data.quotedPostId;
+      
+      // 引用元の投稿の作者に通知を送信
+      try {
+        const quotedPost = await getPost(data.quotedPostId);
+        if (quotedPost && quotedPost.authorId !== userId) {
+          await createNotification(
+            quotedPost.authorId,
+            userId,
+            profile.displayName,
+            'quote',
+            {
+              actorAvatar: profile.avatarUrl,
+              postId,
+              postContent: data.content,
+            }
+          );
+        }
+      } catch (error) {
+        console.error('引用通知の送信に失敗しました:', error);
+        // 通知送信に失敗しても投稿は成功させる
+      }
     }
 
     // 返信の場合
@@ -152,12 +173,32 @@ export const createPost = async (
     // Firestoreに保存
     await setDoc(postRef, postData);
 
-    // 返信の場合、親投稿のreplyCountを増やす
+    // 返信の場合、親投稿のreplyCountを増やし、通知を送信
     if (data.replyToPostId) {
       const parentPostRef = doc(db, 'posts', data.replyToPostId);
       await updateDoc(parentPostRef, {
         replyCount: increment(1),
       });
+      
+      // 返信先のユーザーに通知を送信
+      if (data.replyToUserId && data.replyToUserId !== userId) {
+        try {
+          await createNotification(
+            data.replyToUserId,
+            userId,
+            profile.displayName,
+            'reply',
+            {
+              actorAvatar: profile.avatarUrl,
+              postId,
+              postContent: data.content,
+            }
+          );
+        } catch (error) {
+          console.error('リプライ通知の送信に失敗しました:', error);
+          // 通知送信に失敗しても投稿は成功させる
+        }
+      }
     }
 
     // ユーザーの投稿数を更新

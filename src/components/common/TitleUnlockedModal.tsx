@@ -21,6 +21,9 @@ export const TitleUnlockedModal: React.FC = () => {
 
     // 現在の称号を取得
     const checkForNewTitles = async () => {
+      // モーダルが表示されている間はチェックしない
+      if (showModal) return;
+      
       try {
         const userTitles = await getUserTitles(user.uid);
         const currentTitleIds = userTitles.map(t => t.titleId);
@@ -31,7 +34,7 @@ export const TitleUnlockedModal: React.FC = () => {
         if (newlyEarned.length > 0) {
           setNewlyGranted(newlyEarned);
           setShowModal(true);
-          // ローカルストレージを更新
+          // ローカルストレージを更新（一度表示した称号は再度表示しない）
           localStorage.setItem(lastCheckedKey, JSON.stringify(currentTitleIds));
         }
       } catch (error) {
@@ -42,11 +45,11 @@ export const TitleUnlockedModal: React.FC = () => {
     // 初回チェック
     checkForNewTitles();
 
-    // 定期的にチェック（30秒ごと）
+    // 定期的にチェック（30秒ごと）- モーダルが表示されていない間のみ
     const interval = setInterval(checkForNewTitles, 30000);
     
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, showModal]);
 
   if (!showModal || newlyGranted.length === 0) return null;
 
@@ -139,7 +142,10 @@ export const TitleUnlockedModal: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setShowModal(false)}
+          onClick={() => {
+            setShowModal(false);
+            setNewlyGranted([]); // モーダルを閉じたら状態をリセット
+          }}
           style={{
             width: '100%',
             padding: '12px',

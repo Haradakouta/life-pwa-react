@@ -9,6 +9,7 @@ import { DatePickerModal } from '../common/DatePickerModal';
 
 export const ExpenseForm: React.FC = () => {
   const { addExpense } = useExpenseStore();
+  const [type, setType] = useState<'expense' | 'income'>('expense');
   const [category, setCategory] = useState<ExpenseCategory>('food');
   const [customCategory, setCustomCategory] = useState('');
   const [amount, setAmount] = useState('');
@@ -16,7 +17,7 @@ export const ExpenseForm: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const categories: Array<{ value: ExpenseCategory; label: string }> = [
+  const expenseCategories: Array<{ value: ExpenseCategory; label: string }> = [
     { value: 'food', label: '食費' },
     { value: 'transport', label: '交通費' },
     { value: 'utilities', label: '光熱費' },
@@ -24,6 +25,14 @@ export const ExpenseForm: React.FC = () => {
     { value: 'health', label: '医療' },
     { value: 'other', label: 'その他' },
   ];
+
+  const incomeCategories: Array<{ value: ExpenseCategory; label: string }> = [
+    { value: 'other', label: '給与' },
+    { value: 'other', label: '賞与' },
+    { value: 'other', label: 'その他' },
+  ];
+
+  const categories = type === 'expense' ? expenseCategories : incomeCategories;
 
   const handleSubmit = () => {
     if (!amount || Number(amount) <= 0) {
@@ -37,6 +46,7 @@ export const ExpenseForm: React.FC = () => {
     }
 
     addExpense({
+      type,
       category,
       customCategory: category === 'other' ? customCategory.trim() : undefined,
       amount: Number(amount),
@@ -49,7 +59,7 @@ export const ExpenseForm: React.FC = () => {
     setMemo('');
     setCustomCategory('');
 
-    alert('支出を記録しました！');
+    alert(`${type === 'expense' ? '支出' : '収入'}を記録しました！`);
   };
 
   const formatDate = (date: Date) => {
@@ -58,6 +68,49 @@ export const ExpenseForm: React.FC = () => {
 
   return (
     <div className="card">
+      <label>種別</label>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+        <button
+          onClick={() => {
+            setType('expense');
+            setCategory('food');
+          }}
+          style={{
+            flex: 1,
+            padding: '12px',
+            background: type === 'expense' ? 'var(--primary)' : 'var(--background)',
+            color: type === 'expense' ? '#fff' : 'var(--text)',
+            border: `2px solid ${type === 'expense' ? 'var(--primary)' : 'var(--border)'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: type === 'expense' ? 600 : 400,
+          }}
+        >
+          支出
+        </button>
+        <button
+          onClick={() => {
+            setType('income');
+            setCategory('other');
+            setCustomCategory('');
+          }}
+          style={{
+            flex: 1,
+            padding: '12px',
+            background: type === 'income' ? 'var(--primary)' : 'var(--background)',
+            color: type === 'income' ? '#fff' : 'var(--text)',
+            border: `2px solid ${type === 'income' ? 'var(--primary)' : 'var(--border)'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: type === 'income' ? 600 : 400,
+          }}
+        >
+          収入
+        </button>
+      </div>
+
       <label>日付</label>
       <button
         onClick={() => setIsDatePickerOpen(true)}

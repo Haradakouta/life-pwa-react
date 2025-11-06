@@ -83,7 +83,7 @@ export const ExpenseList: React.FC = () => {
 
       {monthlyExpenses.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
-          この月の支出はまだありません
+          この月の収支はまだありません
         </p>
       ) : (
         <div className="list">
@@ -115,8 +115,8 @@ export const ExpenseList: React.FC = () => {
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--danger)' }}>
-                    ¥{formatAmount(expense.amount)}
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: (expense.type || 'expense') === 'income' ? '#10b981' : 'var(--danger)' }}>
+                    {(expense.type || 'expense') === 'income' ? '+' : '-'}¥{formatAmount(expense.amount)}
                   </span>
                   <button
                     className="delete"

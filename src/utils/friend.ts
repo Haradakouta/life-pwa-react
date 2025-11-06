@@ -56,9 +56,10 @@ export const sendFriendRequest = async (
     await createNotification(receiverId, senderId, senderName, 'friend_request', { actorAvatar: senderAvatar });
 
     console.log(`✅ [sendFriendRequest] Request sent: ${senderId} -> ${receiverId}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [sendFriendRequest] Failed to send request:`, error);
-    throw new Error(`フレンドリクエストの送信に失敗しました: ${error.message || '不明なエラー'}`);
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    throw new Error(`フレンドリクエストの送信に失敗しました: ${errorMessage}`);
   }
 };
 
@@ -116,9 +117,10 @@ export const acceptFriendRequest = async (
     }
 
     console.log(`✅ [acceptFriendRequest] Request accepted: ${accepterId} accepts ${requesterId}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [acceptFriendRequest] Failed to accept request:`, error);
-    throw new Error(`フレンドリクエストの承認に失敗しました: ${error.message || '不明なエラー'}`);
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    throw new Error(`フレンドリクエストの承認に失敗しました: ${errorMessage}`);
   }
 };
 
@@ -146,9 +148,10 @@ export const declineFriendRequest = async (
     // 通知は送信しない（拒否されたことを相手に知らせる必要はない場合が多い）
 
     console.log(`✅ [declineFriendRequest] Request declined: ${declinerId} declines ${requesterId}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [declineFriendRequest] Failed to decline request:`, error);
-    throw new Error(`フレンドリクエストの拒否に失敗しました: ${error.message || '不明なエラー'}`);
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    throw new Error(`フレンドリクエストの拒否に失敗しました: ${errorMessage}`);
   }
 };
 
@@ -180,9 +183,10 @@ export const removeFriend = async (
     await batch.commit();
 
     console.log(`✅ [removeFriend] Friend removed: ${userId} removes ${friendId}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [removeFriend] Failed to remove friend:`, error);
-    throw new Error(`フレンドの解除に失敗しました: ${error.message || '不明なエラー'}`);
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    throw new Error(`フレンドの解除に失敗しました: ${errorMessage}`);
   }
 };
 

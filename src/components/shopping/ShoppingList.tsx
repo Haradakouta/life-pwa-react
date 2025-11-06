@@ -2,23 +2,14 @@
  * 買い物リスト表示コンポーネント
  */
 import React, { useState } from 'react';
-import { useShoppingStore, useStockStore, useExpenseStore } from '../../store';
+import { useShoppingStore, useStockStore } from '../../store';
 import { MdDelete, MdInventory, MdCheckCircle } from 'react-icons/md';
 
 export const ShoppingList: React.FC = () => {
   const { items, toggleItem, deleteItem, clearCompleted } = useShoppingStore();
   const { addStock } = useStockStore();
-  const { addExpense } = useExpenseStore();
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 合計金額を計算
-  const totalAmount = items
-    .filter((item) => !item.checked)
-    .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-
-  const checkedAmount = items
-    .filter((item) => item.checked)
-    .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
   const handleClear = () => {
     if (confirm('チェック済みのアイテムをすべて削除しますか？')) {
@@ -33,13 +24,9 @@ export const ShoppingList: React.FC = () => {
       return;
     }
 
-    // 価格情報がある商品の合計金額を計算
-    const totalPrice = checkedItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-    const priceInfo = totalPrice > 0 ? `\n（合計金額: ¥${totalPrice.toLocaleString()}を家計簿に記録します）` : '';
-
     if (
       !confirm(
-        `チェック済みのアイテム ${checkedItems.length}個を在庫に追加しますか？\n（賞味期限は7日後に設定されます）${priceInfo}`
+        `チェック済みのアイテム ${checkedItems.length}個を在庫に追加しますか？\n（賞味期限は7日後に設定されます）`
       )
     ) {
       return;
@@ -54,16 +41,6 @@ export const ShoppingList: React.FC = () => {
       });
     });
 
-    // 家計簿に記録（価格情報がある場合のみ）
-    if (totalPrice > 0) {
-      const itemNames = checkedItems.map((item) => item.name).join('、');
-      addExpense({
-        category: 'food',
-        amount: totalPrice,
-        memo: `買い物: ${itemNames}`,
-        date: new Date().toISOString(),
-      });
-    }
 
     clearCompleted();
 
@@ -83,19 +60,6 @@ export const ShoppingList: React.FC = () => {
         </p>
       ) : (
         <>
-          {/* 合計金額表示 */}
-          <div style={{ marginBottom: '16px', padding: '12px', background: 'var(--background)', borderRadius: '8px', border: '2px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>未購入の合計</span>
-              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.1rem' }}>¥{totalAmount.toLocaleString()}</span>
-            </div>
-            {checkedAmount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>購入済みの合計</span>
-                <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>¥{checkedAmount.toLocaleString()}</span>
-              </div>
-            )}
-          </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {items.map((item) => (
               <li
@@ -144,11 +108,6 @@ export const ShoppingList: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    {item.price && (
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                        ¥{item.price.toLocaleString()} {item.quantity > 1 && `(小計: ¥${(item.price * item.quantity).toLocaleString()})`}
-                      </div>
-                    )}
                   </div>
                 </label>
                 <button

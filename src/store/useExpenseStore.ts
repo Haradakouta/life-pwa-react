@@ -30,9 +30,11 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
 
   addExpense: async (data) => {
     const user = auth.currentUser;
+    const { type, ...restData } = data;
     const newExpense: Expense = {
       id: generateUUID(),
-      ...data,
+      type: type || 'expense', // デフォルトは支出
+      ...restData,
       date: data.date || new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
@@ -80,7 +82,13 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
 
   getTotalByMonth: (year, month) => {
     const expenses = get().getExpensesByMonth(year, month);
-    return expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalExpenses = expenses
+      .filter((expense) => expense.type === 'expense')
+      .reduce((sum, expense) => sum + expense.amount, 0);
+    const totalIncome = expenses
+      .filter((expense) => expense.type === 'income')
+      .reduce((sum, expense) => sum + expense.amount, 0);
+    return totalExpenses - totalIncome; // 純支出（支出 - 収入）
   },
 
   getTotalByCategory: (category, year, month) => {

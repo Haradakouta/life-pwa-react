@@ -24,6 +24,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+  const [savings, setSavings] = useState(''); // 貯金額
   const [prefecture, setPrefecture] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -48,9 +49,10 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
       // ステップ2へ
       setStep('code');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Email send error:', err);
-      setError(err.message || '確認コードの送信に失敗しました');
+      const errorMessage = err instanceof Error ? err.message : '確認コードの送信に失敗しました';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -74,8 +76,9 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
       // ステップ3へ
       setStep('profile');
-    } catch (err: any) {
-      setError(err.message || '確認に失敗しました');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '確認に失敗しました';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -145,12 +148,13 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           await createUserProfile(user.uid, email, username);
           profileCreated = true;
           console.log('✅ プロフィールを作成しました');
-        } catch (profileError: any) {
+        } catch (profileError: unknown) {
           retryCount++;
           console.error(`❌ プロフィール作成失敗 (試行 ${retryCount}/${maxRetries}):`, profileError);
 
           if (retryCount >= maxRetries) {
-            throw new Error(`プロフィール作成に失敗しました: ${profileError.message || '不明なエラー'}`);
+            const errorMessage = profileError instanceof Error ? profileError.message : '不明なエラー';
+            throw new Error(`プロフィール作成に失敗しました: ${errorMessage}`);
           }
 
           // リトライ前に少し待機
@@ -165,18 +169,19 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
         prefectureChangedAt: new Date().toISOString(),
       });
 
-      // 健康情報を設定に保存
-      if (age || height || weight) {
+      // 健康情報・家計情報を設定に保存
+      if (age || height || weight || savings) {
         try {
           const healthSettings: Partial<typeof settings> = {};
           if (age && age.trim() !== '') healthSettings.age = Number(age);
           if (height && height.trim() !== '') healthSettings.height = Number(height);
           if (weight && weight.trim() !== '') healthSettings.weight = Number(weight);
+          if (savings && savings.trim() !== '') healthSettings.savings = Number(savings);
 
           await updateSettings(healthSettings);
-          console.log('✅ 健康情報を保存しました');
-        } catch (healthErr: any) {
-          console.error('健康情報の保存に失敗しました:', healthErr);
+          console.log('✅ 個人情報を保存しました');
+        } catch (healthErr: unknown) {
+          console.error('個人情報の保存に失敗しました:', healthErr);
           // エラーは無視して続行（必須ではない）
         }
       }
@@ -185,9 +190,10 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
       // ログイン画面に戻る（自動的にログイン状態になる）
       onBack();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Account creation error:', err);
-      setError(err.message || 'アカウント作成に失敗しました');
+      const errorMessage = err instanceof Error ? err.message : 'アカウント作成に失敗しました';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -212,7 +218,8 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       await saveVerificationCode(email, code);
       await sendVerificationEmail(email, code);
       alert('確認コードを再送信しました！');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error('Code resend error:', err);
       setError('再送信に失敗しました');
     } finally {
       setLoading(false);
@@ -363,7 +370,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
             <MdHealthAndSafety /> 健康情報を設定
           </h2>
           <p className="step-description">
-            AI健康アドバイスの精度向上のため、年齢・身長・体重を設定してください（任意）
+            個人情報を入力してください（任意）
           </p>
 
           <div className="form-group">
@@ -406,6 +413,20 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               min="1"
               max="500"
               step="0.1"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              <MdHealthAndSafety /> 貯金額（円）
+            </label>
+            <input
+              type="number"
+              value={savings}
+              onChange={(e) => setSavings(e.target.value)}
+              placeholder="例: 1000000"
+              min="0"
+              step="1000"
             />
           </div>
 

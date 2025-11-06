@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { MdArrowBack, MdDelete, MdFavorite, MdFavoriteBorder, MdComment, MdSend } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { getPost, deletePost, getRelativeTime, addLike, removeLike, hasUserLiked, addComment, deleteComment, getPostComments } from '../../utils/post';
+import { getPost, deletePost, getRelativeTime, addLike, removeLike, hasUserLiked, addComment, deleteComment, getPostComments, getPostReplies } from '../../utils/post';
 import { getUserProfile } from '../../utils/profile';
 import type { Post, Comment } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
+import { PostCard } from './PostCard';
 
 interface PostDetailScreenProps {
   postId: string;
   onBack: () => void;
   onPostDeleted: () => void;
   onUserClick: (userId: string) => void;
+  onPostClick?: (postId: string) => void; // リプライへのリプライ用
 }
 
 export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
@@ -18,10 +20,17 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
   onBack,
   onPostDeleted,
   onUserClick,
+  onPostClick,
 }) => {
+  const handlePostClick = (replyPostId: string) => {
+    if (onPostClick) {
+      onPostClick(replyPostId);
+    }
+  };
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [replies, setReplies] = useState<Post[]>([]); // リプライ投稿
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(0);
@@ -51,6 +60,10 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           // コメント一覧を取得
           const fetchedComments = await getPostComments(postId);
           setComments(fetchedComments);
+          
+          // リプライ投稿一覧を取得
+          const fetchedReplies = await getPostReplies(postId);
+          setReplies(fetchedReplies);
         } else {
           alert('投稿が見つかりません');
           onBack();
@@ -618,6 +631,26 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                   <MdSend size={20} />
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* リプライ一覧 */}
+          {replies.length > 0 && (
+            <div style={{ marginTop: '24px', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--text)' }}>
+                リプライ ({replies.length})
+              </h3>
+              {replies.map((reply) => (
+                <PostCard
+                  key={reply.id}
+                  post={reply}
+                  onPostClick={handlePostClick}
+                  onUserClick={onUserClick}
+                  onQuoteRepost={undefined}
+                  showPinButton={false}
+                  onPinToggle={undefined}
+                />
+              ))}
             </div>
           )}
 

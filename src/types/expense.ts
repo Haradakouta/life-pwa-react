@@ -1,8 +1,9 @@
 /**
- * 支出（Expense）の型定義
+ * 収支（Expense/Income）の型定義
  */
 export interface Expense {
   id: string;
+  type: 'expense' | 'income'; // 支出 or 収入
   category: ExpenseCategory;
   customCategory?: string; // カテゴリが'other'の時のカスタムカテゴリ名
   amount: number;
@@ -21,6 +22,7 @@ export type ExpenseCategory =
   | 'other'; // その他
 
 export interface ExpenseFormData {
+  type: 'expense' | 'income'; // 支出 or 収入
   category: ExpenseCategory;
   customCategory?: string; // カテゴリが'other'の時のカスタムカテゴリ名
   amount: number;

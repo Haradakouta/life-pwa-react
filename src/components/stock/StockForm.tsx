@@ -4,34 +4,55 @@
 import React, { useState } from 'react';
 import { useStockStore } from '../../store';
 import type { StockCategory } from '../../types';
+import { DatePickerModal } from '../common/DatePickerModal';
+import { MdCalendarToday } from 'react-icons/md';
 
 export const StockForm: React.FC = () => {
   const { addStock } = useStockStore();
   const [name, setName] = useState('');
-  const [daysRemaining, setDaysRemaining] = useState('');
+  const [expiryDate, setExpiryDate] = useState<Date>(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7); // デフォルトは7日後
+    return date;
+  });
   const [quantity, setQuantity] = useState('1');
   const [category, setCategory] = useState<StockCategory>('other');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleSubmit = () => {
-    if (!name || !daysRemaining) {
-      alert('品目名と残り日数を入力してください');
+    if (!name) {
+      alert('品目名を入力してください');
       return;
     }
 
+    // 賞味期限から残り日数を計算
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+    const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
     addStock({
       name,
-      daysRemaining: Number(daysRemaining),
+      daysRemaining,
+      expiryDate: expiryDate.toISOString(),
       quantity: Number(quantity),
       category,
     });
 
     // フォームをリセット
     setName('');
-    setDaysRemaining('');
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 7);
+    setExpiryDate(defaultDate);
     setQuantity('1');
     setCategory('other');
 
     alert('在庫を追加しました！');
+  };
+
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
   };
 
   const categoryOptions = [
@@ -72,13 +93,27 @@ export const StockForm: React.FC = () => {
           </option>
         ))}
       </select>
-      <label>残り日数</label>
-      <input
-        type="number"
-        value={daysRemaining}
-        onChange={(e) => setDaysRemaining(e.target.value)}
-        placeholder="例: 3"
-      />
+      <label>賞味期限</label>
+      <button
+        onClick={() => setIsDatePickerOpen(true)}
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: 'var(--background)',
+          color: 'var(--text)',
+          border: '2px solid var(--border)',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '15px',
+        }}
+      >
+        <span>{formatDate(expiryDate)}</span>
+        <MdCalendarToday size={20} color="var(--primary)" />
+      </button>
       <label>数量</label>
       <input
         type="number"
@@ -89,6 +124,13 @@ export const StockForm: React.FC = () => {
       <button className="submit" onClick={handleSubmit}>
         在庫に登録
       </button>
+
+      <DatePickerModal
+        isOpen={isDatePickerOpen}
+        selectedDate={expiryDate}
+        onClose={() => setIsDatePickerOpen(false)}
+        onConfirm={setExpiryDate}
+      />
     </div>
   );
 };

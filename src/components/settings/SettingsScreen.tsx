@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
@@ -11,6 +11,31 @@ import { TitleScreen } from './TitleScreen';
 import { PrefectureSettingScreen } from './PrefectureSettingScreen';
 import { DailyMissionScreen } from '../mission/DailyMissionScreen';
 import { CosmeticShopScreen } from '../cosmetic/CosmeticShopScreen';
+
+/**
+ * BMIを計算する関数
+ * @param height 身長（cm）
+ * @param weight 体重（kg）
+ * @returns BMI値
+ */
+const calculateBMI = (height: number, weight: number): number => {
+  const heightInMeters = height / 100;
+  return weight / (heightInMeters * heightInMeters);
+};
+
+/**
+ * BMIカテゴリを取得する関数
+ * @param bmi BMI値
+ * @returns BMIカテゴリの文字列
+ */
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.5) return '低体重';
+  if (bmi < 25) return '普通体重';
+  if (bmi < 30) return '肥満度1';
+  if (bmi < 35) return '肥満度2';
+  if (bmi < 40) return '肥満度3';
+  return '肥満度4';
+};
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
@@ -285,6 +310,45 @@ export const SettingsScreen: React.FC = () => {
             <MdCode size={18} style={{ marginRight: '8px' }} />
             JSON
           </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdHealthAndSafety size={24} color="var(--primary)" />
+          健康情報
+        </h3>
+        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)' }}>
+          {settings.age && (
+            <p style={{ marginBottom: '8px' }}>
+              <strong>年齢:</strong> {settings.age}歳
+            </p>
+          )}
+          {settings.height && (
+            <p style={{ marginBottom: '8px' }}>
+              <strong>身長:</strong> {settings.height}cm
+            </p>
+          )}
+          {settings.weight && (
+            <p style={{ marginBottom: '8px' }}>
+              <strong>体重:</strong> {settings.weight}kg
+            </p>
+          )}
+          {settings.height && settings.weight && (
+            <p style={{ marginBottom: '8px', color: 'var(--primary)', fontWeight: '600' }}>
+              <strong>BMI:</strong> {calculateBMI(settings.height, settings.weight).toFixed(1)} ({getBMICategory(calculateBMI(settings.height, settings.weight))})
+            </p>
+          )}
+          {settings.savings !== undefined && settings.savings !== null && (
+            <p style={{ marginBottom: '8px', marginTop: '12px' }}>
+              <strong>貯金額:</strong> ¥{settings.savings.toLocaleString()}
+            </p>
+          )}
+          {(!settings.age && !settings.height && !settings.weight && settings.savings === undefined) && (
+            <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+              個人情報が未設定です
+            </p>
+          )}
         </div>
       </div>
 

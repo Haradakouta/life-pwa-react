@@ -51,9 +51,10 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
     try {
       const result = await callDeleteAllPosts();
       setMessage(`すべての投稿が削除されました: ${JSON.stringify(result.data)}`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error deleting all posts:", e);
-      setError(`投稿の削除に失敗しました: ${e.message || '不明なエラー'}`);
+      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
+      setError(`投稿の削除に失敗しました: ${errorMessage}`);
     }
   };
 
@@ -64,9 +65,10 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
     try {
       const result = await callDeleteAllFollows();
       setMessage(`すべてのフォロー関係が削除されました: ${JSON.stringify(result.data)}`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error deleting all follows:", e);
-      setError(`フォロー関係の削除に失敗しました: ${e.message || '不明なエラー'}`);
+      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
+      setError(`フォロー関係の削除に失敗しました: ${errorMessage}`);
     }
   };
 

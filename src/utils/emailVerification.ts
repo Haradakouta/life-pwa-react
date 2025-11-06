@@ -60,23 +60,29 @@ export const verifyCode = async (email: string, inputCode: string): Promise<{ va
 // メール送信（Cloud Functionsを使用）
 export const sendVerificationEmail = async (email: string, code: string) => {
   try {
-    // Cloud Functionを呼び出す（リージョン: us-central1）
-    const { getFunctions, httpsCallable } = await import('firebase/functions');
-    const { default: app } = await import('../config/firebase');
+    // onRequest関数は直接HTTPリクエストで呼び出す
+    const url = 'https://us-central1-oshi-para.cloudfunctions.net/sendVerificationEmailV2';
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code }),
+    });
 
-    const functions = getFunctions(app, 'us-central1');
-    const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
 
-    // Cloud Functionにメール送信をリクエスト
-    const result = await sendEmail({ email, code });
-
+    const result = await response.json();
     console.log(`✅ Verification email sent to ${email}`, result);
   } catch (error: any) {
     console.error('Failed to send email via Cloud Functions:', error);
     console.error('Error details:', {
-      code: error.code,
       message: error.message,
-      details: error.details,
+      stack: error.stack,
     });
 
     // フォールバック: 開発モードとしてコンソールに表示

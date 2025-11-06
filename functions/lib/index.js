@@ -1,20 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmail = void 0;
+exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmailV2 = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
+const express = require("express");
+const cors = require("cors");
 admin.initializeApp();
 const db = admin.firestore();
+// CORS設定
+const corsOptions = {
+    origin: ['https://haradakouta.github.io', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+};
 // シークレットを使用する関数の設定
 // Firebase Functions v2では、シークレットは自動的にprocess.envに設定されます
-exports.sendVerificationEmail = functions.https.onCall({
-    region: 'us-central1',
-    secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],
-}, async (request) => {
-    const { email, code } = request.data;
+const sendVerificationEmailApp = express();
+sendVerificationEmailApp.use(cors(corsOptions));
+sendVerificationEmailApp.use(express.json());
+sendVerificationEmailApp.post('/', async (req, res) => {
+    const { email, code } = req.body;
     if (!email || !code) {
-        throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
+        res.status(400).json({ error: 'メールアドレスと確認コードが必要です' });
+        return;
     }
     // シークレットの確認
     const gmailEmail = process.env.GMAIL_EMAIL;
@@ -23,7 +33,8 @@ exports.sendVerificationEmail = functions.https.onCall({
         console.error('Gmail credentials not found in environment variables');
         console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
         console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'SET' : 'NOT SET');
-        throw new functions.https.HttpsError('failed-precondition', 'Gmail認証情報が設定されていません。管理者に連絡してください。');
+        res.status(500).json({ error: 'Gmail認証情報が設定されていません。管理者に連絡してください。' });
+        return;
     }
     // シークレットから環境変数を取得してtransporterを作成
     const transporter = nodemailer.createTransport({
@@ -202,7 +213,7 @@ https://haradakouta.github.io/life-pwa-react/
     try {
         await transporter.sendMail(mailOptions);
         console.log(`Verification email sent to ${email}`);
-        return { success: true };
+        res.json({ success: true });
     }
     catch (error) {
         console.error('Error sending email:', error);
@@ -213,9 +224,13 @@ https://haradakouta.github.io/life-pwa-react/
             response: error.response,
             responseCode: error.responseCode,
         });
-        throw new functions.https.HttpsError('internal', `メール送信に失敗しました: ${errorMessage}`);
+        res.status(500).json({ error: `メール送信に失敗しました: ${errorMessage}` });
     }
 });
+exports.sendVerificationEmailV2 = functions.https.onRequest({
+    region: 'us-central1',
+    secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],
+}, sendVerificationEmailApp);
 exports.sendPasswordResetEmail = functions.https.onCall({
     region: 'us-central1',
     secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],

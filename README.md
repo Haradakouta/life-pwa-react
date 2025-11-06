@@ -24,6 +24,7 @@
 - **押し付けない設計** - ユーザーが自分で選択できる
 
 ### 📱 モダンなUI/UX
+- **X（Twitter）風のSNS機能** - シンプルで直感的なタイムライン
 - **React Icons** - 統一されたアイコンシステム
 - **カードシャドウ** - 奥行きのあるデザイン
 - **ホバーエフェクト** - スムーズなアニメーション
@@ -31,35 +32,36 @@
 - **レスポンシブ** - スマホ・タブレット対応
 
 ### 🔧 全15画面の完全機能
-1. **ダッシュボード** - 今日のサマリー表示
+1. **ダッシュボード** - 今日のカロリー・今月の支出・BMI表示
 2. **食事記録** - カロリー・支出管理
-3. **在庫管理** - 賞味期限アラート
-4. **買い物リスト** - チェック機能付き
+3. **在庫管理** - 賞味期限カレンダー表示・期限切れアラート
+4. **買い物リスト** - チェック機能付き（金額表示なし）
 5. **AIレシピ** - Gemini APIでレシピ生成
 6. **バーコードスキャン** - ZXingで商品情報取得＋レシートOCR
 7. **レポート** - グラフで可視化＋月次レポート＋AI改善提案
 8. **バッジ** - アチーブメントシステム（14種類のバッジ）
-9. **設定** - トグルスイッチUI＋通知設定
-10. **家計簿** - 支出管理・予算管理・カテゴリ別集計
+9. **設定** - トグルスイッチUI＋通知設定＋健康情報表示
+10. **家計簿** - 収入・支出管理・予算管理・カテゴリ別集計
 11. **PWA対応** - オフライン動作
-12. **SNSタイムライン** - X（Twitter）風のソーシャル機能（Phase 6完了）
+12. **SNSタイムライン** - X（Twitter）風のソーシャル機能
 13. **投稿作成・編集** - 画像投稿、ハッシュタグ、メンション対応
 14. **プロフィール** - フォロー/アンフォロー機能、投稿一覧
-15. **通知** - いいね・コメント・フォロー通知（リアルタイム）
+15. **通知** - いいね・コメント・フォロー・引用・リプライ通知（リアルタイム）
 
 ### 🔐 Firebase統合
 - **Firebase Authentication** - ユーザー認証（メール/パスワード、Google）
 - **Firestore Database** - クラウドデータ保存（ユーザーデータ、投稿、通知）
 - **Firebase Storage** - 画像アップロード（プロフィール画像、投稿画像）
 - **リアルタイム同期** - 複数デバイス間でデータ同期
-- **3ステップ登録** - メール確認コード方式の新規登録フロー
-- **Cloud Functions** - Nodemailer + Gmail SMTPでメール送信
+- **3ステップ登録** - メール確認コード方式の新規登録フロー（個人情報入力含む）
+- **Cloud Functions** - Nodemailer + Gmail SMTPでメール送信（v2, Secret Manager）
 
 ### 🎮 継続利用を促進する仕組み
-- **🔔 通知機能** - 朝・昼・夕の食事記録リマインダー（Web Notification API）+ SNS通知（いいね・コメント・フォロー）
+- **🔔 通知機能** - 朝・昼・夕の食事記録リマインダー（Web Notification API）+ SNS通知
 - **🏆 バッジシステム** - 14種類のアチーブメント（連続記録、マイルストーン、目標達成、機能活用）
 - **📊 月次レポート** - サマリー、先月比較、Gemini APIによるAI改善提案
 - **📱 SNS機能** - X（Twitter）風のタイムライン、フォロー機能、リアルタイム通知
+- **🎨 コスメティック** - フレーム、名前色、スキン（称号獲得で解放）
 
 ---
 
@@ -71,15 +73,15 @@
 
 ## 📸 スクリーンショット
 
-### シームレスな機能連携
-- バーコードスキャン後に自動で在庫画面へ遷移
-- 買い物リストから在庫への一括追加（グラデーションカードで強調）
-- 在庫アイテムから買い物リストへワンタップ追加
+### X風のSNS機能
+- シンプルで直感的なタイムライン
+- ホバーエフェクト付きのアクションボタン
+- スレッド風の投稿詳細表示
 
-### AI健康アドバイザー
-- 「ポテトチップス」→「素焼きアーモンド、焼き野菜チップス」を提案
-- 「コーラ」→「炭酸水、無糖の紅茶」を提案
-- カテゴリ別の健康懸念と代替案を表示
+### 健康管理
+- ダッシュボードにBMI表示
+- 賞味期限カレンダー表示
+- 健康情報の可視化
 
 ---
 
@@ -87,8 +89,8 @@
 
 ### フロントエンド
 - **React 19** - 最新のReact
-- **TypeScript** - 型安全性
-- **Vite** - 高速ビルドツール
+- **TypeScript 5** - 型安全性
+- **Vite 7** - 高速ビルドツール
 - **Zustand** - 軽量な状態管理
 - **Recharts** - データ可視化
 - **React Icons** - アイコンライブラリ
@@ -109,6 +111,13 @@
 ### その他
 - **@zxing/library** - バーコードスキャン
 - **localStorage** - データ永続化
+
+### バックエンド
+- **Firebase Authentication** - ユーザー認証
+- **Firestore Database** - NoSQLクラウドデータベース
+- **Firebase Storage** - 画像アップロード
+- **Cloud Functions (v2)** - メール送信（Nodemailer + Gmail SMTP）
+- **Secret Manager** - 環境変数管理
 
 ---
 
@@ -158,27 +167,23 @@ VITE_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID_HERE
 
 ### 4. Firebase Cloud Functions の設定（メール送信用）
 
-Cloud Functionsを使用してメール送信機能を有効化します。
+詳細は[README_EMAIL_SETUP.md](./README_EMAIL_SETUP.md)を参照してください。
 
-#### Gmail設定
-1. Googleアカウントで2段階認証を有効化
-2. アプリパスワードを作成（https://myaccount.google.com/apppasswords）
-3. 16桁のパスワードをメモ
-
-#### Firebase Functions環境変数を設定
-```bash
-firebase login
-firebase use your-project-id
-firebase functions:config:set gmail.email="your-email@gmail.com" gmail.password="your-app-password"
-```
-
-#### Cloud Functionsをデプロイ
-```bash
-cd functions
-npm install
-cd ..
-firebase deploy --only functions
-```
+#### 簡単な手順:
+1. Gmailアプリパスワードを取得
+2. Firebase Functionsにシークレットとして設定:
+   ```bash
+   firebase functions:secrets:set GMAIL_EMAIL
+   firebase functions:secrets:set GMAIL_APP_PASSWORD
+   ```
+3. Cloud Functionsをデプロイ:
+   ```bash
+   cd functions
+   npm install
+   npm run build
+   cd ..
+   firebase deploy --only functions
+   ```
 
 ### 5. 開発サーバー起動
 
@@ -212,6 +217,8 @@ npm run preview
 npm run deploy
 ```
 
+または、GitHub Actionsで自動デプロイされます（mainブランチへのpush時に自動実行）。
+
 ---
 
 ## 📂 プロジェクト構成
@@ -222,12 +229,14 @@ life-pwa-react/
 │   ├── icon-192.png           # PWAアイコン
 │   ├── icon-512.png
 │   ├── manifest.webmanifest   # PWAマニフェスト
-│   └── sw.js                  # Service Worker
+│   ├── sw.js                   # Service Worker
+│   └── frames/                 # フレーム画像
 │
 ├── src/
 │   ├── api/
 │   │   ├── gemini.ts          # Gemini API
-│   │   └── rakuten.ts         # 商品検索API
+│   │   ├── rakuten.ts         # 商品検索API
+│   │   └── vision.ts           # 画像認識API
 │   │
 │   ├── components/
 │   │   ├── layout/            # レイアウト
@@ -235,50 +244,57 @@ life-pwa-react/
 │   │   ├── dashboard/         # ダッシュボード
 │   │   ├── meals/             # 食事記録
 │   │   ├── settings/          # 設定
-│   │   ├── stock/             # 在庫管理
-│   │   ├── shopping/          # 買い物リスト
-│   │   ├── recipe/            # AIレシピ
-│   │   ├── barcode/           # バーコードスキャン
-│   │   ├── expense/           # 家計簿
-│   │   └── report/            # レポート
+│   │   ├── stock/              # 在庫管理
+│   │   ├── shopping/           # 買い物リスト
+│   │   ├── recipe/             # AIレシピ
+│   │   ├── barcode/            # バーコードスキャン
+│   │   ├── expense/            # 家計簿
+│   │   ├── report/             # レポート
+│   │   ├── badges/             # バッジ
+│   │   ├── social/             # SNS機能
+│   │   ├── mission/            # 日次ミッション
+│   │   ├── cosmetic/           # コスメティック
+│   │   └── common/              # 共通コンポーネント
 │   │
 │   ├── store/
-│   │   ├── useIntakeStore.ts  # 食事記録ストア
-│   │   ├── useExpenseStore.ts # 家計簿ストア
-│   │   ├── useStockStore.ts   # 在庫ストア
+│   │   ├── useIntakeStore.ts   # 食事記録ストア
+│   │   ├── useExpenseStore.ts  # 家計簿ストア
+│   │   ├── useStockStore.ts    # 在庫ストア
 │   │   ├── useShoppingStore.ts # 買い物リストストア
-│   │   ├── useRecipeStore.ts  # レシピストア
-│   │   └── useSettingsStore.ts # 設定ストア
+│   │   ├── useRecipeStore.ts   # レシピストア
+│   │   ├── useSettingsStore.ts # 設定ストア
+│   │   └── useBadgeStore.ts    # バッジストア
 │   │
 │   ├── config/
-│   │   └── firebase.ts        # Firebase設定
+│   │   └── firebase.ts         # Firebase設定
 │   │
-│   ├── types/                 # TypeScript型定義
-│   ├── utils/
-│   │   ├── auth.ts            # 認証ユーティリティ
-│   │   ├── emailVerification.ts # メール確認コード
-│   │   ├── firestore.ts       # Firestore操作
-│   │   └── healthAdvisor.ts   # AI健康アドバイザー
-│   │
+│   ├── types/                  # TypeScript型定義
+│   ├── utils/                   # ユーティリティ関数
+│   ├── data/                    # データ定義
 │   ├── styles/
-│   │   └── global.css         # グローバルスタイル
+│   │   └── global.css          # グローバルスタイル
 │   │
 │   ├── App.tsx
 │   └── main.tsx
 │
-├── functions/                 # Cloud Functions
+├── functions/                  # Cloud Functions
 │   ├── src/
-│   │   └── index.ts           # メール送信Function
+│   │   └── index.ts            # メール送信Function
 │   ├── package.json
 │   └── tsconfig.json
 │
 ├── vite.config.ts
-├── firebase.json              # Firebase設定
-├── .firebaserc                # Firebaseプロジェクト
-├── firestore.rules            # Firestoreルール
+├── firebase.json               # Firebase設定
+├── .firebaserc                 # Firebaseプロジェクト
+├── firestore.rules             # Firestoreルール
+├── storage.rules               # Storageルール
 ├── package.json
-├── CLAUDE.md                  # 開発メモ
-└── README.md                  # このファイル
+├── README.md                   # このファイル
+├── README_EMAIL_SETUP.md       # メール設定手順
+├── GEMINI.md                   # Gemini API情報
+├── cursor.md                   # 開発用メモ（AIコーディング用）
+└── .github/workflows/
+    └── deploy.yml              # GitHub Actions デプロイワークフロー
 ```
 
 ---
@@ -288,10 +304,7 @@ life-pwa-react/
 ### 1. シームレスな機能連携
 
 #### バーコードスキャン → 在庫管理
-```tsx
-// バーコードスキャン後、自動で在庫画面に遷移
-<BarcodeScreen onNavigateToStock={() => setCurrentScreen('stock')} />
-```
+- スキャン後、自動で在庫画面に遷移
 
 #### 買い物リスト → 在庫管理（目玉機能）
 - グラデーションカードで強調表示
@@ -323,13 +336,16 @@ life-pwa-react/
 11. 缶詰（シロップ漬け）
 12. 高脂質調味料
 
-#### 使用例
-```tsx
-// 買い物リストに「ポテトチップス」を追加しようとすると...
-→ 健康アドバイスモーダルが表示
-→ 代替案: 素焼きアーモンド、無塩ミックスナッツ、焼き野菜チップス
-→ ユーザーが選択: 代替案 or このまま追加
-```
+### 3. X風のSNS機能
+
+- **シンプルなタイムライン** - ホバー時に背景色が変わる
+- **円形のアクションボタン** - いいね、コメント、リポスト、ブックマーク、共有
+- **スレッド風の投稿詳細** - リプライへのリプライ、いいね機能
+- **引用リポスト** - 元の投稿を埋め込んで表示
+- **メンション機能** - @usernameでメンション
+- **レシピ添付** - AIレシピを投稿に添付
+- **ピン留め機能** - プロフィール画面でピン留め投稿を表示
+- **通知機能** - いいね・コメント・フォロー・引用・リプライ通知
 
 ---
 
@@ -381,9 +397,9 @@ location.reload();
 
 ## 🤝 コントリビューション
 
-このプロジェクトは[Claude Code](https://claude.com/claude-code)で開発されています。
+このプロジェクトは[Cursor](https://cursor.sh/)で開発されています。
 
-詳細な開発履歴は[CLAUDE.md](./CLAUDE.md)を参照してください。
+詳細な開発履歴は[cursor.md](./cursor.md)を参照してください。
 
 ---
 
@@ -394,30 +410,20 @@ location.reload();
 - [Zustand Documentation](https://zustand.docs.pmnd.rs/)
 - [Recharts Documentation](https://recharts.org/)
 - [Google Gemini API](https://ai.google.dev/)
+- [Firebase Documentation](https://firebase.google.com/docs)
 
 ---
 
 ## 🎯 今後の予定
 
 - [ ] Phase 7: ランキング機能（人気投稿ランキング、人気レシピランキング、トレンドハッシュタグ）
-- [ ] パフォーマンス最適化（バンドルサイズ削減: 現在1,768KB）
+- [ ] パフォーマンス最適化（バンドルサイズ削減）
 - [ ] ページ遷移アニメーション
 - [ ] E2Eテスト追加（Playwright）
 - [ ] アクセシビリティ向上（ARIA属性、キーボードナビゲーション）
-- [ ] 収入管理機能
-- [ ] データインポート機能
-
-## ✅ 最近の更新（2025-10-30）
-
-**Session 18: SNS関連バグ修正完了！**
-- ✅ フォロー/アンフォロー機能のバグ修正（`followerAvatar` undefined対応）
-- ✅ プロフィール画面での投稿表示修正（Firestoreセキュリティルール修正）
-- ✅ 通知機能の修正（`useAuth()`フック使用）
-- ✅ Firestoreルールの完全修正（`replyCount`、ネストフィールド対応）
-- ✅ デスクトップにルールファイルを作成（手動デプロイ用: `firestore-rules.txt`）
 
 ---
 
 **Happy Coding! 🚀**
 
-Made with ❤️ by Claude Code
+Made with ❤️ by Cursor

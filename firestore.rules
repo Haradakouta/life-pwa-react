@@ -190,6 +190,14 @@ service cloud.firestore {
       allow update, delete: if false; // 更新・削除は不可
     }
 
+    // 称号コレクション
+    match /users/{userId}/titles/{titleId} {
+      allow read: if isAuth(); // 認証済みユーザーは読み取り可能
+      allow create: if isAuth(); // システムが称号を付与する場合
+      allow update: if isOwner(userId); // 装備/外すは本人のみ
+      allow delete: if false; // 削除は不可
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

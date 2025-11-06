@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
+import app from '../../config/firebase';
 
 interface AdminScreenProps {
   onBack: () => void;
@@ -14,7 +15,8 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const functions = getFunctions();
+  // deleteAllPostsとdeleteAllFollowsはus-central1リージョンにデプロイされている
+  const functions = getFunctions(app, 'us-central1');
   const callDeleteAllPosts = httpsCallable(functions, 'deleteAllPosts');
   const callDeleteAllFollows = httpsCallable(functions, 'deleteAllFollows');
 

@@ -22,16 +22,44 @@ Firebase Cloud Functionsを使って、実際にメールを送信する機能�
 
 ### 2. Firebase Functionsに環境変数を設定
 
-ターミナルで以下のコマンドを実行：
+Firebase Functions v2では、環境変数をSecret Managerを使用して設定します。
+
+#### 方法: コマンドラインでシークレットとして設定（推奨）
 
 ```bash
-# Gmail設定
-firebase functions:config:set gmail.email="your-email@gmail.com"
-firebase functions:config:set gmail.password="アプリパスワード（スペースなし）"
+# Firebase CLIでログイン（まだの場合）
+firebase login
+
+# プロジェクトを選択
+firebase use oshi-para
+
+# Gmail環境変数をシークレットとして設定
+# 実行すると、値の入力を求められます
+firebase functions:secrets:set GMAIL_EMAIL
+firebase functions:secrets:set GMAIL_APP_PASSWORD
 
 # 例:
-# firebase functions:config:set gmail.email="example@gmail.com"
-# firebase functions:config:set gmail.password="abcdefghijklmnop"
+# firebase functions:secrets:set GMAIL_EMAIL
+# > Enter a value for GMAIL_EMAIL: your-email@gmail.com
+# 
+# firebase functions:secrets:set GMAIL_APP_PASSWORD
+# > Enter a value for GMAIL_APP_PASSWORD: abcdefghijklmnop
+```
+
+**注意**: 
+- `firebase functions:config:set`はv1用で、v2では使用できません
+- シークレットとして設定した環境変数は、Secret Managerに保存され、関数から安全にアクセスできます
+- デプロイ後、関数が自動的にシークレットにアクセスできるようになります
+
+#### シークレットの確認方法
+
+```bash
+# シークレットの一覧を確認
+firebase functions:secrets:list
+
+# 特定のシークレットの値を確認（プレーンテキストで表示されるため注意）
+firebase functions:secrets:access GMAIL_EMAIL
+firebase functions:secrets:access GMAIL_APP_PASSWORD
 ```
 
 ### 3. Cloud Functionsをデプロイ

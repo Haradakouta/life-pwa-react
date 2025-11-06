@@ -1,7 +1,7 @@
 /**
  * クイックアクションコンポーネント（3x3グリッド）
  */
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import type { Screen } from '../layout/BottomNav';
 import {
   MdRestaurant,
@@ -28,7 +28,7 @@ interface FunctionCard {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
-  const functionCards: FunctionCard[] = [
+  const functionCards: FunctionCard[] = useMemo(() => [
     {
       screen: 'meals',
       icon: <MdRestaurant size={32} />,
@@ -83,15 +83,15 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
       label: '設定',
       color: '#64748b',
     },
-  ];
+  ], []);
 
-  const handleClick = (card: FunctionCard) => {
+  const handleClick = useCallback((card: FunctionCard) => {
     if (card.onClick) {
       card.onClick();
     } else if (card.screen) {
       onNavigate(card.screen);
     }
-  };
+  }, [onNavigate]);
 
   return (
     <div className="function-grid">

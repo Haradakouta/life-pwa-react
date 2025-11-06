@@ -6,9 +6,10 @@ import { SearchScreen } from './SearchScreen';
 import NotificationScreen from './NotificationScreen';
 import { ConversationListScreen } from './ConversationListScreen';
 import { ChatScreen } from './ChatScreen';
-import { MdHome, MdSearch, MdNotifications, MdChat } from 'react-icons/md';
+import { RankingScreen } from './RankingScreen';
+import { MdHome, MdSearch, MdNotifications, MdChat, MdTrendingUp } from 'react-icons/md';
 
-type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm';
+type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm' | 'ranking';
 type View = 'main' | 'post-detail' | 'profile' | 'chat';
 
 export const SocialScreen: React.FC = () => {
@@ -187,6 +188,28 @@ export const SocialScreen: React.FC = () => {
           <MdChat size={20} />
           DM
         </button>
+        <button
+          onClick={() => setCurrentTab('ranking')}
+          style={{
+            flex: 1,
+            padding: '16px',
+            background: 'none',
+            border: 'none',
+            borderBottom: currentTab === 'ranking' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: currentTab === 'ranking' ? 'var(--primary)' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            fontSize: '15px',
+            fontWeight: currentTab === 'ranking' ? 600 : 400,
+          }}
+        >
+          <MdTrendingUp size={20} />
+          ランキング
+        </button>
       </div>
 
       {/* タブコンテンツ */}
@@ -206,6 +229,12 @@ export const SocialScreen: React.FC = () => {
         <ConversationListScreen
           onBack={handleBackToTimeline}
           onNavigateToProfile={handleUserClick}
+        />
+      )}
+      {currentTab === 'ranking' && (
+        <RankingScreen
+          onPostClick={handlePostClick}
+          onUserClick={handleUserClick}
         />
       )}
     </div>

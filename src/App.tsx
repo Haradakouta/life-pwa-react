@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react';
 import { Layout } from './components/layout/Layout';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { BadgeUnlockedModal } from './components/badges/BadgeUnlockedModal';
+import { TitleUnlockedModal } from './components/common/TitleUnlockedModal';
+import { PrefectureSettingScreen } from './components/settings/PrefectureSettingScreen';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { checkAndGrantTitles } from './utils/title';
 import {
   useSettingsStore,
   useIntakeStore,
@@ -50,6 +54,7 @@ function App() {
   const { settings } = useSettingsStore();
   const { user, loading: authLoading } = useAuth();
   const [syncing, setSyncing] = useState(false);
+  const [showPrefectureSetting, setShowPrefectureSetting] = useState(false);
 
   const intakeStore = useIntakeStore();
   const expenseStore = useExpenseStore();
@@ -63,6 +68,57 @@ function App() {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', settings.darkMode);
   }, [settings.darkMode]);
+
+  // スキンの適用
+  useEffect(() => {
+    if (!user) {
+      // ログアウト時にスキンクラスを削除
+      const skinClasses = document.body.className.match(/skin-\w+/g);
+      if (skinClasses) {
+        skinClasses.forEach(cls => document.body.classList.remove(cls));
+      }
+      return;
+    }
+
+    const applySkin = async () => {
+      try {
+        const { getUserCosmetics, getCosmeticById } = await import('./utils/cosmetic');
+        const userCosmetics = await getUserCosmetics(user.uid);
+        
+        if (!userCosmetics?.equippedSkin) {
+          // 装備中のスキンがない場合は既存のスキンクラスを削除
+          const skinClasses = document.body.className.match(/skin-\w+/g);
+          if (skinClasses) {
+            skinClasses.forEach(cls => document.body.classList.remove(cls));
+          }
+          return;
+        }
+
+        const cosmetic = getCosmeticById(userCosmetics.equippedSkin);
+        if (!cosmetic?.data.skinConfig?.cssClass) {
+          // スキンクラスがない場合は既存のスキンクラスを削除
+          const skinClasses = document.body.className.match(/skin-\w+/g);
+          if (skinClasses) {
+            skinClasses.forEach(cls => document.body.classList.remove(cls));
+          }
+          return;
+        }
+
+        // 既存のスキンクラスを削除
+        const skinClasses = document.body.className.match(/skin-\w+/g);
+        if (skinClasses) {
+          skinClasses.forEach(cls => document.body.classList.remove(cls));
+        }
+
+        // 新しいスキンクラスを適用
+        document.body.classList.add(cosmetic.data.skinConfig.cssClass);
+      } catch (error) {
+        console.error('スキン適用エラー:', error);
+      }
+    };
+
+    applySkin();
+  }, [user]);
 
   // バッジチェック（データが更新されたときに実行）
   useEffect(() => {
@@ -119,11 +175,20 @@ function App() {
 
     // バッジをチェック
     badgeStore.checkAndUnlockBadges(badgeData);
+
+    // 称号チェック（定期的に実行）
+    if (user) {
+      // 称号チェックを実行（エラーを無視）
+      checkAndGrantTitles(user.uid).catch((error) => {
+        console.debug('称号チェックエラー:', error);
+      });
+    }
   }, [
     intakeStore.intakes.length,
     expenseStore.expenses.length,
     stockStore.stocks.length,
     recipeStore.recipeHistory.length,
+    user?.uid,
   ]);
 
   // ログイン時にFirestoreと同期
@@ -160,15 +225,34 @@ function App() {
           console.log('✅ プロフィールが存在します');
         }
 
-        await Promise.all([
-          intakeStore.syncWithFirestore(),
-          expenseStore.syncWithFirestore(),
-          stockStore.syncWithFirestore(),
-          shoppingStore.syncWithFirestore(),
-          recipeStore.syncWithFirestore(),
-          settingsStore.syncWithFirestore(),
-        ]);
-        console.log('Sync completed for user:', user.uid);
+                    await Promise.all([
+                      intakeStore.syncWithFirestore(),
+                      expenseStore.syncWithFirestore(),
+                      stockStore.syncWithFirestore(),
+                      shoppingStore.syncWithFirestore(),
+                      recipeStore.syncWithFirestore(),
+                      settingsStore.syncWithFirestore(),
+                    ]);
+                    console.log('Sync completed for user:', user.uid);
+
+                    // ミッション進捗をチェック（ログイン時）
+                    try {
+                      const { checkAndUpdateMissions } = await import('./utils/mission');
+                      await checkAndUpdateMissions(user.uid, {
+                        intakeCount: intakeStore.intakes.length,
+                        expenseCount: expenseStore.expenses.length,
+                      });
+                    } catch (error) {
+                      console.error('ミッション進捗チェックエラー:', error);
+                    }
+
+                    // テスト用: 全フレーム解放（既存/ログインユーザー対象）
+                    try {
+                      const { unlockAllFramesForUser } = await import('./utils/cosmetic');
+                      await unlockAllFramesForUser(user.uid);
+                    } catch (error) {
+                      console.error('全フレーム解放エラー:', error);
+                    }
 
         // 初期同期完了後、リアルタイム同期を開始
         console.log('Starting realtime sync...');
@@ -213,12 +297,47 @@ function App() {
     return <LoginScreen onLoginSuccess={() => {}} />;
   }
 
+  // 都道府県設定画面を表示中
+  if (showPrefectureSetting && user) {
+    return (
+      <ErrorBoundary>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'var(--background)',
+          zIndex: 1000,
+        }}>
+          <PrefectureSettingScreen
+            onComplete={() => {
+              setShowPrefectureSetting(false);
+              // プロフィールを再取得して称号チェック
+              import('./utils/profile').then(({ getUserProfile }) => {
+                getUserProfile(user.uid).then((profile) => {
+                  if (profile?.prefecture) {
+                    // 都道府県別称号をチェック
+                    checkAndGrantTitles(user.uid).catch((error) => {
+                      console.debug('称号チェックエラー:', error);
+                    });
+                  }
+                });
+              });
+            }}
+          />
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
   // ログイン済みの場合はメインアプリを表示
   return (
-    <>
+    <ErrorBoundary>
       <Layout />
       <BadgeUnlockedModal />
-    </>
+      <TitleUnlockedModal />
+    </ErrorBoundary>
   );
 }
 

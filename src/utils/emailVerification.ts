@@ -60,11 +60,11 @@ export const verifyCode = async (email: string, inputCode: string): Promise<{ va
 // メール送信（Cloud Functionsを使用）
 export const sendVerificationEmail = async (email: string, code: string) => {
   try {
-    // Cloud Functionを呼び出す
+    // Cloud Functionを呼び出す（リージョン: us-central1）
     const { getFunctions, httpsCallable } = await import('firebase/functions');
     const { default: app } = await import('../config/firebase');
 
-    const functions = getFunctions(app);
+    const functions = getFunctions(app, 'us-central1');
     const sendEmail = httpsCallable(functions, 'sendVerificationEmail');
 
     // Cloud Functionにメール送信をリクエスト
@@ -73,6 +73,11 @@ export const sendVerificationEmail = async (email: string, code: string) => {
     console.log(`✅ Verification email sent to ${email}`, result);
   } catch (error: any) {
     console.error('Failed to send email via Cloud Functions:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    });
 
     // フォールバック: 開発モードとしてコンソールに表示
     console.log(`
@@ -123,11 +128,11 @@ https://haradakouta.github.io/life-pwa-react/
 // パスワードリセット用のメール送信
 export const sendPasswordResetEmail = async (email: string, code: string) => {
   try {
-    // Cloud Functionを呼び出す
+    // Cloud Functionを呼び出す（リージョン: us-central1）
     const { getFunctions, httpsCallable } = await import('firebase/functions');
     const { default: app } = await import('../config/firebase');
 
-    const functions = getFunctions(app);
+    const functions = getFunctions(app, 'us-central1');
     const sendEmail = httpsCallable(functions, 'sendPasswordResetEmail');
 
     // Cloud Functionにメール送信をリクエスト
@@ -136,6 +141,11 @@ export const sendPasswordResetEmail = async (email: string, code: string) => {
     console.log(`✅ Password reset email sent to ${email}`, result);
   } catch (error: any) {
     console.error('Failed to send password reset email via Cloud Functions:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    });
 
     // フォールバック: 開発モードとしてコンソールに表示
     console.log(`
@@ -171,11 +181,11 @@ https://haradakouta.github.io/life-pwa-react/
 // パスワードをリセット（Cloud Functionsを使用）
 export const resetPasswordWithCode = async (email: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    // Cloud Functionを呼び出す
+    // Cloud Functionを呼び出す（リージョン: us-central1）
     const { getFunctions, httpsCallable } = await import('firebase/functions');
     const { default: app } = await import('../config/firebase');
 
-    const functions = getFunctions(app);
+    const functions = getFunctions(app, 'us-central1');
     const resetPassword = httpsCallable(functions, 'resetPassword');
 
     // Cloud Functionにパスワードリセットをリクエスト

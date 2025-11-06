@@ -3,10 +3,14 @@
  */
 import React, { useState } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
+import { TitleScreen } from './TitleScreen';
+import { PrefectureSettingScreen } from './PrefectureSettingScreen';
+import { DailyMissionScreen } from '../mission/DailyMissionScreen';
+import { CosmeticShopScreen } from '../cosmetic/CosmeticShopScreen';
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
@@ -17,6 +21,10 @@ export const SettingsScreen: React.FC = () => {
 
   const [budget, setBudget] = useState((settings.monthlyBudget ?? 30000).toString());
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showTitleScreen, setShowTitleScreen] = useState(false);
+  const [showPrefectureSetting, setShowPrefectureSetting] = useState(false);
+  const [showDailyMission, setShowDailyMission] = useState(false);
+  const [showCosmeticShop, setShowCosmeticShop] = useState(false);
 
   const handleSaveSettings = () => {
     updateSettings({
@@ -73,6 +81,26 @@ export const SettingsScreen: React.FC = () => {
     return <ProfileEditScreen onBack={() => setShowProfileEdit(false)} />;
   }
 
+  // 称号画面を表示中
+  if (showTitleScreen) {
+    return <TitleScreen onBack={() => setShowTitleScreen(false)} />;
+  }
+
+  // 都道府県設定画面を表示中
+  if (showPrefectureSetting) {
+    return <PrefectureSettingScreen onBack={() => setShowPrefectureSetting(false)} />;
+  }
+
+  // デイリーミッション画面を表示中
+  if (showDailyMission) {
+    return <DailyMissionScreen onBack={() => setShowDailyMission(false)} />;
+  }
+
+  // 装飾ショップ画面を表示中
+  if (showCosmeticShop) {
+    return <CosmeticShopScreen onBack={() => setShowCosmeticShop(false)} />;
+  }
+
   return (
     <section className="screen active">
       <h2>設定</h2>
@@ -104,8 +132,111 @@ export const SettingsScreen: React.FC = () => {
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
         </button>
+        <button
+          onClick={() => setShowTitleScreen(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdEmojiEvents size={24} color="#f59e0b" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              称号
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <button
+          onClick={() => setShowPrefectureSetting(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdLocationOn size={24} color="#3b82f6" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              都道府県
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
           アイコン、名前、自己紹介などを編集
+        </p>
+      </div>
+
+      <div className="card">
+        <h3>ミッション・報酬</h3>
+        <button
+          onClick={() => setShowDailyMission(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdAssignment size={24} color="#667eea" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              デイリーミッション
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <button
+          onClick={() => setShowCosmeticShop(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdShoppingBag size={24} color="#f59e0b" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              装飾ショップ
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
+          ミッションをクリアしてポイントを獲得し、装飾を購入
         </p>
       </div>
 

@@ -297,6 +297,26 @@ section.active {
   }
 }
 
+/* ローディングスピナーアニメーション */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ページ遷移アニメーション */
+.screen-transition {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.screen-transition.transitioning {
+  opacity: 0.7;
+  transform: translateY(10px);
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1427,4 +1447,266 @@ body.dark-mode .ai-suggestions {
 
 body.dark-mode .suggestions-content {
   color: #e9d5ff;
+}
+
+/* ============================================
+   スキン（厨二っぽく）
+   ============================================ */
+
+/* 深紅の領域 */
+body.skin-crimson {
+  --background: #fff5f5;
+  --card: #fff;
+  --primary: #dc2626;
+  --primary-dark: #991b1b;
+  --border: #fecaca;
+  background: linear-gradient(135deg, #fff5f5 0%, #fee2e2 100%);
+}
+
+body.skin-crimson header {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+
+body.skin-crimson .card {
+  border: 1px solid #fecaca;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+/* 蒼穹の世界 */
+body.skin-azure {
+  --background: #eff6ff;
+  --card: #fff;
+  --primary: #3b82f6;
+  --primary-dark: #1e40af;
+  --border: #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+body.skin-azure header {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+body.skin-azure .card {
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+/* 翠玉の森 */
+body.skin-emerald {
+  --background: #f0fdf4;
+  --card: #fff;
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --border: #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+}
+
+body.skin-emerald header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+body.skin-emerald .card {
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+/* 虚無の闇 */
+body.skin-void {
+  --background: #1a1a1a;
+  --text: #f5f5f7;
+  --text-secondary: #999;
+  --card: #2d2d2d;
+  --primary: #4b5563;
+  --primary-dark: #374151;
+  --border: #3a3a3a;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+}
+
+body.skin-void header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+}
+
+body.skin-void .card {
+  border: 1px solid #3a3a3a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 業火の獄 */
+body.skin-fire {
+  --background: #fff7ed;
+  --card: #fff;
+  --primary: #f59e0b;
+  --primary-dark: #dc2626;
+  --border: #fed7aa;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+}
+
+body.skin-fire header {
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+body.skin-fire .card {
+  border: 1px solid #fed7aa;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+/* 氷河の世界 */
+body.skin-ice {
+  --background: #ecfeff;
+  --card: #fff;
+  --primary: #06b6d4;
+  --primary-dark: #0891b2;
+  --border: #a5f3fc;
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+}
+
+body.skin-ice header {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+body.skin-ice .card {
+  border: 1px solid #a5f3fc;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.2);
+}
+
+/* 混沌の領域 */
+body.skin-chaos {
+  --background: #faf5ff;
+  --card: #fff;
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --border: #e9d5ff;
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+}
+
+body.skin-chaos header {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+body.skin-chaos .card {
+  border: 1px solid #e9d5ff;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+}
+
+/* 不死鳥の炎 */
+body.skin-phoenix {
+  --background: #fff7ed;
+  --card: #fff;
+  --primary: #f59e0b;
+  --primary-dark: #dc2626;
+  --border: #fed7aa;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%);
+  position: relative;
+}
+
+body.skin-phoenix::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.skin-phoenix header {
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 50%, #991b1b 100%);
+  box-shadow: 0 4px 30px rgba(245, 158, 11, 0.6);
+  animation: phoenixGlow 3s ease-in-out infinite;
+}
+
+@keyframes phoenixGlow {
+  0%, 100% { box-shadow: 0 4px 30px rgba(245, 158, 11, 0.6); }
+  50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.9); }
+}
+
+body.skin-phoenix .card {
+  border: 2px solid #fed7aa;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* 龍の聖域 */
+body.skin-dragon {
+  --background: #f0fdf4;
+  --card: #fff;
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --border: #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 50%, #a7f3d0 100%);
+  position: relative;
+}
+
+body.skin-dragon::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.skin-dragon header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  box-shadow: 0 4px 30px rgba(16, 185, 129, 0.6);
+  animation: dragonGlow 3s ease-in-out infinite;
+}
+
+@keyframes dragonGlow {
+  0%, 100% { box-shadow: 0 4px 30px rgba(16, 185, 129, 0.6); }
+  50% { box-shadow: 0 4px 40px rgba(16, 185, 129, 0.9); }
+}
+
+body.skin-dragon .card {
+  border: 2px solid #bbf7d0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* 深淵の闇 */
+body.skin-abyss {
+  --background: #000000;
+  --text: #f5f5f7;
+  --text-secondary: #999;
+  --card: #1a1a1a;
+  --primary: #4b5563;
+  --primary-dark: #374151;
+  --border: #2d2d2d;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+  position: relative;
+}
+
+body.skin-abyss::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: abyssPulse 4s ease-in-out infinite;
+}
+
+@keyframes abyssPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+body.skin-abyss header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid #2d2d2d;
+}
+
+body.skin-abyss .card {
+  border: 1px solid #2d2d2d;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  background: #1a1a1a;
 }

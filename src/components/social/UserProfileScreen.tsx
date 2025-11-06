@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { MdArrowBack, MdEdit, MdPersonAdd, MdLink, MdCalendarToday, MdCheck, MdClose, MdChat } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
 import { sendFriendRequest, acceptFriendRequest, declineFriendRequest, removeFriend, getFriendStatus } from '../../utils/friend';
 import { getOrCreateConversation } from '../../utils/chat';
 import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
+import { getEquippedTitle } from '../../utils/title';
+import type { Title } from '../../types/title';
+import { TitleBadge } from '../common/TitleBadge';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FriendListModal } from './FriendListModal';
 import { formatCount, formatJoinDate } from '../../utils/formatNumber';
 import type { UserProfile, Friend } from '../../types/profile';
 import type { Post } from '../../types/post';
+import { getUserCosmetics, getCosmeticById } from '../../utils/cosmetic';
 
 type ProfileTab = 'posts' | 'replies' | 'media' | 'likes';
 
@@ -40,6 +45,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
   const [showFriendListModal, setShowFriendListModal] = useState(false);
   const [friendListModalInitialTab, setFriendListModalInitialTab] = useState<'friends' | 'pending_sent' | 'pending_received'>('friends');
+  const [equippedTitle, setEquippedTitle] = useState<Title | null>(null);
 
   const isOwnProfile = user && user.uid === userId;
 
@@ -48,6 +54,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       setLoading(true);
       setError(null);
       try {
+        // 称号を取得
+        const title = await getEquippedTitle(userId);
+        setEquippedTitle(title);
+
         const fetchedProfile = await getUserProfile(userId);
         if (!fetchedProfile) {
           setError('プロフィールが見つかりません');
@@ -165,11 +175,12 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           await removeFriend(user.uid, userId);
           break;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('DUMPING FULL FRIEND ACTION ERROR:', error);
       setFriendStatus(currentFriendStatus); // Revert UI on error
       setProfile(previousProfile);
-      alert(`フレンド操作に失敗しました.\n\nエラー: ${error.message || '不明なエラー'}`);
+      const message = error instanceof Error ? error.message : '不明なエラー';
+      alert(`フレンド操作に失敗しました.\n\nエラー: ${message}`);
     }
   };
 
@@ -240,7 +251,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
 
       <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '-40px', marginBottom: '12px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: profile.avatarUrl ? `url(${profile.avatarUrl}) center/cover` : 'linear-gradient(135deg, var(--primary), #81c784)', border: '4px solid var(--card)' }} />
+          <ProfileAvatarWithFrame userId={profile.uid} avatarUrl={profile.avatarUrl || undefined} />
           {isOwnProfile ? (
             <div style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <MdEdit size={14} />
@@ -283,7 +294,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{profile.displayName}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '4px' }}>
+            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>{profile.displayName}</div>
+            {equippedTitle && <TitleBadge title={equippedTitle} size="medium" showName={true} />}
+          </div>
           <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>@{profile.username}</div>
         </div>
 
@@ -316,10 +330,127 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           userId={userId}
           onClose={() => setShowFriendListModal(false)}
           onNavigateToProfile={onUserClick}
-          onNavigateToDM={() => {}}
+          onNavigateToDM={() => { }}
           initialTab={friendListModalInitialTab}
         />
       )}
     </div>
   );
 };
+
+const ProfileAvatarWithFrame: React.FC<{ userId: string; avatarUrl?: string }> = ({ userId, avatarUrl }) => {
+  const [frameUrl, setFrameUrl] = useState<string | undefined>(undefined);
+  const [inlineStyle, setInlineStyle] = useState<React.CSSProperties | undefined>(undefined);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getUserCosmetics(userId);
+        if (!mounted || !data?.equippedFrame) {
+          setFrameUrl(undefined);
+          setInlineStyle(undefined);
+          return;
+        }
+        const cosmetic = getCosmeticById(data.equippedFrame);
+        let url = cosmetic?.data.frameUrl as string | undefined;
+        const style = cosmetic?.data.frameStyle as React.CSSProperties | undefined;
+
+        // BASE_URLを正しく取得
+        const base = import.meta.env.BASE_URL || '/';
+
+        // 画像ファイル名の自動解決（拡張子/命名ゆらぎに対応）
+        if (!url) {
+          // frameUrlが定義されていない場合は、IDや名前から推測
+          const candidates: string[] = [];
+          const names = [
+            data.equippedFrame,
+            cosmetic?.name || '',
+            cosmetic?.id || '',
+          ].filter(Boolean);
+          const exts = ['png', 'webp', 'jpg', 'jpeg'];
+          for (const n of names) {
+            const safe = n
+              .toString()
+              .toLowerCase()
+              .replace(/\s+/g, '_')
+              .replace(/[\u3000]/g, '_');
+            for (const ext of exts) {
+              candidates.push(`${base}frames/${safe}.${ext}`);
+              candidates.push(`${base}frames/frame_${safe}.${ext}`);
+            }
+          }
+          console.log('[UserProfile] フレーム画像候補:', candidates);
+          url = await findFirstExistingImage(candidates);
+          console.log('[UserProfile] 見つかったフレーム画像:', url);
+        } else {
+          // frameUrlが定義されている場合、BASE_URLを考慮して正しいパスに変換
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            // 相対パスの場合
+            if (!url.startsWith(base)) {
+              // BASE_URLが含まれていない場合は追加
+              url = `${base}${url.replace(/^\//, '')}`;
+            }
+          }
+          console.log('[UserProfile] フレームURL:', url);
+        }
+        setFrameUrl(url || undefined);
+        setInlineStyle(style);
+      } catch (e) {
+        console.error('フレーム取得エラー:', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [userId]);
+
+  const iconSize = 68; // アイコンサイズを少し小さく
+  const frameExtra = 21; // フレーム分の追加サイズを拡大
+  const containerSize = 80 + frameExtra * 2; // コンテナサイズは元のアイコンサイズ基準
+  const iconOffset = (containerSize - iconSize) / 2; // アイコンを中央に配置するオフセット
+  return (
+    <div style={{ position: 'relative', width: `${containerSize}px`, height: `${containerSize}px` }}>
+      {/* フレーム（背景/下層） */}
+      {frameUrl ? (
+        <img
+          src={frameUrl}
+          alt="frame"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+        />
+      ) : inlineStyle ? (
+        <div
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1, ...inlineStyle }}
+        />
+      ) : null}
+      {/* アイコン（上層、少し小さく） */}
+      <div
+        style={{
+          position: 'absolute',
+          left: `${iconOffset}px`,
+          top: `${iconOffset}px`,
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
+          borderRadius: '0px',
+          background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'linear-gradient(135deg, var(--primary), #81c784)',
+          zIndex: 2,
+        }}
+      />
+    </div>
+  );
+};
+
+async function findFirstExistingImage(candidates: string[]): Promise<string | undefined> {
+  for (const src of candidates) {
+    const ok = await imageExists(src);
+    if (ok) return src;
+  }
+  return undefined;
+}
+
+function imageExists(src: string): Promise<boolean> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = src;
+  });
+}

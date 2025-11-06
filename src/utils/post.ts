@@ -166,6 +166,28 @@ export const createPost = async (
       'stats.postCount': increment(1),
     });
 
+    // 称号チェック（投稿作成後）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(userId);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗しても投稿は成功させる
+    }
+
+    // ミッション進捗更新（投稿作成後）
+    try {
+      const { updateMissionProgress } = await import('./mission');
+      const updatedProfile = await getUserProfile(userId);
+      if (updatedProfile) {
+        await updateMissionProgress(userId, 'daily_post_1', updatedProfile.stats.postCount);
+        await updateMissionProgress(userId, 'daily_post_3', updatedProfile.stats.postCount);
+      }
+    } catch (error) {
+      console.error('ミッション進捗更新エラー:', error);
+      // ミッション更新に失敗しても投稿は成功させる
+    }
+
     // メンションされたユーザーに通知を送信
     if (mentions.length > 0) {
       for (const username of mentions) {
@@ -646,6 +668,28 @@ export const addLike = async (
     }
 
     console.log('いいねを追加しました');
+
+    // 称号チェック（いいね追加後）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(userId);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもいいねは成功させる
+    }
+
+    // ミッション進捗更新（いいね追加後）
+    try {
+      const { getPostLikes } = await import('./post');
+      const likes = await getPostLikes(postId);
+      const userLikes = likes.filter(l => l.userId === userId).length;
+      const { updateMissionProgress } = await import('./mission');
+      await updateMissionProgress(userId, 'daily_like_5', userLikes);
+      await updateMissionProgress(userId, 'daily_like_10', userLikes);
+    } catch (error) {
+      console.error('ミッション進捗更新エラー:', error);
+      // ミッション更新に失敗してもいいねは成功させる
+    }
   } catch (error) {
     console.error('いいねの追加に失敗しました:', error);
     throw error;
@@ -784,6 +828,27 @@ export const addComment = async (
     }
 
     console.log('コメントを追加しました');
+
+    // 称号チェック（コメント追加後）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(userId);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもコメントは成功させる
+    }
+
+    // ミッション進捗更新（コメント追加後）
+    try {
+      const { getPostComments } = await import('./post');
+      const comments = await getPostComments(postId);
+      const userComments = comments.filter(c => c.userId === userId).length;
+      const { updateMissionProgress } = await import('./mission');
+      await updateMissionProgress(userId, 'daily_comment_3', userComments);
+    } catch (error) {
+      console.error('ミッション進捗更新エラー:', error);
+      // ミッション更新に失敗してもコメントは成功させる
+    }
   } catch (error) {
     console.error('コメントの追加に失敗しました:', error);
     throw error;
@@ -995,6 +1060,27 @@ export const addRepost = async (
     }
 
     console.log('リポストを追加しました');
+
+    // 称号チェック（リポスト追加後）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(userId);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもリポストは成功させる
+    }
+
+    // ミッション進捗更新（リポスト追加後）
+    try {
+      const { getPostReposts } = await import('./post');
+      const reposts = await getPostReposts(postId);
+      const userReposts = reposts.filter(r => r.userId === userId).length;
+      const { updateMissionProgress } = await import('./mission');
+      await updateMissionProgress(userId, 'daily_repost_2', userReposts);
+    } catch (error) {
+      console.error('ミッション進捗更新エラー:', error);
+      // ミッション更新に失敗してもリポストは成功させる
+    }
   } catch (error) {
     console.error('リポストの追加に失敗しました:', error);
     throw error;
@@ -1121,6 +1207,34 @@ export const publishRecipe = async (
     };
 
     await setDoc(recipeRef, recipeData);
+
+    // ユーザーのレシピ投稿数を更新
+    const profileRef = doc(db, 'users', userId, 'profile', 'data');
+    await updateDoc(profileRef, {
+      'stats.recipeCount': increment(1),
+    });
+
+    // 称号チェック（レシピ投稿後）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(userId);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもレシピ投稿は成功させる
+    }
+
+    // ミッション進捗更新（レシピ投稿後）
+    try {
+      const { updateMissionProgress } = await import('./mission');
+      const profile = await getUserProfile(userId);
+      if (profile) {
+        await updateMissionProgress(userId, 'daily_recipe_1', profile.stats.recipeCount);
+      }
+    } catch (error) {
+      console.error('ミッション進捗更新エラー:', error);
+      // ミッション更新に失敗してもレシピ投稿は成功させる
+    }
+
     console.log('レシピを投稿しました:', recipeId);
     return recipeId;
   } catch (error) {
@@ -1272,11 +1386,12 @@ export const getUserRecipes = async (userId: string, limit: number = 20): Promis
 export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> => {
   try {
     const postsRef = collection(db, 'posts');
+    
+    // まず全体公開の投稿を取得
     const q = query(
       postsRef,
       where('visibility', '==', 'public'),
-      orderBy('likes', 'desc'),
-      firestoreLimit(limit)
+      firestoreLimit(200) // より多くの投稿を取得してクライアント側でソート
     );
 
     const querySnapshot = await getDocs(q);
@@ -1284,6 +1399,8 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+      const likes = data.likes || 0; // likesが未定義の場合は0
+      
       posts.push({
         id: doc.id,
         content: data.content,
@@ -1291,7 +1408,7 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
         authorId: data.authorId,
         authorName: data.authorName,
         authorAvatar: data.authorAvatar || '',
-        likes: data.likes || 0,
+        likes,
         commentCount: data.commentCount || 0,
         repostCount: data.repostCount || 0,
         hashtags: data.hashtags || [],
@@ -1301,9 +1418,18 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
       });
     });
 
-    return posts;
+    // クライアント側でいいね数でソート
+    posts.sort((a, b) => b.likes - a.likes);
+    
+    // 上位limit件を返す
+    return posts.slice(0, limit);
   } catch (error) {
     console.error('ランキング取得に失敗しました:', error);
+    // エラーの詳細をログに出力
+    if (error instanceof Error) {
+      console.error('エラー詳細:', error.message);
+      console.error('スタック:', error.stack);
+    }
     return [];
   }
 };
@@ -1314,11 +1440,12 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
 export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]> => {
   try {
     const recipesRef = collection(db, 'recipes');
+    
+    // まず全体公開のレシピを取得
     const q = query(
       recipesRef,
       where('visibility', '==', 'public'),
-      orderBy('likes', 'desc'),
-      firestoreLimit(limit)
+      firestoreLimit(200) // より多くのレシピを取得してクライアント側でソート
     );
 
     const querySnapshot = await getDocs(q);
@@ -1326,6 +1453,8 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+      const likes = data.likes || 0; // likesが未定義の場合は0
+      
       recipes.push({
         id: doc.id,
         title: data.title,
@@ -1340,7 +1469,7 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
         authorId: data.authorId,
         authorName: data.authorName,
         authorAvatar: data.authorAvatar,
-        likes: data.likes || 0,
+        likes,
         commentCount: data.commentCount || 0,
         visibility: data.visibility,
         createdAt: data.createdAt,
@@ -1348,9 +1477,18 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
       });
     });
 
-    return recipes;
+    // クライアント側でいいね数でソート
+    recipes.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    
+    // 上位limit件を返す
+    return recipes.slice(0, limit);
   } catch (error) {
     console.error('レシピランキング取得に失敗しました:', error);
+    // エラーの詳細をログに出力
+    if (error instanceof Error) {
+      console.error('エラー詳細:', error.message);
+      console.error('スタック:', error.stack);
+    }
     return [];
   }
 };

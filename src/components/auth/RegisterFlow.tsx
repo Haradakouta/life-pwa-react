@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack, MdHealthAndSafety } from 'react-icons/md';
+import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack, MdHealthAndSafety, MdLocationOn } from 'react-icons/md';
+import { prefectures } from '../../types/prefecture';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { generateVerificationCode, saveVerificationCode, verifyCode, sendVerificationEmail } from '../../utils/emailVerification';
@@ -10,7 +11,7 @@ interface RegisterFlowProps {
   onBack: () => void;
 }
 
-type Step = 'email' | 'code' | 'profile' | 'health';
+type Step = 'email' | 'code' | 'profile' | 'health' | 'prefecture';
 
 export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   const { updateSettings, settings } = useSettingsStore();
@@ -23,6 +24,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+  const [prefecture, setPrefecture] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -103,11 +105,18 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
     setStep('health');
   };
 
-  // ステップ4: 健康情報入力 → アカウント作成
-  const handleHealthSubmit = async (e: React.FormEvent) => {
+  // ステップ4.5: 都道府県選択 → アカウント作成
+  const handlePrefectureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!prefecture) {
+      setError('都道府県を選択してください');
+      return;
+    }
+
     setLoading(true);
+    setError('');
 
     try {
       // Firebase Authenticationでアカウント作成
@@ -133,29 +142,28 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
       while (!profileCreated && retryCount < maxRetries) {
         try {
-          console.log(`📝 プロフィール作成試行 ${retryCount + 1}/${maxRetries}...`);
           await createUserProfile(user.uid, email, username);
           profileCreated = true;
-          console.log('✅ プロフィール作成完了:', user.uid);
-        } catch (profileErr: any) {
+          console.log('✅ プロフィールを作成しました');
+        } catch (profileError: any) {
           retryCount++;
-          console.error(`❌ プロフィール作成失敗（試行 ${retryCount}/${maxRetries}）:`, profileErr);
+          console.error(`❌ プロフィール作成失敗 (試行 ${retryCount}/${maxRetries}):`, profileError);
 
-          if (retryCount < maxRetries) {
-            // リトライ前に少し待つ（指数バックオフ）
-            const waitTime = 1000 * Math.pow(2, retryCount);
-            console.log(`⏳ ${waitTime}ms 待機してリトライします...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-
-            // トークンを再度リフレッシュ
-            await user.getIdToken(true);
-          } else {
-            // 最大リトライ回数に達した
-            console.error('❌ プロフィール作成に失敗しました（最大リトライ回数超過）');
-            alert('注意: プロフィール作成に失敗しました。設定画面からプロフィールを作成してください。\n\nエラー: ' + (profileErr.message || profileErr.code || '不明なエラー'));
+          if (retryCount >= maxRetries) {
+            throw new Error(`プロフィール作成に失敗しました: ${profileError.message || '不明なエラー'}`);
           }
+
+          // リトライ前に少し待機
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
       }
+
+      // 都道府県を設定
+      const { updateUserProfile } = await import('../../utils/profile');
+      await updateUserProfile(user.uid, {
+        prefecture,
+        prefectureChangedAt: new Date().toISOString(),
+      });
 
       // 健康情報を設定に保存
       if (age || height || weight) {
@@ -164,7 +172,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           if (age && age.trim() !== '') healthSettings.age = Number(age);
           if (height && height.trim() !== '') healthSettings.height = Number(height);
           if (weight && weight.trim() !== '') healthSettings.weight = Number(weight);
-          
+
           await updateSettings(healthSettings);
           console.log('✅ 健康情報を保存しました');
         } catch (healthErr: any) {
@@ -178,22 +186,20 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       // ログイン画面に戻る（自動的にログイン状態になる）
       onBack();
     } catch (err: any) {
-      console.error('Registration error:', err);
-
-      // エラーメッセージを日本語化
-      let errorMessage = 'アカウント作成に失敗しました';
-      if (err.code === 'auth/email-already-in-use') {
-        errorMessage = 'このメールアドレスは既に使用されています';
-      } else if (err.code === 'auth/invalid-email') {
-        errorMessage = 'メールアドレスの形式が正しくありません';
-      } else if (err.code === 'auth/weak-password') {
-        errorMessage = 'パスワードが弱すぎます（6文字以上推奨）';
-      }
-
-      setError(errorMessage);
+      console.error('Account creation error:', err);
+      setError(err.message || 'アカウント作成に失敗しました');
     } finally {
       setLoading(false);
     }
+  };
+
+  // ステップ4: 健康情報入力 → 都道府県選択へ
+  const handleHealthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // ステップ5へ
+    setStep('prefecture');
   };
 
   // コード再送信
@@ -216,13 +222,15 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
   return (
     <div className="register-flow">
       <div className="progress-bar">
-        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile', 'health'].includes(step) ? 'completed' : ''}`}>1</div>
+        <div className={`progress-step ${step === 'email' ? 'active' : ['code', 'profile', 'health', 'prefecture'].includes(step) ? 'completed' : ''}`}>1</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'code' ? 'active' : ['profile', 'health'].includes(step) ? 'completed' : ''}`}>2</div>
+        <div className={`progress-step ${step === 'code' ? 'active' : ['profile', 'health', 'prefecture'].includes(step) ? 'completed' : ''}`}>2</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'profile' ? 'active' : step === 'health' ? 'completed' : ''}`}>3</div>
+        <div className={`progress-step ${step === 'profile' ? 'active' : ['health', 'prefecture'].includes(step) ? 'completed' : ''}`}>3</div>
         <div className="progress-line" />
-        <div className={`progress-step ${step === 'health' ? 'active' : ''}`}>4</div>
+        <div className={`progress-step ${step === 'health' ? 'active' : step === 'prefecture' ? 'completed' : ''}`}>4</div>
+        <div className="progress-line" />
+        <div className={`progress-step ${step === 'prefecture' ? 'active' : ''}`}>5</div>
       </div>
 
       {/* ステップ1: メールアドレス入力 */}
@@ -404,17 +412,61 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'アカウント作成中...' : '登録完了'}
+            次へ
           </button>
 
           <button
             type="button"
-            onClick={handleHealthSubmit}
+            onClick={() => setStep('prefecture')}
             className="link-button"
             disabled={loading}
             style={{ textAlign: 'center' }}
           >
-            スキップして登録
+            スキップして次へ
+          </button>
+        </form>
+      )}
+
+      {/* ステップ5: 都道府県選択 */}
+      {step === 'prefecture' && (
+        <form onSubmit={handlePrefectureSubmit} className="step-form">
+          <h2>
+            <MdLocationOn /> 都道府県を選択
+          </h2>
+          <p className="step-description">
+            都道府県を選択してください（30日に1回のみ変更可能）
+          </p>
+
+          <div className="form-group">
+            <label>
+              <MdLocationOn /> 都道府県
+            </label>
+            <select
+              value={prefecture}
+              onChange={(e) => setPrefecture(e.target.value)}
+              required
+              style={{
+                padding: '12px 16px',
+                border: '2px solid var(--border)',
+                borderRadius: '8px',
+                fontSize: '16px',
+                background: 'var(--card)',
+                color: 'var(--text)',
+              }}
+            >
+              <option value="">選択してください</option>
+              {prefectures.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? 'アカウント作成中...' : '登録完了'}
           </button>
         </form>
       )}

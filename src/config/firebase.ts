@@ -23,8 +23,9 @@ export const auth = getAuth(app);
 // Firestoreのインスタンス
 export const db = getFirestore(app);
 
-// Cloud Functionsのインスタンス
-export const functions = getFunctions(app);
+// Cloud Functionsのインスタンス（リージョン: us-central1）
+// 注: 現在デプロイされている関数はus-central1リージョンにあります
+export const functions = getFunctions(app, 'us-central1');
 
 // Firebase Storageのインスタンス
 export const storage = getStorage(app);

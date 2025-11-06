@@ -5,7 +5,12 @@ import type { UserProfile } from '../../types/profile';
 import { getRelativeTime, addLike, removeLike, hasUserLiked, addBookmark, removeBookmark, hasUserBookmarked, addRepost, removeRepost, hasUserReposted, pinPost, unpinPost } from '../../utils/post';
 import { getUserProfile, getUserIdByUsername } from '../../utils/profile';
 import { formatCount } from '../../utils/formatNumber';
+import { getEquippedTitle } from '../../utils/title';
+import type { Title } from '../../types/title';
+import { TitleBadge } from '../common/TitleBadge';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote, MdPushPin, MdMoreVert } from 'react-icons/md';
+import React from 'react';
+import { getUserCosmetics, getCosmeticById } from '../../utils/cosmetic';
 import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
@@ -29,6 +34,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   const [imageModalIndex, setImageModalIndex] = useState(0);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showPinMenu, setShowPinMenu] = useState(false);
+  const [authorTitle, setAuthorTitle] = useState<Title | null>(null);
 
   // いいね・ブックマーク・リポスト状態を初期化
   useEffect(() => {
@@ -53,6 +59,20 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
 
     checkStatus();
   }, [post.id, user]);
+
+  // 投稿者の称号を取得
+  useEffect(() => {
+    const fetchAuthorTitle = async () => {
+      try {
+        const title = await getEquippedTitle(post.authorId);
+        setAuthorTitle(title);
+      } catch (error) {
+        console.error('称号取得エラー:', error);
+      }
+    };
+
+    fetchAuthorTitle();
+  }, [post.authorId]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -248,30 +268,24 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
           e.currentTarget.style.background = 'none';
         }}
       >
-        <div
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: post.authorAvatar
-              ? `url(${post.authorAvatar}) center/cover`
-              : 'linear-gradient(135deg, var(--primary), #81c784)',
-            marginRight: '12px',
-            flexShrink: 0,
-          }}
-        />
+        <AuthorAvatarWithFrame authorId={post.authorId} avatarUrl={post.authorAvatar} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 600,
-              color: 'var(--text)',
-              fontSize: '15px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {post.authorName}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                fontWeight: 600,
+                color: 'var(--text)',
+                fontSize: '15px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {post.authorName}
+            </div>
+            {authorTitle && (
+              <TitleBadge title={authorTitle} size="small" showName={true} />
+            )}
           </div>
           <div
             style={{
@@ -614,8 +628,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               post.images.length === 1
                 ? '1fr'
                 : post.images.length === 2
-                ? 'repeat(2, 1fr)'
-                : 'repeat(2, 1fr)',
+                  ? 'repeat(2, 1fr)'
+                  : 'repeat(2, 1fr)',
             gap: '8px',
             marginBottom: '16px',
           }}
@@ -850,3 +864,111 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
     </div>
   );
 };
+
+const AuthorAvatarWithFrame: React.FC<{ authorId: string; avatarUrl?: string }> = ({ authorId, avatarUrl }) => {
+  const [frameUrl, setFrameUrl] = React.useState<string | undefined>(undefined);
+  const [inlineStyle, setInlineStyle] = React.useState<React.CSSProperties | undefined>(undefined);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getUserCosmetics(authorId);
+        if (!mounted || !data?.equippedFrame) {
+          setFrameUrl(undefined);
+          setInlineStyle(undefined);
+          return;
+        }
+        const cosmetic = getCosmeticById(data.equippedFrame);
+        let url = cosmetic?.data.frameUrl as string | undefined;
+        const style = cosmetic?.data.frameStyle as React.CSSProperties | undefined;
+
+        // BASE_URLを正しく取得
+        const base = import.meta.env.BASE_URL || '/';
+
+        if (!url) {
+          // frameUrlが定義されていない場合は、IDや名前から推測
+          const candidates: string[] = [];
+          const names = [data.equippedFrame, cosmetic?.name || '', cosmetic?.id || ''].filter(Boolean);
+          const exts = ['png', 'webp', 'jpg', 'jpeg'];
+          for (const n of names) {
+            const safe = n.toString().toLowerCase().replace(/\s+/g, '_').replace(/[\u3000]/g, '_');
+            for (const ext of exts) {
+              candidates.push(`${base}frames/${safe}.${ext}`);
+              candidates.push(`${base}frames/frame_${safe}.${ext}`);
+            }
+          }
+          console.log('[PostCard] フレーム画像候補:', candidates);
+          url = await findFirstExistingImage(candidates);
+          console.log('[PostCard] 見つかったフレーム画像:', url);
+        } else {
+          // frameUrlが定義されている場合、BASE_URLを考慮して正しいパスに変換
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            // 相対パスの場合
+            if (!url.startsWith(base)) {
+              // BASE_URLが含まれていない場合は追加
+              url = `${base}${url.replace(/^\//, '')}`;
+            }
+          }
+          console.log('[PostCard] フレームURL:', url);
+        }
+        setFrameUrl(url || undefined);
+        setInlineStyle(style);
+      } catch (e) {
+        console.error('フレーム取得エラー:', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [authorId]);
+
+  const iconSize = 40; // アイコンサイズを少し小さく
+  const frameExtra = 17; // フレーム分の追加サイズ（外側に広がる）を拡大
+  const containerSize = 48 + frameExtra * 2; // コンテナサイズは元のアイコンサイズ基準
+  const iconOffset = (containerSize - iconSize) / 2; // アイコンを中央に配置するオフセット
+  return (
+    <div style={{ position: 'relative', width: `${containerSize}px`, height: `${containerSize}px`, marginRight: '12px', flexShrink: 0 }}>
+      {/* フレーム（背景/下層） */}
+      {frameUrl ? (
+        <img
+          src={frameUrl}
+          alt="frame"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+        />
+      ) : inlineStyle ? (
+        <div
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1, ...inlineStyle }}
+        />
+      ) : null}
+      {/* アイコン（上層、少し小さく） */}
+      <div
+        style={{
+          position: 'absolute',
+          left: `${iconOffset}px`,
+          top: `${iconOffset}px`,
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
+          borderRadius: '0px',
+          background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'linear-gradient(135deg, var(--primary), #81c784)',
+          zIndex: 2,
+        }}
+      />
+    </div>
+  );
+};
+
+async function findFirstExistingImage(candidates: string[]): Promise<string | undefined> {
+  for (const src of candidates) {
+    const ok = await imageExists(src);
+    if (ok) return src;
+  }
+  return undefined;
+}
+
+function imageExists(src: string): Promise<boolean> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = src;
+  });
+}

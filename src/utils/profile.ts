@@ -80,6 +80,15 @@ export const updateUserProfile = async (uid: string, data: Partial<UserProfile>)
     }
 
     console.log('✅ Profile updated:', uid);
+
+    // 称号チェック（プロフィール更新後 - プロフィール完成チェック）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await checkAndGrantTitles(uid);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもプロフィール更新は成功させる
+    }
   } catch (error) {
     console.error('Update profile error:', error);
     throw new Error('プロフィールの更新に失敗しました');
@@ -230,6 +239,34 @@ export const getUserIdByUsername = async (username: string): Promise<string | nu
   } catch (error) {
     console.error('Get user ID by username error:', error);
     return null;
+  }
+};
+
+/**
+ * フォロワー数を取得
+ */
+export const getFollowerCount = async (userId: string): Promise<number> => {
+  try {
+    const followersRef = collection(db, `users/${userId}/followers`);
+    const snapshot = await getDocs(followersRef);
+    return snapshot.size;
+  } catch (error) {
+    console.error('フォロワー数取得エラー:', error);
+    return 0;
+  }
+};
+
+/**
+ * フォロー数を取得
+ */
+export const getFollowingCount = async (userId: string): Promise<number> => {
+  try {
+    const followingRef = collection(db, `users/${userId}/following`);
+    const snapshot = await getDocs(followingRef);
+    return snapshot.size;
+  } catch (error) {
+    console.error('フォロー数取得エラー:', error);
+    return 0;
   }
 };
 

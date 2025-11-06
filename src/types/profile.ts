@@ -13,6 +13,8 @@ export interface UserProfile {
   websiteUrl?: string; // WebサイトURL
   isPublic: boolean; // 公開/非公開
   pinnedPostId?: string; // ピン留めされた投稿ID（Twitter機能）
+  prefecture?: string; // 都道府県コード（01-47）
+  prefectureChangedAt?: string; // 都道府県変更日時（ISO string）
   createdAt: string; // アカウント作成日
   stats: UserStats;
 }

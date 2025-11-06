@@ -103,6 +103,18 @@ export const acceptFriendRequest = async (
     // リクエスト送信者に通知を送信
     await createNotification(requesterId, accepterId, accepterName, 'friend_accept', { actorAvatar: accepterAvatar });
 
+    // 称号チェック（フレンド承認後 - 両方のユーザー）
+    try {
+      const { checkAndGrantTitles } = await import('./title');
+      await Promise.all([
+        checkAndGrantTitles(accepterId),
+        checkAndGrantTitles(requesterId),
+      ]);
+    } catch (error) {
+      console.error('称号チェックエラー:', error);
+      // 称号チェックに失敗してもフレンド承認は成功させる
+    }
+
     console.log(`✅ [acceptFriendRequest] Request accepted: ${accepterId} accepts ${requesterId}`);
   } catch (error: any) {
     console.error(`❌ [acceptFriendRequest] Failed to accept request:`, error);

@@ -5,14 +5,6 @@ import * as nodemailer from 'nodemailer';
 admin.initializeApp();
 const db = admin.firestore();
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
 interface SendVerificationEmailData {
   email: string;
   code: string;
@@ -23,12 +15,41 @@ interface ResetPasswordData {
   newPassword: string;
 }
 
+// シークレットを使用する関数の設定
+// Firebase Functions v2では、シークレットは自動的にprocess.envに設定されます
 export const sendVerificationEmail = functions.https.onCall(
+  {
+    region: 'us-central1',
+    secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],
+  },
   async (request: functions.https.CallableRequest<SendVerificationEmailData>) => {
     const { email, code } = request.data;
     if (!email || !code) {
       throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
     }
+
+    // シークレットの確認
+    const gmailEmail = process.env.GMAIL_EMAIL;
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+    
+    if (!gmailEmail || !gmailPassword) {
+      console.error('Gmail credentials not found in environment variables');
+      console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
+      console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'SET' : 'NOT SET');
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Gmail認証情報が設定されていません。管理者に連絡してください。'
+      );
+    }
+
+    // シークレットから環境変数を取得してtransporterを作成
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: gmailEmail,
+        pass: gmailPassword,
+      },
+    });
     const mailOptions = {
       from: '"健康家計アプリ" <noreply@life-pwa.app>',
       to: email,
@@ -200,19 +221,53 @@ https://haradakouta.github.io/life-pwa-react/
       await transporter.sendMail(mailOptions);
       console.log(`Verification email sent to ${email}`);
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending email:', error);
-      throw new functions.https.HttpsError('internal', 'メール送信に失敗しました');
+      const errorMessage = error.message || 'メール送信に失敗しました';
+      console.error('Error details:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
+      });
+      throw new functions.https.HttpsError('internal', `メール送信に失敗しました: ${errorMessage}`);
     }
   }
 );
 
 export const sendPasswordResetEmail = functions.https.onCall(
+  {
+    region: 'us-central1',
+    secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],
+  },
   async (request: functions.https.CallableRequest<SendVerificationEmailData>) => {
     const { email, code } = request.data;
     if (!email || !code) {
       throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
     }
+
+    // シークレットの確認
+    const gmailEmail = process.env.GMAIL_EMAIL;
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+    
+    if (!gmailEmail || !gmailPassword) {
+      console.error('Gmail credentials not found in environment variables');
+      console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
+      console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'SET' : 'NOT SET');
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Gmail認証情報が設定されていません。管理者に連絡してください。'
+      );
+    }
+
+    // シークレットから環境変数を取得してtransporterを作成
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: gmailEmail,
+        pass: gmailPassword,
+      },
+    });
     const mailOptions = {
       from: '"健康家計アプリ" <noreply@life-pwa.app>',
       to: email,
@@ -342,14 +397,22 @@ https://haradakouta.github.io/life-pwa-react/
       await transporter.sendMail(mailOptions);
       console.log(`Password reset email sent to ${email}`);
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending password reset email:', error);
-      throw new functions.https.HttpsError('internal', 'パスワードリセットメール送信に失敗しました');
+      const errorMessage = error.message || 'パスワードリセットメール送信に失敗しました';
+      console.error('Error details:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
+      });
+      throw new functions.https.HttpsError('internal', `パスワードリセットメール送信に失敗しました: ${errorMessage}`);
     }
   }
 );
 
 export const resetPassword = functions.https.onCall(
+  { region: 'us-central1' },
   async (request: functions.https.CallableRequest<ResetPasswordData>) => {
     const { email, newPassword } = request.data;
     if (!email || !newPassword) {

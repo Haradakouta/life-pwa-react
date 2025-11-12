@@ -15,9 +15,8 @@ export const TitleUnlockedModal: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    // 前回チェック時の称号IDを取得
+    // 前回チェック時の称号IDを保存するキー
     const lastCheckedKey = `lastTitleCheck_${user.uid}`;
-    const lastCheckedTitleIds = JSON.parse(localStorage.getItem(lastCheckedKey) || '[]');
 
     // 現在の称号を取得
     const checkForNewTitles = async () => {
@@ -25,6 +24,7 @@ export const TitleUnlockedModal: React.FC = () => {
       if (showModal) return;
       
       try {
+        const lastCheckedTitleIds = JSON.parse(localStorage.getItem(lastCheckedKey) || '[]');
         const userTitles = await getUserTitles(user.uid);
         const currentTitleIds = userTitles.map(t => t.titleId);
         

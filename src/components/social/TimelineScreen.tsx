@@ -32,7 +32,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onPostClick, onU
         setPosts(fetchedPosts);
       } else {
         console.log('📡 Fetching timeline posts...');
-        const fetchedPosts = await getTimelinePosts(20);
+        const fetchedPosts = await getTimelinePosts(20, user?.uid);
         console.log(`✅ Fetched ${fetchedPosts.length} posts`);
         setPosts(fetchedPosts);
       }

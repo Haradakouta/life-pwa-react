@@ -36,24 +36,37 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
   const [showPinMenu, setShowPinMenu] = useState(false);
   const [authorTitle, setAuthorTitle] = useState<Title | null>(null);
 
-  // いいね・ブックマーク・リポスト状態と称号を並列で取得（最適化）
+  // いいね・ブックマーク・リポスト状態と称号を取得（最適化）
   useEffect(() => {
     const loadPostData = async () => {
       if (!user) return;
 
       try {
-        // 並列で全てのデータを取得
-        const [isLiked, isBookmarked, isReposted, profile, title] = await Promise.all([
-          hasUserLiked(post.id, user.uid),
-          hasUserBookmarked(post.id, user.uid),
-          hasUserReposted(post.id, user.uid),
+        // 投稿に既にユーザー状態が含まれている場合はそれを使用（バッチ取得済み）
+        const postAny = post as any;
+        if (postAny.userLiked !== undefined && postAny.userBookmarked !== undefined && postAny.userReposted !== undefined) {
+          setLiked(postAny.userLiked);
+          setBookmarked(postAny.userBookmarked);
+          setReposted(postAny.userReposted);
+        } else {
+          // フォールバック: 個別に取得（タイムライン以外の画面など）
+          const [isLiked, isBookmarked, isReposted] = await Promise.all([
+            hasUserLiked(post.id, user.uid),
+            hasUserBookmarked(post.id, user.uid),
+            hasUserReposted(post.id, user.uid),
+          ]);
+
+          setLiked(isLiked);
+          setBookmarked(isBookmarked);
+          setReposted(isReposted);
+        }
+
+        // プロフィールと称号は並列で取得
+        const [profile, title] = await Promise.all([
           getUserProfile(user.uid),
           getEquippedTitle(post.authorId),
         ]);
 
-        setLiked(isLiked);
-        setBookmarked(isBookmarked);
-        setReposted(isReposted);
         setUserProfile(profile);
         setAuthorTitle(title);
       } catch (error) {

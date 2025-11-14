@@ -312,10 +312,16 @@ export const getPost = async (postId: string): Promise<Post | null> => {
 
 /**
  * ユーザーの投稿一覧を取得
+ * 
+ * @param userId ユーザーID
+ * @param limit 取得件数
+ * @param currentUserId 現在のユーザーID（いいね/ブックマーク/リポスト状態を取得する場合）
+ * @returns 投稿の配列（userLiked, userBookmarked, userRepostedプロパティを含む）
  */
 export const getUserPosts = async (
   userId: string,
-  limit: number = 20
+  limit: number = 20,
+  currentUserId?: string
 ): Promise<Post[]> => {
   try {
     console.log(`[getUserPosts] Fetching posts for user: ${userId}`);
@@ -400,6 +406,31 @@ export const getUserPosts = async (
     }
 
     console.log(`[getUserPosts] Successfully processed ${posts.length} posts`);
+    
+    // 現在のユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
+    if (currentUserId && posts.length > 0) {
+      try {
+        const postIds = posts.map(p => p.id);
+        const [likedMap, bookmarkedMap, repostedMap] = await Promise.all([
+          batchHasUserLiked(postIds, currentUserId),
+          batchHasUserBookmarked(postIds, currentUserId),
+          batchHasUserReposted(postIds, currentUserId),
+        ]);
+
+        // 投稿にユーザー状態を追加（型拡張のためanyを使用）
+        posts.forEach((post: any) => {
+          post.userLiked = likedMap[post.id] || false;
+          post.userBookmarked = bookmarkedMap[post.id] || false;
+          post.userReposted = repostedMap[post.id] || false;
+        });
+
+        console.log(`[getUserPosts] User interaction states loaded for ${posts.length} posts`);
+      } catch (error) {
+        console.error('[getUserPosts] Failed to load user interaction states:', error);
+        // エラーが発生しても投稿は返す
+      }
+    }
+    
     return posts;
   } catch (error) {
     console.error('[getUserPosts] ユーザーの投稿取得に失敗しました:', error);
@@ -414,8 +445,12 @@ export const getUserPosts = async (
  * 初回実行時にエラーが出た場合、Firebaseコンソールで以下のインデックスを作成してください：
  * - Collection: posts
  * - Fields: visibility (Ascending), createdAt (Descending)
+ * 
+ * @param limit 取得件数
+ * @param userId ユーザーID（いいね/ブックマーク/リポスト状態を取得する場合）
+ * @returns 投稿の配列（userLiked, userBookmarked, userRepostedプロパティを含む）
  */
-export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
+export const getTimelinePosts = async (limit: number = 20, userId?: string): Promise<Post[]> => {
   console.log('🔍 getTimelinePosts: Starting to fetch timeline posts...');
 
   try {
@@ -480,6 +515,31 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
     }
 
     console.log(`✅ getTimelinePosts: Successfully processed ${posts.length} posts`);
+    
+    // ユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
+    if (userId && posts.length > 0) {
+      try {
+        const postIds = posts.map(p => p.id);
+        const [likedMap, bookmarkedMap, repostedMap] = await Promise.all([
+          batchHasUserLiked(postIds, userId),
+          batchHasUserBookmarked(postIds, userId),
+          batchHasUserReposted(postIds, userId),
+        ]);
+
+        // 投稿にユーザー状態を追加（型拡張のためanyを使用）
+        posts.forEach((post: any) => {
+          post.userLiked = likedMap[post.id] || false;
+          post.userBookmarked = bookmarkedMap[post.id] || false;
+          post.userReposted = repostedMap[post.id] || false;
+        });
+
+        console.log(`✅ getTimelinePosts: User interaction states loaded for ${posts.length} posts`);
+      } catch (error) {
+        console.error('❌ getTimelinePosts: Failed to load user interaction states:', error);
+        // エラーが発生しても投稿は返す
+      }
+    }
+    
     return posts;
   } catch (error: any) {
     console.error('❌ getTimelinePosts: Error occurred:', error);
@@ -542,6 +602,31 @@ export const getTimelinePosts = async (limit: number = 20): Promise<Post[]> => {
         // クライアント側でフィルタリング
         const publicPosts = allPosts.filter((post) => post.visibility === 'public').slice(0, limit);
         console.log(`✅ Fallback: Filtered to ${publicPosts.length} public posts`);
+        
+        // ユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
+        if (userId && publicPosts.length > 0) {
+          try {
+            const postIds = publicPosts.map(p => p.id);
+            const [likedMap, bookmarkedMap, repostedMap] = await Promise.all([
+              batchHasUserLiked(postIds, userId),
+              batchHasUserBookmarked(postIds, userId),
+              batchHasUserReposted(postIds, userId),
+            ]);
+
+            // 投稿にユーザー状態を追加（型拡張のためanyを使用）
+            publicPosts.forEach((post: any) => {
+              post.userLiked = likedMap[post.id] || false;
+              post.userBookmarked = bookmarkedMap[post.id] || false;
+              post.userReposted = repostedMap[post.id] || false;
+            });
+
+            console.log(`✅ Fallback: User interaction states loaded for ${publicPosts.length} posts`);
+          } catch (error) {
+            console.error('❌ Fallback: Failed to load user interaction states:', error);
+            // エラーが発生しても投稿は返す
+          }
+        }
+        
         return publicPosts;
       } catch (fallbackError: any) {
         console.error('❌ フォールバッククエリもエラー:', fallbackError);
@@ -766,7 +851,7 @@ export const removeLike = async (postId: string, userId: string): Promise<void> 
 };
 
 /**
- * ユーザーがいいねしているかチェック
+ * ユーザーがいいねしているかチェック（単一投稿）
  */
 export const hasUserLiked = async (postId: string, userId: string): Promise<boolean> => {
   try {
@@ -778,6 +863,52 @@ export const hasUserLiked = async (postId: string, userId: string): Promise<bool
   } catch (error) {
     console.error('いいね確認に失敗しました:', error);
     return false;
+  }
+};
+
+/**
+ * 複数の投稿に対するユーザーのいいね状態をバッチで取得
+ * @param postIds 投稿IDの配列
+ * @param userId ユーザーID
+ * @returns 投稿IDをキーとしたいいね状態のマップ
+ */
+export const batchHasUserLiked = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
+  const result: Record<string, boolean> = {};
+  
+  // 初期化: すべてfalseに設定
+  postIds.forEach(postId => {
+    result[postId] = false;
+  });
+
+  try {
+    // バッチ処理: 最大10件ずつ処理（Firestoreの制限）
+    const batchSize = 10;
+    for (let i = 0; i < postIds.length; i += batchSize) {
+      const batch = postIds.slice(i, i + batchSize);
+      
+      // 並列でクエリを実行
+      const promises = batch.map(async (postId) => {
+        try {
+          const likesRef = collection(db, `posts/${postId}/likes`);
+          const q = query(likesRef, where('userId', '==', userId), firestoreLimit(1));
+          const querySnapshot = await getDocs(q);
+          return { postId, liked: !querySnapshot.empty };
+        } catch (error) {
+          console.error(`いいね確認エラー (postId: ${postId}):`, error);
+          return { postId, liked: false };
+        }
+      });
+
+      const batchResults = await Promise.all(promises);
+      batchResults.forEach(({ postId, liked }) => {
+        result[postId] = liked;
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error('バッチいいね確認に失敗しました:', error);
+    return result;
   }
 };
 
@@ -1006,7 +1137,7 @@ export const removeBookmark = async (postId: string, userId: string): Promise<vo
 };
 
 /**
- * ユーザーがブックマークしているかチェック
+ * ユーザーがブックマークしているかチェック（単一投稿）
  */
 export const hasUserBookmarked = async (postId: string, userId: string): Promise<boolean> => {
   try {
@@ -1016,6 +1147,43 @@ export const hasUserBookmarked = async (postId: string, userId: string): Promise
   } catch (error) {
     console.error('ブックマーク確認に失敗しました:', error);
     return false;
+  }
+};
+
+/**
+ * 複数の投稿に対するユーザーのブックマーク状態をバッチで取得
+ * @param postIds 投稿IDの配列
+ * @param userId ユーザーID
+ * @returns 投稿IDをキーとしたブックマーク状態のマップ
+ */
+export const batchHasUserBookmarked = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
+  const result: Record<string, boolean> = {};
+  
+  // 初期化: すべてfalseに設定
+  postIds.forEach(postId => {
+    result[postId] = false;
+  });
+
+  try {
+    // ユーザーのブックマーク一覧を一度に取得
+    const bookmarksRef = collection(db, `users/${userId}/bookmarks`);
+    const querySnapshot = await getDocs(bookmarksRef);
+    
+    // ブックマークされている投稿IDのセットを作成
+    const bookmarkedPostIds = new Set<string>();
+    querySnapshot.forEach((doc) => {
+      bookmarkedPostIds.add(doc.id);
+    });
+
+    // 結果を設定
+    postIds.forEach(postId => {
+      result[postId] = bookmarkedPostIds.has(postId);
+    });
+
+    return result;
+  } catch (error) {
+    console.error('バッチブックマーク確認に失敗しました:', error);
+    return result;
   }
 };
 
@@ -1157,7 +1325,7 @@ export const removeRepost = async (postId: string, userId: string): Promise<void
 };
 
 /**
- * ユーザーがリポストしているかチェック
+ * ユーザーがリポストしているかチェック（単一投稿）
  */
 export const hasUserReposted = async (postId: string, userId: string): Promise<boolean> => {
   try {
@@ -1169,6 +1337,52 @@ export const hasUserReposted = async (postId: string, userId: string): Promise<b
   } catch (error) {
     console.error('リポスト確認に失敗しました:', error);
     return false;
+  }
+};
+
+/**
+ * 複数の投稿に対するユーザーのリポスト状態をバッチで取得
+ * @param postIds 投稿IDの配列
+ * @param userId ユーザーID
+ * @returns 投稿IDをキーとしたリポスト状態のマップ
+ */
+export const batchHasUserReposted = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
+  const result: Record<string, boolean> = {};
+  
+  // 初期化: すべてfalseに設定
+  postIds.forEach(postId => {
+    result[postId] = false;
+  });
+
+  try {
+    // バッチ処理: 最大10件ずつ処理（Firestoreの制限）
+    const batchSize = 10;
+    for (let i = 0; i < postIds.length; i += batchSize) {
+      const batch = postIds.slice(i, i + batchSize);
+      
+      // 並列でクエリを実行
+      const promises = batch.map(async (postId) => {
+        try {
+          const repostsRef = collection(db, `posts/${postId}/reposts`);
+          const q = query(repostsRef, where('userId', '==', userId), firestoreLimit(1));
+          const querySnapshot = await getDocs(q);
+          return { postId, reposted: !querySnapshot.empty };
+        } catch (error) {
+          console.error(`リポスト確認エラー (postId: ${postId}):`, error);
+          return { postId, reposted: false };
+        }
+      });
+
+      const batchResults = await Promise.all(promises);
+      batchResults.forEach(({ postId, reposted }) => {
+        result[postId] = reposted;
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error('バッチリポスト確認に失敗しました:', error);
+    return result;
   }
 };
 

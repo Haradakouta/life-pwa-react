@@ -10,7 +10,13 @@ admin.initializeApp();
 const db = admin.firestore();
 // CORS設定
 const corsOptions = {
-    origin: ['https://haradakouta.github.io', 'http://localhost:5173'],
+    origin: [
+        'https://healthfinanse.jp',
+        'https://www.healthfinanse.jp',
+        'https://oshi-para.web.app',
+        'https://haradakouta.github.io',
+        'http://localhost:5173',
+    ],
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -169,7 +175,7 @@ sendVerificationEmailApp.post('/', async (req, res) => {
 
     <div class="footer">
       <p>© 2025 健康家計アプリ</p>
-      <p><a href="https://haradakouta.github.io/life-pwa-react/" style="color: #4caf50; text-decoration: none;">https://haradakouta.github.io/life-pwa-react/</a></p>
+      <p><a href="https://healthfinanse.jp" style="color: #4caf50; text-decoration: none;">https://healthfinanse.jp</a></p>
       <p>このメールは自動送信されています。返信はできません。</p>
     </div>
   </div>
@@ -207,7 +213,7 @@ AIが健康をサポートする生活管理アプリです。
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 © 2025 健康家計アプリ
-https://haradakouta.github.io/life-pwa-react/
+https://healthfinanse.jp
       `,
     };
     try {
@@ -353,7 +359,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
 
     <div class="footer">
       <p>© 2025 健康家計アプリ</p>
-      <p><a href="https://haradakouta.github.io/life-pwa-react/" style="color: #4caf50; text-decoration: none;">https://haradakouta.github.io/life-pwa-react/</a></p>
+      <p><a href="https://healthfinanse.jp" style="color: #4caf50; text-decoration: none;">https://healthfinanse.jp</a></p>
       <p>このメールは自動送信されています。返信はできません。</p>
     </div>
   </div>
@@ -377,7 +383,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 © 2025 健康家計アプリ
-https://haradakouta.github.io/life-pwa-react/
+https://healthfinanse.jp
       `,
     };
     try {

@@ -89,7 +89,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         let fetchedPosts: Post[] = [];
         switch (activeTab) {
           case 'posts':
-            fetchedPosts = await getUserPosts(userId, 20);
+            fetchedPosts = await getUserPosts(userId, 20, user?.uid);
             if (profile.pinnedPostId) {
               const pinned = await getPost(profile.pinnedPostId);
               setPinnedPost(pinned);

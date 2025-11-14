@@ -1,8 +1,9 @@
 # Cursor 開発用メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-11-06**
+**最終更新: 2025-01-XX**
 
 このドキュメントは、AIコーディング（Cursor）で作業を引き継ぐ際に必要な情報をまとめたものです。
+**⚠️ 重要: このドキュメントを必ず最初に読んでください。設定を誤るとアプリが動かなくなります。**
 
 ---
 
@@ -12,9 +13,43 @@ Vanilla JSで開発した「健康家計アプリ」をReact + TypeScriptに移�
 食事記録、カロリー管理、家計簿、在庫管理、AIレシピ生成、バーコードスキャン、SNS機能などの機能を実装。
 
 **リポジトリ:** https://github.com/Haradakouta/life-pwa-react  
-**GitHub Pages:** https://haradakouta.github.io/life-pwa-react/  
+**本番URL:** https://healthfinanse.jp  
+**Firebase Hosting:** https://oshi-para.web.app  
 **Firebase プロジェクトID:** `oshi-para`  
-**Firebase リージョン:** `us-central1`（Cloud Functions）
+**Firebase リージョン:** `us-central1`（Cloud Functions）  
+**カスタムドメイン:** `healthfinanse.jp`（お名前.com、DNS: dns1.onamae.com, dns2.onamae.com）
+
+---
+
+## ⚠️ 最重要: 作業前に必ず確認すべき設定
+
+### 1. Viteのbase設定（絶対に変更しない）
+- **ファイル:** `vite.config.ts`
+- **設定値:** `base: '/'`（Firebase Hosting用）
+- **⚠️ 警告:** `/life-pwa-react/`に戻すと、Firebase Hostingで動作しなくなります
+
+### 2. PWA設定のパス（絶対に変更しない）
+- **ファイル:** `index.html`, `public/manifest.webmanifest`, `public/sw.js`
+- **設定値:** すべて`/`から始まるパス（例: `/manifest.webmanifest`）
+- **⚠️ 警告:** `/life-pwa-react/`を含むパスに戻すと、PWAが動作しなくなります
+
+### 3. Firebase Authenticationの承認済みドメイン
+- **設定場所:** Firebase Console > Authentication > Settings > 承認済みドメイン
+- **必須ドメイン:**
+  - `healthfinanse.jp`
+  - `www.healthfinanse.jp`（必要に応じて）
+  - `oshi-para.web.app`
+  - `localhost`（開発用）
+- **⚠️ 警告:** カスタムドメインを追加しないと、Googleログインが`auth/unauthorized-domain`エラーになります
+
+### 4. Firebase Hosting設定
+- **ファイル:** `firebase.json`
+- **設定値:** `"public": "dist"`, `"rewrites": [{"source": "**", "destination": "/index.html"}]`
+- **⚠️ 警告:** この設定を変更すると、SPAのルーティングが動作しなくなります
+
+### 5. 環境変数（`.env`ファイル）
+- **必須変数:** すべての`VITE_*`変数が設定されている必要があります
+- **⚠️ 警告:** 環境変数が不足していると、ビルドは成功しても実行時にエラーになります
 
 ---
 
@@ -222,14 +257,22 @@ npm run preview
 
 ### 3. デプロイ
 
-#### GitHub Pages（自動デプロイ）
+#### Firebase Hosting（本番環境）
 ```bash
-# mainブランチにpushすると自動デプロイ
-git add .
-git commit -m "コミットメッセージ"
-git push origin main
-# → GitHub Actionsが自動でデプロイ
+# ビルド
+npm run build
+
+# Firebase Hostingにデプロイ
+firebase deploy --only hosting
+
+# または、すべてをデプロイ
+firebase deploy
 ```
+
+**⚠️ 重要:**
+- デプロイ前に必ず`npm run build`を実行してください
+- `dist`ディレクトリが正しく生成されているか確認してください
+- デプロイ後、`https://healthfinanse.jp`で動作確認してください
 
 #### Cloud Functions
 ```bash
@@ -332,8 +375,9 @@ firebase deploy --only storage
 
 ### `vite.config.ts`
 - Vite設定
-- **base:** `/life-pwa-react/`（GitHub Pages用）
+- **base:** `/`（Firebase Hosting用）⚠️ **絶対に変更しない**
 - **コード分割:** react-vendor, firebase-vendor, ui-vendor, chart-vendor
+- **⚠️ 警告:** baseを`/life-pwa-react/`に戻すと、Firebase Hostingで動作しなくなります
 
 ### `firestore.rules`
 - Firestoreセキュリティルール
@@ -457,16 +501,25 @@ firebase deploy --only storage
 - **関数タイプ:** `onRequest`（Express + CORS）を使用
 - **リージョン:** `us-central1`を明示的に指定
 
-### 3. GitHub Pages デプロイ
-- **base URL:** `/life-pwa-react/`
-- **自動デプロイ:** mainブランチへのpushで自動実行
-- **環境:** `github-pages`を指定
+### 3. Firebase Hosting デプロイ
+- **base URL:** `/`（ルートパス）⚠️ **絶対に変更しない**
+- **デプロイ方法:** `firebase deploy --only hosting`
+- **カスタムドメイン:** `healthfinanse.jp`（お名前.comでDNS設定済み）
+- **⚠️ 重要:** 
+  - デプロイ前に必ず`npm run build`を実行
+  - `dist`ディレクトリが正しく生成されているか確認
+  - デプロイ後、カスタムドメインで動作確認
 
-### 4. モーダル表示
+### 4. Firebase Authentication 承認済みドメイン
+- **設定場所:** Firebase Console > Authentication > Settings > 承認済みドメイン
+- **必須ドメイン:** `healthfinanse.jp`, `www.healthfinanse.jp`, `oshi-para.web.app`, `localhost`
+- **⚠️ 警告:** カスタムドメインを追加しないと、Googleログインが`auth/unauthorized-domain`エラーになります
+
+### 6. モーダル表示
 - **カレンダー系モーダル:** 画面下部に表示（`alignItems: 'flex-end'`）
 - **実装:** `DatePickerModal.tsx`, `MonthPickerModal.tsx`, `global.css`
 
-### 5. SNS機能
+### 7. SNS機能
 - **X風デザイン:** 投稿カード、タイムライン、投稿詳細、投稿作成
 - **通知:** 引用（`quote`）、リプライ（`reply`）の通知を送信
 - **リプライ:** リプライへのリプライ、いいね機能を実装
@@ -614,15 +667,70 @@ type NotificationType =
 ## 🔄 バージョン管理
 
 ### 重要な変更履歴
+- **2025-01-XX:** Firebase Hostingへの移行、カスタムドメイン（healthfinanse.jp）設定、PWA設定修正
 - **2025-11-06:** X風UI改善、健康管理機能強化
 - **2025-11-05:** SNS機能改善、リファクタリング完了
 - **2025-10-30:** SNS関連バグ修正完了
+
+### 重要な移行履歴
+- **GitHub Pages → Firebase Hosting:** 2025-01-XXに移行完了
+  - `vite.config.ts`の`base`を`/life-pwa-react/`から`/`に変更
+  - PWA設定のパスをすべて`/`から始まるパスに変更
+  - `firebase.json`に`hosting`設定を追加
+- **カスタムドメイン設定:** `healthfinanse.jp`を設定
+  - お名前.comでDNS設定（Aレコード、TXTレコード）
+  - Firebase Authenticationの承認済みドメインに追加
 
 ---
 
 ## ⚠️ トラブルシューティング
 
-### Service Workerのクリア
+### 1. PWAが動作しない（アプリ化ボタンが表示されない）
+**原因:** PWA設定のパスが間違っている可能性があります
+
+**確認事項:**
+- `index.html`の`<link rel="manifest" href="/manifest.webmanifest" />`が正しいか
+- `public/manifest.webmanifest`の`start_url`が`"/"`になっているか
+- `public/sw.js`のキャッシュパスが`/`から始まっているか
+- `vite.config.ts`の`base: '/'`が正しいか
+
+**解決方法:**
+```bash
+# ビルドして確認
+npm run build
+
+# Service Workerをクリア（ブラウザのDevTools Console）
+await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
+navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
+location.reload();
+```
+
+### 2. Googleログインが`auth/unauthorized-domain`エラーになる
+**原因:** Firebase Authenticationの承認済みドメインにカスタムドメインが登録されていない
+
+**解決方法:**
+1. Firebase Console > Authentication > Settings > 承認済みドメイン
+2. `healthfinanse.jp`と`www.healthfinanse.jp`を追加
+3. 保存
+
+### 3. サイトが表示されない（404エラー）
+**原因:** Firebase Hostingの設定が間違っている可能性があります
+
+**確認事項:**
+- `firebase.json`の`hosting.public`が`"dist"`になっているか
+- `firebase.json`の`hosting.rewrites`が正しく設定されているか
+- `dist`ディレクトリが存在し、`index.html`が含まれているか
+
+**解決方法:**
+```bash
+# ビルド
+npm run build
+
+# デプロイ
+firebase deploy --only hosting
+```
+
+### 4. Service Workerのクリア
 ```javascript
 // DevTools Console
 await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
@@ -630,13 +738,13 @@ navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.
 location.reload();
 ```
 
-### localStorageのクリア
+### 5. localStorageのクリア
 ```javascript
 localStorage.clear();
 location.reload();
 ```
 
-### Cloud Functionsのデプロイエラー
+### 6. Cloud Functionsのデプロイエラー
 ```bash
 # シークレットの確認
 firebase functions:secrets:list
@@ -652,7 +760,95 @@ cd ..
 firebase deploy --only functions
 ```
 
+### 7. ビルドエラー
+**原因:** 環境変数が不足している可能性があります
+
+**確認事項:**
+- `.env`ファイルが存在するか
+- すべての`VITE_*`変数が設定されているか
+
+**解決方法:**
+```bash
+# .envファイルを確認
+cat .env
+
+# 不足している変数を追加
+# 例: VITE_FIREBASE_API_KEY=...
+```
+
+### 8. カスタムドメインが接続されない
+**原因:** DNS設定が正しくない可能性があります
+
+**確認事項:**
+- お名前.comのDNS設定でAレコードがGoogleのIP（Firebase Consoleで確認）を指しているか
+- TXTレコードが正しく設定されているか
+- DNSの反映に時間がかかる場合がある（最大24時間）
+
+**解決方法:**
+1. Firebase Console > Hosting > カスタムドメインで確認
+2. DNS設定を確認（お名前.comのDNS設定画面）
+3. 時間を置いて再確認
+
 ---
 
-**このドキュメントは定期的に更新されます。**
+---
+
+## 📝 引き継ぎ時のチェックリスト
+
+新しい作業者が引き継ぐ際に、以下のチェックリストを確認してください：
+
+### ✅ 必須確認事項
+
+1. **環境変数（`.env`ファイル）**
+   - [ ] `.env`ファイルが存在するか
+   - [ ] すべての`VITE_*`変数が設定されているか
+   - [ ] Firebase設定値が正しいか
+
+2. **Firebase設定**
+   - [ ] Firebase CLIにログインしているか（`firebase login`）
+   - [ ] 正しいプロジェクトを選択しているか（`firebase use oshi-para`）
+   - [ ] Cloud Functionsのシークレットが設定されているか（`firebase functions:secrets:list`）
+
+3. **ビルド確認**
+   - [ ] `npm install`が完了しているか
+   - [ ] `npm run build`が成功するか
+   - [ ] `dist`ディレクトリが正しく生成されているか
+
+4. **デプロイ確認**
+   - [ ] `firebase deploy --only hosting`が成功するか
+   - [ ] `https://healthfinanse.jp`でサイトが表示されるか
+   - [ ] Googleログインが動作するか（`auth/unauthorized-domain`エラーが出ないか）
+
+5. **PWA確認**
+   - [ ] ブラウザで「アプリをインストール」ボタンが表示されるか
+   - [ ] Service Workerが正しく登録されているか（DevTools > Application > Service Workers）
+
+### ⚠️ 絶対に変更してはいけない設定
+
+1. **`vite.config.ts`の`base: '/'`** - Firebase Hosting用の設定
+2. **PWA設定のパス** - `index.html`, `public/manifest.webmanifest`, `public/sw.js`のパス
+3. **`firebase.json`の`hosting`設定** - SPAのルーティングに必要
+4. **Firebase Authenticationの承認済みドメイン** - カスタムドメインが登録されているか
+
+### 🔧 よくあるエラーと対処法
+
+1. **`auth/unauthorized-domain`エラー**
+   - 原因: Firebase Authenticationの承認済みドメインにカスタムドメインが登録されていない
+   - 対処: Firebase Console > Authentication > Settings > 承認済みドメインに追加
+
+2. **PWAが動作しない**
+   - 原因: PWA設定のパスが間違っている
+   - 対処: `index.html`, `public/manifest.webmanifest`, `public/sw.js`のパスを確認
+
+3. **404エラー**
+   - 原因: Firebase Hostingの設定が間違っている
+   - 対処: `firebase.json`の`hosting.rewrites`を確認
+
+4. **ビルドエラー**
+   - 原因: 環境変数が不足している
+   - 対処: `.env`ファイルを確認し、不足している変数を追加
+
+---
+
+**このドキュメントは定期的に更新されます。作業前に必ず最新版を確認してください。**
 

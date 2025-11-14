@@ -138,7 +138,7 @@ AIが健康をサポートする生活管理アプリです。
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 © 2025 健康家計アプリ
-https://haradakouta.github.io/life-pwa-react/
+https://healthfinanse.jp
 
 ====================================
     `);
@@ -199,7 +199,7 @@ export const sendPasswordResetEmail = async (email: string, code: string) => {
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 © 2025 健康家計アプリ
-https://haradakouta.github.io/life-pwa-react/
+https://healthfinanse.jp
 
 ====================================
     `);

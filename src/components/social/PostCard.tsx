@@ -22,7 +22,7 @@ interface PostCardProps {
   onPinToggle?: () => void; // ピン留め後にプロフィールをリフレッシュ
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost, showPinButton = false, onPinToggle }) => {
+const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost, showPinButton = false, onPinToggle }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -36,43 +36,33 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
   const [showPinMenu, setShowPinMenu] = useState(false);
   const [authorTitle, setAuthorTitle] = useState<Title | null>(null);
 
-  // いいね・ブックマーク・リポスト状態を初期化
+  // いいね・ブックマーク・リポスト状態と称号を並列で取得（最適化）
   useEffect(() => {
-    const checkStatus = async () => {
+    const loadPostData = async () => {
       if (!user) return;
+
       try {
-        const isLiked = await hasUserLiked(post.id, user.uid);
-        const isBookmarked = await hasUserBookmarked(post.id, user.uid);
-        const isReposted = await hasUserReposted(post.id, user.uid);
+        // 並列で全てのデータを取得
+        const [isLiked, isBookmarked, isReposted, profile, title] = await Promise.all([
+          hasUserLiked(post.id, user.uid),
+          hasUserBookmarked(post.id, user.uid),
+          hasUserReposted(post.id, user.uid),
+          getUserProfile(user.uid),
+          getEquippedTitle(post.authorId),
+        ]);
 
         setLiked(isLiked);
         setBookmarked(isBookmarked);
         setReposted(isReposted);
-
-        // ユーザープロフィールを取得
-        const profile = await getUserProfile(user.uid);
         setUserProfile(profile);
-      } catch (error) {
-        console.error('ステータス確認エラー:', error);
-      }
-    };
-
-    checkStatus();
-  }, [post.id, user]);
-
-  // 投稿者の称号を取得
-  useEffect(() => {
-    const fetchAuthorTitle = async () => {
-      try {
-        const title = await getEquippedTitle(post.authorId);
         setAuthorTitle(title);
       } catch (error) {
-        console.error('称号取得エラー:', error);
+        console.error('投稿データ読み込みエラー:', error);
       }
     };
 
-    fetchAuthorTitle();
-  }, [post.authorId]);
+    loadPostData();
+  }, [post.id, post.authorId, user]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -607,6 +597,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               <img
                 src={post.quotedPost.images[0]}
                 alt="引用元画像"
+                loading="lazy"
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -667,6 +658,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
               <img
                 src={image}
                 alt={`投稿画像 ${index + 1}`}
+                loading="lazy"
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -878,4 +870,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onPostClick, onUserCli
     </div>
   );
 };
+
+// React.memoでメモ化してパフォーマンスを最適化
+export const PostCard = React.memo(PostCardComponent);
 

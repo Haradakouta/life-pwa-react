@@ -12,6 +12,7 @@ import { TitleBadge } from '../common/TitleBadge';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from '../common/PostCardSkeleton';
 import { FriendListModal } from './FriendListModal';
+import { ProfileEditScreen } from '../profile/ProfileEditScreen';
 import { formatCount, formatJoinDate } from '../../utils/formatNumber';
 import type { UserProfile, Friend } from '../../types/profile';
 import type { Post } from '../../types/post';
@@ -46,6 +47,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   const [showFriendListModal, setShowFriendListModal] = useState(false);
   const [friendListModalInitialTab, setFriendListModalInitialTab] = useState<'friends' | 'pending_sent' | 'pending_received'>('friends');
   const [equippedTitle, setEquippedTitle] = useState<Title | null>(null);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
 
   const isOwnProfile = user && user.uid === userId;
 
@@ -120,7 +122,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
     };
 
     fetchPosts();
-  }, [userId, activeTab, profile]);
+  }, [userId, activeTab, profile, user?.uid]);
 
   const handleFriendAction = async (action: 'send' | 'accept' | 'decline' | 'remove') => {
     if (!user || !profile) return;
@@ -253,10 +255,35 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '-40px', marginBottom: '12px' }}>
           <AvatarWithFrame userId={profile.uid} avatarUrl={profile.avatarUrl} size="medium" />
           {isOwnProfile ? (
-            <div style={{ padding: '8px 16px', background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '20px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <MdEdit size={14} />
-              設定画面から編集できます
-            </div>
+            <button
+              onClick={() => {
+                // プロフィール編集画面を表示
+                setShowProfileEdit(true);
+              }}
+              style={{
+                padding: '8px 16px',
+                background: 'var(--primary)',
+                border: 'none',
+                borderRadius: '20px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
+              <MdEdit size={16} />
+              プロフィールを編集
+            </button>
           ) : (
             <div style={{ display: 'flex', gap: '8px' }}>
               {friendStatus === 'not_friends' && (
@@ -332,6 +359,26 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           onNavigateToProfile={onUserClick}
           onNavigateToDM={() => { }}
           initialTab={friendListModalInitialTab}
+        />
+      )}
+
+      {showProfileEdit && (
+        <ProfileEditScreen
+          onBack={() => {
+            setShowProfileEdit(false);
+            // プロフィールを再取得
+            const refreshProfile = async () => {
+              try {
+                const updatedProfile = await getUserProfile(userId);
+                if (updatedProfile) {
+                  setProfile(updatedProfile);
+                }
+              } catch (error) {
+                console.error('[UserProfileScreen] プロフィールの再取得に失敗:', error);
+              }
+            };
+            refreshProfile();
+          }}
         />
       )}
     </div>

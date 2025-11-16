@@ -166,7 +166,7 @@ export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onBack }) 
   };
 
   return (
-    <div className="profile-edit-screen">
+    <div className="profile-edit-screen" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--background)', zIndex: 1000, overflowY: 'auto' }}>
       <div className="profile-edit-header">
         <button onClick={onBack} className="back-button">
           <MdArrowBack /> 戻る

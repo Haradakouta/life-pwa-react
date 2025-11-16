@@ -135,7 +135,7 @@ export const createPost = async (
     // 引用リポストの場合
     if (data.quotedPostId) {
       postData.quotedPostId = data.quotedPostId;
-      
+
       // 引用元の投稿の作者に通知を送信
       try {
         const quotedPost = await getPost(data.quotedPostId);
@@ -179,7 +179,7 @@ export const createPost = async (
       await updateDoc(parentPostRef, {
         replyCount: increment(1),
       });
-      
+
       // 返信先のユーザーに通知を送信
       if (data.replyToUserId && data.replyToUserId !== userId) {
         try {
@@ -406,7 +406,7 @@ export const getUserPosts = async (
     }
 
     console.log(`[getUserPosts] Successfully processed ${posts.length} posts`);
-    
+
     // 現在のユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
     if (currentUserId && posts.length > 0) {
       try {
@@ -430,7 +430,7 @@ export const getUserPosts = async (
         // エラーが発生しても投稿は返す
       }
     }
-    
+
     return posts;
   } catch (error) {
     console.error('[getUserPosts] ユーザーの投稿取得に失敗しました:', error);
@@ -515,7 +515,7 @@ export const getTimelinePosts = async (limit: number = 20, userId?: string): Pro
     }
 
     console.log(`✅ getTimelinePosts: Successfully processed ${posts.length} posts`);
-    
+
     // ユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
     if (userId && posts.length > 0) {
       try {
@@ -539,7 +539,7 @@ export const getTimelinePosts = async (limit: number = 20, userId?: string): Pro
         // エラーが発生しても投稿は返す
       }
     }
-    
+
     return posts;
   } catch (error: any) {
     console.error('❌ getTimelinePosts: Error occurred:', error);
@@ -602,7 +602,7 @@ export const getTimelinePosts = async (limit: number = 20, userId?: string): Pro
         // クライアント側でフィルタリング
         const publicPosts = allPosts.filter((post) => post.visibility === 'public').slice(0, limit);
         console.log(`✅ Fallback: Filtered to ${publicPosts.length} public posts`);
-        
+
         // ユーザーIDが提供された場合、いいね/ブックマーク/リポスト状態をバッチで取得
         if (userId && publicPosts.length > 0) {
           try {
@@ -626,7 +626,7 @@ export const getTimelinePosts = async (limit: number = 20, userId?: string): Pro
             // エラーが発生しても投稿は返す
           }
         }
-        
+
         return publicPosts;
       } catch (fallbackError: any) {
         console.error('❌ フォールバッククエリもエラー:', fallbackError);
@@ -795,27 +795,33 @@ export const addLike = async (
 
     console.log('いいねを追加しました');
 
-    // 称号チェック（いいね追加後）
-    try {
-      const { checkAndGrantTitles } = await import('./title');
-      await checkAndGrantTitles(userId);
-    } catch (error) {
-      console.error('称号チェックエラー:', error);
-      // 称号チェックに失敗してもいいねは成功させる
-    }
+    // ミッション進捗更新を非同期で実行（ブロックしない）
+    // 称号チェックは削除（いいね追加時には不要。定期的に実行するか、投稿作成時のみ実行）
+    // これにより、いいね操作のレスポンスが大幅に速くなる
+    (async () => {
+      // ミッション進捗更新（既存の進捗に1を足すだけ）
+      try {
+        const { updateMissionProgress } = await import('./mission');
+        const { getUserMissionData } = await import('./mission');
+        const missionData = await getUserMissionData(userId);
 
-    // ミッション進捗更新（いいね追加後）
-    try {
-      const { getPostLikes } = await import('./post');
-      const likes = await getPostLikes(postId);
-      const userLikes = likes.filter(l => l.userId === userId).length;
-      const { updateMissionProgress } = await import('./mission');
-      await updateMissionProgress(userId, 'daily_like_5', userLikes);
-      await updateMissionProgress(userId, 'daily_like_10', userLikes);
-    } catch (error) {
-      console.error('ミッション進捗更新エラー:', error);
-      // ミッション更新に失敗してもいいねは成功させる
-    }
+        if (missionData) {
+          // 既存の進捗を取得
+          const likeMission5 = missionData.missions.find(m => m.missionId === 'daily_like_5');
+          const likeMission10 = missionData.missions.find(m => m.missionId === 'daily_like_10');
+          const currentProgress5 = (likeMission5?.current || 0) + 1;
+          const currentProgress10 = (likeMission10?.current || 0) + 1;
+
+          // 進捗を更新（いいねを追加したので1増やす）
+          await updateMissionProgress(userId, 'daily_like_5', currentProgress5);
+          await updateMissionProgress(userId, 'daily_like_10', currentProgress10);
+        }
+      } catch (error) {
+        console.error('ミッション進捗更新エラー:', error);
+      }
+    })().catch(error => {
+      console.error('非同期処理エラー:', error);
+    });
   } catch (error) {
     console.error('いいねの追加に失敗しました:', error);
     throw error;
@@ -874,7 +880,7 @@ export const hasUserLiked = async (postId: string, userId: string): Promise<bool
  */
 export const batchHasUserLiked = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
   const result: Record<string, boolean> = {};
-  
+
   // 初期化: すべてfalseに設定
   postIds.forEach(postId => {
     result[postId] = false;
@@ -885,7 +891,7 @@ export const batchHasUserLiked = async (postIds: string[], userId: string): Prom
     const batchSize = 10;
     for (let i = 0; i < postIds.length; i += batchSize) {
       const batch = postIds.slice(i, i + batchSize);
-      
+
       // 並列でクエリを実行
       const promises = batch.map(async (postId) => {
         try {
@@ -1158,7 +1164,7 @@ export const hasUserBookmarked = async (postId: string, userId: string): Promise
  */
 export const batchHasUserBookmarked = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
   const result: Record<string, boolean> = {};
-  
+
   // 初期化: すべてfalseに設定
   postIds.forEach(postId => {
     result[postId] = false;
@@ -1168,7 +1174,7 @@ export const batchHasUserBookmarked = async (postIds: string[], userId: string):
     // ユーザーのブックマーク一覧を一度に取得
     const bookmarksRef = collection(db, `users/${userId}/bookmarks`);
     const querySnapshot = await getDocs(bookmarksRef);
-    
+
     // ブックマークされている投稿IDのセットを作成
     const bookmarkedPostIds = new Set<string>();
     querySnapshot.forEach((doc) => {
@@ -1348,7 +1354,7 @@ export const hasUserReposted = async (postId: string, userId: string): Promise<b
  */
 export const batchHasUserReposted = async (postIds: string[], userId: string): Promise<Record<string, boolean>> => {
   const result: Record<string, boolean> = {};
-  
+
   // 初期化: すべてfalseに設定
   postIds.forEach(postId => {
     result[postId] = false;
@@ -1359,7 +1365,7 @@ export const batchHasUserReposted = async (postIds: string[], userId: string): P
     const batchSize = 10;
     for (let i = 0; i < postIds.length; i += batchSize) {
       const batch = postIds.slice(i, i + batchSize);
-      
+
       // 並列でクエリを実行
       const promises = batch.map(async (postId) => {
         try {
@@ -1641,7 +1647,7 @@ export const getUserRecipes = async (userId: string, limit: number = 20): Promis
 export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> => {
   try {
     const postsRef = collection(db, 'posts');
-    
+
     // まず全体公開の投稿を取得
     const q = query(
       postsRef,
@@ -1655,7 +1661,7 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       const likes = data.likes || 0; // likesが未定義の場合は0
-      
+
       posts.push({
         id: doc.id,
         content: data.content,
@@ -1675,7 +1681,7 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
 
     // クライアント側でいいね数でソート
     posts.sort((a, b) => b.likes - a.likes);
-    
+
     // 上位limit件を返す
     return posts.slice(0, limit);
   } catch (error) {
@@ -1695,7 +1701,7 @@ export const getTopPostsByLikes = async (limit: number = 10): Promise<Post[]> =>
 export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]> => {
   try {
     const recipesRef = collection(db, 'recipes');
-    
+
     // まず全体公開のレシピを取得
     const q = query(
       recipesRef,
@@ -1709,7 +1715,7 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       const likes = data.likes || 0; // likesが未定義の場合は0
-      
+
       recipes.push({
         id: doc.id,
         title: data.title,
@@ -1734,7 +1740,7 @@ export const getTopRecipesByLikes = async (limit: number = 10): Promise<Recipe[]
 
     // クライアント側でいいね数でソート
     recipes.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-    
+
     // 上位limit件を返す
     return recipes.slice(0, limit);
   } catch (error) {

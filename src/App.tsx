@@ -7,8 +7,10 @@ import { LoginScreen } from './components/auth/LoginScreen';
 import { BadgeUnlockedModal } from './components/badges/BadgeUnlockedModal';
 import { TitleUnlockedModal } from './components/common/TitleUnlockedModal';
 import { PrefectureSettingScreen } from './components/settings/PrefectureSettingScreen';
+import { WeightInputModal } from './components/settings/WeightInputModal';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { checkAndGrantTitles } from './utils/title';
+import { shouldShowWeightReminder, markWeightReminderShown } from './utils/weightReminder';
 import {
   useSettingsStore,
   useIntakeStore,
@@ -55,6 +57,7 @@ function App() {
   const { user, loading: authLoading } = useAuth();
   const [syncing, setSyncing] = useState(false);
   const [showPrefectureSetting, setShowPrefectureSetting] = useState(false);
+  const [showWeightInputModal, setShowWeightInputModal] = useState(false);
 
   const intakeStore = useIntakeStore();
   const expenseStore = useExpenseStore();
@@ -84,7 +87,7 @@ function App() {
       try {
         const { getUserCosmetics, getCosmeticById } = await import('./utils/cosmetic');
         const userCosmetics = await getUserCosmetics(user.uid);
-        
+
         if (!userCosmetics?.equippedSkin) {
           // 装備中のスキンがない場合は既存のスキンクラスを削除
           const skinClasses = document.body.className.match(/skin-\w+/g);
@@ -230,34 +233,34 @@ function App() {
           console.log('✅ プロフィールが存在します');
         }
 
-                    await Promise.all([
-                      intakeStore.syncWithFirestore(),
-                      expenseStore.syncWithFirestore(),
-                      stockStore.syncWithFirestore(),
-                      shoppingStore.syncWithFirestore(),
-                      recipeStore.syncWithFirestore(),
-                      settingsStore.syncWithFirestore(),
-                    ]);
-                    console.log('Sync completed for user:', user.uid);
+        await Promise.all([
+          intakeStore.syncWithFirestore(),
+          expenseStore.syncWithFirestore(),
+          stockStore.syncWithFirestore(),
+          shoppingStore.syncWithFirestore(),
+          recipeStore.syncWithFirestore(),
+          settingsStore.syncWithFirestore(),
+        ]);
+        console.log('Sync completed for user:', user.uid);
 
-                    // ミッション進捗をチェック（ログイン時）
-                    try {
-                      const { checkAndUpdateMissions } = await import('./utils/mission');
-                      await checkAndUpdateMissions(user.uid, {
-                        intakeCount: intakeStore.intakes.length,
-                        expenseCount: expenseStore.expenses.length,
-                      });
-                    } catch (error) {
-                      console.error('ミッション進捗チェックエラー:', error);
-                    }
+        // ミッション進捗をチェック（ログイン時）
+        try {
+          const { checkAndUpdateMissions } = await import('./utils/mission');
+          await checkAndUpdateMissions(user.uid, {
+            intakeCount: intakeStore.intakes.length,
+            expenseCount: expenseStore.expenses.length,
+          });
+        } catch (error) {
+          console.error('ミッション進捗チェックエラー:', error);
+        }
 
-                    // テスト用: 全フレーム解放（既存/ログインユーザー対象）
-                    try {
-                      const { unlockAllFramesForUser } = await import('./utils/cosmetic');
-                      await unlockAllFramesForUser(user.uid);
-                    } catch (error) {
-                      console.error('全フレーム解放エラー:', error);
-                    }
+        // テスト用: 全フレーム解放（既存/ログインユーザー対象）
+        try {
+          const { unlockAllFramesForUser } = await import('./utils/cosmetic');
+          await unlockAllFramesForUser(user.uid);
+        } catch (error) {
+          console.error('全フレーム解放エラー:', error);
+        }
 
         // 初期同期完了後、リアルタイム同期を開始
         console.log('Starting realtime sync...');
@@ -280,6 +283,19 @@ function App() {
     };
   }, [user?.uid]); // user.uidが変わったら再同期
 
+  // 週次体重入力リマインダー（月曜日に表示）
+  useEffect(() => {
+    if (!user || !settings.height) {
+      // 身長が設定されていない場合は表示しない
+      return;
+    }
+
+    if (shouldShowWeightReminder()) {
+      setShowWeightInputModal(true);
+      markWeightReminderShown();
+    }
+  }, [user, settings.height]);
+
   // ローディング中
   if (authLoading || syncing) {
     return (
@@ -299,7 +315,7 @@ function App() {
 
   // 未ログインの場合はログイン画面を表示
   if (!user) {
-    return <LoginScreen onLoginSuccess={() => {}} />;
+    return <LoginScreen onLoginSuccess={() => { }} />;
   }
 
   // 都道府県設定画面を表示中
@@ -342,6 +358,13 @@ function App() {
       <Layout />
       <BadgeUnlockedModal />
       <TitleUnlockedModal />
+      {showWeightInputModal && (
+        <WeightInputModal
+          onClose={() => {
+            setShowWeightInputModal(false);
+          }}
+        />
+      )}
     </ErrorBoundary>
   );
 }

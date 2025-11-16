@@ -5,6 +5,7 @@
 import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy, limit, onSnapshot, increment } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Unsubscribe } from 'firebase/firestore';
+import { getUserProfile } from './profile';
 
 // ============================================
 // 型定義
@@ -78,11 +79,8 @@ export const getConversations = async (userId: string): Promise<Conversation[]> 
       // 参加者のプロフィール情報を取得して会話オブジェクトに追加
       const participantProfiles = await Promise.all(
         conversation.participants.map(async (uid) => {
-          // ここでgetUserProfileをインポートして使用
-          // import { getUserProfile } from './profile';
-          // const profile = await getUserProfile(uid);
-          // return { uid, displayName: profile?.displayName || 'Unknown', avatarUrl: profile?.avatarUrl };
-          return { uid, displayName: 'Unknown', avatarUrl: undefined }; // 仮実装
+          const profile = await getUserProfile(uid);
+          return { uid, displayName: profile?.displayName || 'Unknown', avatarUrl: profile?.avatarUrl };
         })
       );
       conversations.push({ ...conversation, participantProfiles });
@@ -113,10 +111,8 @@ export const subscribeToConversations = (
       const conversation = docSnap.data() as Conversation;
       const participantProfiles = await Promise.all(
         conversation.participants.map(async (uid) => {
-          // import { getUserProfile } from './profile';
-          // const profile = await getUserProfile(uid);
-          // return { uid, displayName: profile?.displayName || 'Unknown', avatarUrl: profile?.avatarUrl };
-          return { uid, displayName: 'Unknown', avatarUrl: undefined }; // 仮実装
+          const profile = await getUserProfile(uid);
+          return { uid, displayName: profile?.displayName || 'Unknown', avatarUrl: profile?.avatarUrl };
         })
       );
       conversations.push({ ...conversation, participantProfiles });
@@ -165,6 +161,29 @@ export const sendMessage = async (conversationId: string, senderId: string, cont
           [`unreadCount.${recipientId}`]: increment(1),
         };
         await updateDoc(conversationRef, updateData);
+
+        // DM通知を作成
+        try {
+          const { createNotification } = await import('./notification');
+          const { getUserProfile } = await import('./profile');
+          const senderProfile = await getUserProfile(senderId);
+
+          if (senderProfile) {
+            await createNotification(
+              recipientId,
+              senderId,
+              senderProfile.displayName,
+              'message',
+              {
+                actorAvatar: senderProfile.avatarUrl,
+                postContent: content, // メッセージ内容をpostContentに格納
+              }
+            );
+          }
+        } catch (error) {
+          console.error('DM通知の作成に失敗しました:', error);
+          // 通知作成に失敗してもメッセージ送信は成功させる
+        }
       }
     }
 

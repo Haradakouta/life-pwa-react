@@ -146,14 +146,19 @@ export const ConversationListScreen: React.FC<ConversationListScreenProps> = ({
                 )}
                 {unreadCount > 0 && (
                   <div style={{
-                    backgroundColor: 'var(--primary)',
+                    backgroundColor: '#ef4444',
                     color: 'white',
-                    borderRadius: '10px',
-                    padding: '0 6px',
-                    fontSize: '12px',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
                     fontWeight: 'bold',
+                    minWidth: '20px',
                   }}>
-                    {unreadCount}
+                    {unreadCount > 99 ? '99+' : unreadCount}
                   </div>
                 )}
               </div>

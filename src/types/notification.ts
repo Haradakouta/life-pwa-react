@@ -11,7 +11,8 @@ export type NotificationType =
   | 'follow'         // フォロー
   | 'friend_request' // フレンドリクエスト
   | 'friend_accept'  // フレンド承認
-  | 'mention';       // メンション
+  | 'mention'        // メンション
+  | 'message';       // DM
 
 export interface Notification {
   id: string;

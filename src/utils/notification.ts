@@ -180,7 +180,7 @@ export const groupNotifications = (notifications: Notification[]): NotificationG
   // 最新の通知順にソート
   return Array.from(groups.values()).sort((a, b) => {
     return new Date(b.latestNotification.createdAt).getTime() -
-           new Date(a.latestNotification.createdAt).getTime();
+      new Date(a.latestNotification.createdAt).getTime();
   });
 };
 
@@ -355,6 +355,8 @@ export const getNotificationIcon = (type: NotificationType): string => {
       return '✅'; // 友達承認のアイコン
     case 'mention':
       return '@';
+    case 'message':
+      return '💬';
     default:
       return '🔔';
   }
@@ -385,6 +387,8 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${actor.name}さんがフレンドリクエストを承認しました`;
       case 'mention':
         return `${actor.name}さんがあなたをメンションしました`;
+      case 'message':
+        return `${actor.name}さんからメッセージが届きました`;
       default:
         return `${actor.name}さんから通知があります`;
     }
@@ -409,6 +413,8 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${firstActor.name}さんと他${othersCount}人がフレンドリクエストを承認しました`;
       case 'mention':
         return `${firstActor.name}さんと他${othersCount}人があなたをメンションしました`;
+      case 'message':
+        return `${firstActor.name}さんと他${othersCount}人からメッセージが届きました`;
       default:
         return `${firstActor.name}さんと他${othersCount}人から通知があります`;
     }

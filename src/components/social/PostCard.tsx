@@ -61,21 +61,30 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
           setReposted(isReposted);
         }
 
-        // プロフィールと称号は並列で取得
-        const [profile, title] = await Promise.all([
-          getUserProfile(user.uid),
-          getEquippedTitle(post.authorId),
-        ]);
+        // プロフィールと称号は初回のみ取得（再取得を防ぐ）
+        if (!userProfile) {
+          const [profile, title] = await Promise.all([
+            getUserProfile(user.uid),
+            getEquippedTitle(post.authorId),
+          ]);
 
-        setUserProfile(profile);
-        setAuthorTitle(title);
+          setUserProfile(profile);
+          setAuthorTitle(title);
+        } else {
+          // プロフィールは既に取得済みなので、称号のみ更新（投稿者の称号は変わらない可能性が高いが、念のため）
+          if (!authorTitle) {
+            const title = await getEquippedTitle(post.authorId);
+            setAuthorTitle(title);
+          }
+        }
       } catch (error) {
         console.error('投稿データ読み込みエラー:', error);
       }
     };
 
     loadPostData();
-  }, [post.id, post.authorId, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id, post.authorId, user?.uid]); // userオブジェクト全体ではなく、user.uidのみを依存配列に
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -655,11 +664,11 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
                 width: '100%',
                 paddingBottom: post.images!.length === 1 ? '56.25%' : '100%', // 16:9 or 1:1
                 position: 'relative',
-                  borderRadius: '0',
-                  overflow: 'hidden',
-                  background: 'var(--border)',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
+                borderRadius: '0',
+                overflow: 'hidden',
+                background: 'var(--border)',
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.opacity = '0.9';

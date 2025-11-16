@@ -11,6 +11,7 @@ import { TitleScreen } from './TitleScreen';
 import { PrefectureSettingScreen } from './PrefectureSettingScreen';
 import { DailyMissionScreen } from '../mission/DailyMissionScreen';
 import { CosmeticShopScreen } from '../cosmetic/CosmeticShopScreen';
+import { HealthSettingScreen } from './HealthSettingScreen';
 
 /**
  * BMIを計算する関数
@@ -50,6 +51,7 @@ export const SettingsScreen: React.FC = () => {
   const [showPrefectureSetting, setShowPrefectureSetting] = useState(false);
   const [showDailyMission, setShowDailyMission] = useState(false);
   const [showCosmeticShop, setShowCosmeticShop] = useState(false);
+  const [showHealthSetting, setShowHealthSetting] = useState(false);
 
   const handleSaveSettings = () => {
     updateSettings({
@@ -124,6 +126,11 @@ export const SettingsScreen: React.FC = () => {
   // 装飾ショップ画面を表示中
   if (showCosmeticShop) {
     return <CosmeticShopScreen onBack={() => setShowCosmeticShop(false)} />;
+  }
+
+  // 健康情報設定画面を表示中
+  if (showHealthSetting) {
+    return <HealthSettingScreen onBack={() => setShowHealthSetting(false)} />;
   }
 
   return (
@@ -211,6 +218,37 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
+        <h3>装飾</h3>
+        <button
+          onClick={() => setShowCosmeticShop(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdShoppingBag size={24} color="#f59e0b" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              装飾を変更
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
+          装飾を変更・購入できます
+        </p>
+      </div>
+
+      <div className="card">
         <h3>ミッション・報酬</h3>
         <button
           onClick={() => setShowDailyMission(true)}
@@ -236,32 +274,8 @@ export const SettingsScreen: React.FC = () => {
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
         </button>
-        <button
-          onClick={() => setShowCosmeticShop(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
-            padding: '12px 16px',
-            background: 'var(--background)',
-            border: '2px solid var(--border)',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.3s',
-            marginBottom: '12px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <MdShoppingBag size={24} color="#f59e0b" />
-            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              装飾ショップ
-            </span>
-          </div>
-          <MdChevronRight size={24} color="var(--text-secondary)" />
-        </button>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
-          ミッションをクリアしてポイントを獲得し、装飾を購入
+          ミッションをクリアしてポイントを獲得
         </p>
       </div>
 
@@ -318,6 +332,30 @@ export const SettingsScreen: React.FC = () => {
           <MdHealthAndSafety size={24} color="var(--primary)" />
           健康情報
         </h3>
+        <button
+          onClick={() => setShowHealthSetting(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdHealthAndSafety size={24} color="var(--primary)" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              健康情報を設定
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
         <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)' }}>
           {settings.age && (
             <p style={{ marginBottom: '8px' }}>

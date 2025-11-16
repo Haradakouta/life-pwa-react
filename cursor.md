@@ -1,6 +1,6 @@
 # Cursor 開発用メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-01-XX（健康管理機能・403エラー診断ツール追加）**
+**最終更新: 2025-01-XX（Firestore管理者APIキー管理・無料プラン対応・自動リトライ機能追加）**
 
 このドキュメントは、AIコーディング（Cursor）で作業を引き継ぐ際に必要な情報をまとめたものです。
 **⚠️ 重要: このドキュメントを必ず最初に読んでください。設定を誤るとアプリが動かなくなります。**
@@ -186,8 +186,16 @@ life-pwa-react/
 
 ### 外部API
 - **Google Gemini API**
-  - `gemini-2.0-flash-exp` - レシピ生成・健康アドバイザー
-  - `gemini-2.5-flash-lite` - レシートOCR（1日1,000リクエスト）
+  - **モデル:** `gemini-2.5-flash-lite`（すべての機能で使用）
+  - **⚠️ 重要:** `gemini-2.0-flash-exp`は無料プランで利用できないため、使用禁止
+  - **無料プラン:** 1日1,000リクエストまで利用可能
+  - **APIキー管理:**
+    - 運営者APIキー: Firestoreの`admin/config`コレクションに保存（管理者画面から設定可能）
+    - ユーザーAPIキー: 各ユーザーの設定（`users/{userId}/settings`）に保存
+    - 優先順位: ユーザーAPIキー → 運営者APIキー → 環境変数 → デフォルト値
+  - **エラーハンドリング:**
+    - 429エラー時に自動リトライ（最大1回、retry-afterヘッダーに基づく待機時間）
+    - 403エラー時はユーザーにエラーメッセージを表示
 - **楽天市場商品検索API** - バーコードスキャン
 - **JAN Code Lookup API** - バーコードスキャン
 - **Open Food Facts API** - バーコードスキャン
@@ -311,6 +319,19 @@ firebase deploy --only storage
 - メール確認コード送信
 - **Cloud Functions v2:** `onRequest`（Express + CORS）
 - **URL:** `https://us-central1-oshi-para.cloudfunctions.net/sendVerificationEmailV2`
+
+### `src/api/gemini.ts`
+- Gemini API呼び出し
+- **使用モデル:** `gemini-2.5-flash-lite`（⚠️ `gemini-2.0-flash-exp`は使用禁止）
+- **APIキー取得順序:** ユーザーAPIキー → 運営者APIキー（Firestore） → 環境変数 → デフォルト値
+- **429エラー自動リトライ:** `retryOn429`関数（最大1回、retry-afterヘッダーに基づく待機時間）
+- **キャッシュ:** 運営者APIキーは5分間キャッシュ（`CACHE_DURATION`）
+
+### `src/utils/firestore.ts`
+- Firestore操作
+- **`adminOperations`:** 管理者設定の取得・更新
+  - `getConfig()`: `admin/config`から設定を取得
+  - `updateConfig()`: `admin/config`を更新（認証済みユーザーのみ）
 
 ### `functions/src/index.ts`
 - Cloud Functions定義

@@ -189,7 +189,7 @@ VITE_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID_HERE
    firebase deploy --only functions
    ```
 
-### 5. 開発サーバー起動
+### 6. 開発サーバー起動
 
 ```bash
 npm run dev

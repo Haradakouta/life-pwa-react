@@ -216,59 +216,8 @@ export async function generateRecipe(
           statusText: response.statusText,
           errorData: errorData,
           errorMessage: errorData.error?.message,
-          errorCode: errorData.error?.code,
-          errorStatus: errorData.error?.status,
           apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし',
-          model: 'gemini-2.0-flash-exp',
         });
-
-        // 403エラーの詳細な診断を実行（非同期で実行、ブロックしない）
-        (async () => {
-          try {
-            const { diagnose403Error, logDiagnosticResult } = await import('../utils/gemini403Diagnostics');
-            console.log('[Gemini] 403エラーの詳細な診断を開始します...');
-            const diagnosticResult = await diagnose403Error();
-            logDiagnosticResult(diagnosticResult);
-          } catch (diagnosticError) {
-            console.error('[Gemini] 診断ツールの実行に失敗しました:', diagnosticError);
-          }
-        })().catch(() => {
-          // 診断ツールのエラーは無視
-        });
-
-        // 403エラーの一般的な原因を表示
-        console.error('[Gemini] 403エラーの一般的な原因:');
-        console.error('  1. APIキーが無効または期限切れ');
-        console.error('  2. APIキーに必要な権限がない（Google Cloud Consoleで確認）');
-        console.error('  3. 請求情報が未設定（Google AI Studioで課金を有効化）');
-        console.error('  4. APIキーにIP制限やリファラー制限が設定されている');
-        console.error('  5. APIキーの使用制限に達している（1日あたりの制限など）');
-        console.error('  6. プロジェクトのAPI有効化が未完了');
-
-        // エラーメッセージから原因を推測
-        if (errorData.error?.message) {
-          const errorMsg = errorData.error.message.toLowerCase();
-          console.error('[Gemini] エラーメッセージ:', errorData.error.message);
-          if (errorMsg.includes('permission') || errorMsg.includes('permission denied')) {
-            console.error('  → 原因: APIキーに権限がありません');
-          } else if (errorMsg.includes('quota') || errorMsg.includes('limit') || errorMsg.includes('exceeded')) {
-            console.error('  → 原因: 使用制限に達しています');
-          } else if (errorMsg.includes('billing') || errorMsg.includes('payment') || errorMsg.includes('account')) {
-            console.error('  → 原因: 請求情報が未設定です');
-          } else if (errorMsg.includes('invalid') || errorMsg.includes('key') || errorMsg.includes('unauthorized')) {
-            console.error('  → 原因: APIキーが無効です');
-          } else if (errorMsg.includes('restricted') || errorMsg.includes('not allowed')) {
-            console.error('  → 原因: APIキーに制限が設定されています');
-          }
-        }
-
-        // エラーコードとステータスを表示
-        if (errorData.error?.code) {
-          console.error('[Gemini] エラーコード:', errorData.error.code);
-        }
-        if (errorData.error?.status) {
-          console.error('[Gemini] エラーステータス:', errorData.error.status);
-        }
       }
 
       console.error('[Gemini] APIエラー詳細', {
@@ -281,9 +230,6 @@ export async function generateRecipe(
       let errorMessage = `Gemini API エラー (${response.status})`;
       if (errorData.error?.message) {
         errorMessage += `: ${errorData.error.message}`;
-      }
-      if (errorData.error?.code) {
-        errorMessage += ` [コード: ${errorData.error.code}]`;
       }
 
       throw new Error(errorMessage);
@@ -536,33 +482,8 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
           statusText: response.statusText,
           errorData: errorData,
           errorMessage: errorData.error?.message,
-          errorCode: errorData.error?.code,
           apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし',
-          model: 'gemini-2.5-flash-lite',
         });
-
-        // 403エラーの一般的な原因を表示
-        console.error('[Gemini Receipt] 403エラーの一般的な原因:');
-        console.error('  1. APIキーが無効または期限切れ');
-        console.error('  2. APIキーに必要な権限がない（Google Cloud Consoleで確認）');
-        console.error('  3. 請求情報が未設定（Google AI Studioで課金を有効化）');
-        console.error('  4. APIキーにIP制限やリファラー制限が設定されている');
-        console.error('  5. モデル名が正しくない');
-        console.error('  6. APIキーの使用制限に達している（1日あたりの制限など）');
-
-        // エラーメッセージから原因を推測
-        if (errorData.error?.message) {
-          const errorMsg = errorData.error.message.toLowerCase();
-          if (errorMsg.includes('permission') || errorMsg.includes('permission denied')) {
-            console.error('  → 原因: APIキーに権限がありません');
-          } else if (errorMsg.includes('quota') || errorMsg.includes('limit')) {
-            console.error('  → 原因: 使用制限に達しています');
-          } else if (errorMsg.includes('billing') || errorMsg.includes('payment')) {
-            console.error('  → 原因: 請求情報が未設定です');
-          } else if (errorMsg.includes('invalid') || errorMsg.includes('key')) {
-            console.error('  → 原因: APIキーが無効です');
-          }
-        }
       }
 
       console.error('[Gemini Receipt] APIエラー', errorText);
@@ -577,9 +498,6 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
         let errorMessage = 'Gemini API 403エラー: APIキーが無効または権限が不足しています';
         if (errorData.error?.message) {
           errorMessage += ` (${errorData.error.message})`;
-        }
-        if (errorData.error?.code) {
-          errorMessage += ` [コード: ${errorData.error.code}]`;
         }
         throw new Error(errorMessage);
       }

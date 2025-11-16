@@ -1,11 +1,12 @@
 /**
  * api/gemini.ts — Google Gemini API連携
  *
- * AIレシピ生成機能を提供します。
- * Gemini 2.0 Flash モデルを使用。
+ * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供します。
+ * ⚠️ 重要: gemini-2.5-flash-liteのみを使用（gemini-2.0-flash-expは無料プランで利用不可）
  */
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
+import { useSettingsStore } from '../store';
 
 // レシートOCR用の型定義
 export interface ReceiptItem {
@@ -22,11 +23,94 @@ export interface ReceiptOCRResult {
   rawText: string;
 }
 
-// Gemini APIキー（環境変数から取得、または直接設定）
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBSqmtDaNAqF09NTYYKQsTKm-3fLl1LMr0';
+// 運営者APIキーのキャッシュ（パフォーマンス向上のため）
+let cachedOperatorApiKey: string | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5分間キャッシュ
+let isFetchingFromFirestore = false; // 重複リクエストを防ぐ
 
-// API有効フラグ
-const API_ENABLED = !!GEMINI_API_KEY && GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE';
+/**
+ * 運営者のAPIキーを取得（Firestore → 環境変数 → デフォルトの順で試行）
+ * 非同期でFirestoreから取得を試みるが、同期関数として動作（キャッシュを使用）
+ */
+function getOperatorApiKey(): string | null {
+  // キャッシュが有効な場合はキャッシュを返す
+  const now = Date.now();
+  if (cachedOperatorApiKey && (now - cacheTimestamp) < CACHE_DURATION) {
+    return cachedOperatorApiKey;
+  }
+
+  // Firestoreから非同期で取得を試みる（バックグラウンドで実行）
+  // エラーが発生してもアプリケーションの動作を妨げないようにする
+  if (!isFetchingFromFirestore) {
+    isFetchingFromFirestore = true;
+    import('../utils/firestore').then(({ adminOperations }) => {
+      adminOperations.getConfig().then((config) => {
+        if (config?.geminiApiKey && config.geminiApiKey.trim() !== '') {
+          cachedOperatorApiKey = config.geminiApiKey.trim();
+          cacheTimestamp = Date.now();
+          console.log('[Gemini] 運営者APIキーをFirestoreから取得');
+        }
+        isFetchingFromFirestore = false;
+      }).catch((error) => {
+        // Firestoreからの取得に失敗しても、エラーを出さない（フォールバックを使用）
+        console.warn('[Gemini] FirestoreからAPIキー取得失敗（フォールバックを使用）:', error);
+        isFetchingFromFirestore = false;
+      });
+    }).catch((error) => {
+      // モジュールのインポートに失敗しても、エラーを出さない
+      console.warn('[Gemini] Firestoreモジュールのインポート失敗（フォールバックを使用）:', error);
+      isFetchingFromFirestore = false;
+    });
+  }
+
+  // 環境変数から取得を試みる
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (envKey && envKey !== 'YOUR_GEMINI_API_KEY_HERE') {
+    if (!cachedOperatorApiKey || cachedOperatorApiKey !== envKey) {
+      cachedOperatorApiKey = envKey;
+      cacheTimestamp = now;
+    }
+    return envKey;
+  }
+
+  // デフォルト値（フォールバック）
+  const defaultKey = 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
+  if (!cachedOperatorApiKey || cachedOperatorApiKey !== defaultKey) {
+    cachedOperatorApiKey = defaultKey;
+    cacheTimestamp = now;
+  }
+  return defaultKey;
+}
+
+/**
+ * 運営者APIキーのキャッシュをクリア（APIキー更新時に使用）
+ */
+export function clearOperatorApiKeyCache(): void {
+  cachedOperatorApiKey = null;
+  cacheTimestamp = 0;
+}
+
+/**
+ * ユーザーのAPIキーを取得（設定から取得）
+ */
+function getUserApiKey(): string | null {
+  const settings = useSettingsStore.getState().settings;
+  if (settings.geminiApiKey && settings.geminiApiKey.trim() !== '') {
+    return settings.geminiApiKey.trim();
+  }
+  return null;
+}
+
+
+/**
+ * APIが有効かどうかをチェック
+ */
+function isApiEnabled(): boolean {
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  return !!(operatorKey || userKey);
+}
 
 interface GeminiResponse {
   candidates?: Array<{
@@ -78,33 +162,62 @@ function logRequestStats(newRequestType: 'recipe' | 'receipt') {
 }
 
 /**
- * 材料からレシピを生成
+ * 429エラー時に自動リトライするヘルパー関数
  */
-export async function generateRecipe(
+async function retryOn429<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 1,
+  apiKeyName: string = 'APIキー'
+): Promise<T> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number; errorData?: GeminiError })?.status;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // 429エラーの場合のみリトライ
+      if (errorStatus === 429 && attempt < maxRetries) {
+        // retry-afterヘッダーまたはエラーメッセージから待機時間を抽出
+        const retryAfterMatch = errorMessage.match(/retry in ([\d.]+)s/i) ||
+          errorMessage.match(/([\d.]+)秒後/i);
+        const retryAfter = retryAfterMatch ? parseFloat(retryAfterMatch[1]) : 5; // デフォルト5秒
+
+        console.log(`[Gemini] ${apiKeyName}で429エラー発生。${Math.ceil(retryAfter)}秒後にリトライします... (試行 ${attempt + 1}/${maxRetries + 1})`);
+
+        // 待機時間に少し余裕を持たせる
+        await new Promise(resolve => setTimeout(resolve, Math.ceil(retryAfter * 1000) + 1000));
+
+        lastError = error as Error;
+        continue;
+      }
+
+      // 429エラー以外、または最大リトライ回数に達した場合はエラーを投げる
+      throw error;
+    }
+  }
+
+  // ここには到達しないはずだが、型安全性のため
+  throw lastError || new Error('リトライに失敗しました');
+}
+
+/**
+ * 材料からレシピを生成（内部実装：指定されたAPIキーで試行）
+ */
+async function generateRecipeWithKey(
+  apiKey: string,
   ingredients: string[],
-  dietaryRestriction: DietaryRestriction = 'none',
-  difficulty: RecipeDifficulty = 'none',
-  customRequest = ''
+  dietaryRestriction: DietaryRestriction,
+  difficulty: RecipeDifficulty,
+  customRequest: string
 ): Promise<string> {
-  console.log('[Gemini] API呼び出し開始', {
-    ingredients,
-    dietaryRestriction,
-    difficulty,
-    customRequest,
-    API_ENABLED,
-    apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし'
-  });
-
-  if (!API_ENABLED) {
-    console.warn('Gemini APIが無効です。モックデータを返します。');
-    return getMockRecipe(ingredients, dietaryRestriction, difficulty);
-  }
-
-  if (!ingredients || ingredients.length === 0) {
-    throw new Error('材料を指定してください。');
-  }
-
   try {
+    if (!ingredients || ingredients.length === 0) {
+      throw new Error('材料を指定してください。');
+    }
+
     const dietLabel =
       dietaryRestriction === 'vegetarian'
         ? 'ベジタリアン'
@@ -159,12 +272,13 @@ export async function generateRecipe(
 ---
 `.trim();
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
+    // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
     // リクエスト統計を記録
     logRequestStats('recipe');
 
-    console.log('[Gemini] APIリクエスト送信', { url: url.replace(GEMINI_API_KEY, 'HIDDEN') });
+    console.log('[Gemini] APIリクエスト送信', { url: apiKey ? url.replace(apiKey, 'HIDDEN') : url });
 
     const response = await fetch(url, {
       method: 'POST',
@@ -209,30 +323,59 @@ export async function generateRecipe(
         errorData = { rawError: errorText };
       }
 
-      // 403エラーの詳細をログ出力
-      if (response.status === 403) {
-        console.error('[Gemini] 403エラー詳細', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData: errorData,
-          errorMessage: errorData.error?.message,
-          apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし',
-        });
-      }
-
-      console.error('[Gemini] APIエラー詳細', {
+      // すべてのエラーを詳細にログ出力
+      console.error('[Gemini] APIエラー発生', {
         status: response.status,
         statusText: response.statusText,
+        errorText: errorText,
         errorData: errorData,
+        errorMessage: errorData.error?.message,
+        errorCode: errorData.error?.code,
+        errorStatus: errorData.error?.status,
+        apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'なし',
+        apiKeyLength: apiKey ? apiKey.length : 0,
+        url: url.replace(apiKey, 'HIDDEN'),
       });
 
       // エラーメッセージを見やすく
       let errorMessage = `Gemini API エラー (${response.status})`;
       if (errorData.error?.message) {
         errorMessage += `: ${errorData.error.message}`;
+      } else if (errorData.rawError) {
+        errorMessage += `: ${errorData.rawError}`;
       }
 
-      throw new Error(errorMessage);
+      // 403エラーの場合
+      if (response.status === 403) {
+        errorMessage = `APIキーが無効または権限が不足しています (403)\n\n詳細: ${errorData.error?.message || errorData.rawError || 'Permission denied'}\n\n設定画面でAPIキーを確認してください。`;
+      }
+
+      // 429エラーの場合
+      if (response.status === 429) {
+        // リトライ待機時間を抽出（あれば）
+        const retryAfter = response.headers.get('retry-after') ||
+          (errorText.match(/retry in ([\d.]+)s/i)?.[1]);
+        const retryMessage = retryAfter ? `\n\n約${Math.ceil(parseFloat(retryAfter))}秒後に再試行できます。` : '';
+
+        // エラーメッセージから詳細情報を抽出
+        const quotaInfo = errorData.error?.message || errorText;
+        const isFreeTierLimit = quotaInfo.includes('free_tier') || quotaInfo.includes('limit: 0');
+        const tierMessage = isFreeTierLimit
+          ? '\n\n⚠️ 無料プランのクォータ制限に達しています。有料プランへのアップグレードを検討してください。'
+          : '';
+
+        errorMessage = `API使用制限に達しました (429)\n\n詳細: ${quotaInfo}${retryMessage}${tierMessage}\n\nしばらく待ってから再度お試しください。`;
+      }
+
+      // 400エラーの場合（リクエスト形式の問題）
+      if (response.status === 400) {
+        errorMessage = `リクエスト形式が不正です (400)\n\n詳細: ${errorData.error?.message || errorData.rawError || 'Bad Request'}`;
+      }
+
+      const error = new Error(errorMessage) as Error & { status?: number; errorData?: GeminiError };
+      error.status = response.status;
+      error.errorData = errorData;
+      throw error;
     }
 
     const data: GeminiResponse = await response.json();
@@ -251,28 +394,218 @@ export async function generateRecipe(
     console.error('[Gemini] レスポンス形式が不正', data);
     throw new Error('Gemini APIからレシピを取得できませんでした。');
   } catch (error) {
-    console.error('[Gemini] エラー発生:', error);
+    console.error('[Gemini] generateRecipeWithKey でエラー発生', {
+      error: error,
+      errorType: typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      hasStatus: error instanceof Error && 'status' in error,
+    });
 
-    // エラー時はモックデータを返す
-    console.warn('[Gemini] モックデータを使用します。');
-    console.info('[Gemini] 新しいAPIキーが必要な場合: https://aistudio.google.com/app/apikey');
+    // ネットワークエラーなどの場合、statusプロパティがない可能性がある
+    if (error instanceof Error && !('status' in error)) {
+      const networkError = error as Error & { status?: number; errorData?: GeminiError };
+      networkError.status = 0; // ネットワークエラーを示す
 
-    // 403エラーの場合は特別なメッセージを表示
-    if (error instanceof Error && error.message.includes('403')) {
-      console.error(
-        '[Gemini] 403エラー: APIキーが無効または期限切れです。新しいキーを取得してください。'
-      );
+      // ネットワークエラーの詳細を追加
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        networkError.message = `ネットワークエラー: ${error.message}\n\nインターネット接続を確認してください。`;
+      }
+
+      throw networkError;
     }
+    throw error;
+  }
+}
 
+/**
+ * 材料からレシピを生成
+ */
+export async function generateRecipe(
+  ingredients: string[],
+  dietaryRestriction: DietaryRestriction = 'none',
+  difficulty: RecipeDifficulty = 'none',
+  customRequest = ''
+): Promise<string> {
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  const apiEnabled = isApiEnabled();
+
+  // デバッグ: 設定ストアの状態を確認
+  const settings = useSettingsStore.getState().settings;
+  console.log('[Gemini] API呼び出し開始', {
+    ingredients,
+    dietaryRestriction,
+    difficulty,
+    customRequest,
+    API_ENABLED: apiEnabled,
+    hasOperatorKey: !!operatorKey,
+    hasUserKey: !!userKey,
+    userApiKeyFromSettings: settings.geminiApiKey ? `${settings.geminiApiKey.substring(0, 10)}...` : 'なし',
+    operatorKeyPrefix: operatorKey ? `${operatorKey.substring(0, 10)}...` : 'なし',
+  });
+
+  if (!apiEnabled) {
+    console.warn('Gemini APIが無効です。モックデータを返します。');
     return getMockRecipe(ingredients, dietaryRestriction, difficulty);
   }
+
+  // ユーザーのAPIキーが設定されている場合、優先的に使用
+  if (userKey) {
+    try {
+      console.log('[Gemini] ユーザーのAPIキーで試行（優先）');
+      return await generateRecipeWithKey(userKey, ingredients, dietaryRestriction, difficulty, customRequest);
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // エラーメッセージから429エラーを検出（statusプロパティがない場合でも）
+      const isQuotaError = errorStatus === 429 ||
+        errorMessage.includes('429') ||
+        errorMessage.includes('Quota exceeded') ||
+        errorMessage.includes('quota') ||
+        errorMessage.includes('制限');
+
+      console.error('[Gemini] ユーザーのAPIキーでエラー発生', {
+        status: errorStatus,
+        error: errorMessage,
+        errorType: typeof error,
+        errorKeys: error instanceof Error ? Object.keys(error) : [],
+        isQuotaError: isQuotaError,
+        hasOperatorKey: !!operatorKey,
+      });
+
+      // ユーザーのAPIキーでエラーが発生した場合、運営者のAPIキーで再試行
+      // 403、429、またはネットワークエラーの場合
+      if (operatorKey && (errorStatus === 403 || errorStatus === 429 || errorStatus === 0 || isQuotaError)) {
+        console.warn('[Gemini] ユーザーのAPIキーでエラー発生。運営者のAPIキーで再試行します。', {
+          status: errorStatus,
+          error: errorMessage,
+          isQuotaError: isQuotaError,
+        });
+        try {
+          console.log('[Gemini] 運営者のAPIキーで再試行');
+          return await retryOn429(
+            () => generateRecipeWithKey(operatorKey, ingredients, dietaryRestriction, difficulty, customRequest),
+            1, // 最大1回リトライ
+            '運営者APIキー'
+          );
+        } catch (operatorError) {
+          const operatorErrorStatus = (operatorError as Error & { status?: number })?.status;
+          const operatorErrorMessage = operatorError instanceof Error ? operatorError.message : String(operatorError);
+
+          console.error('[Gemini] 運営者のAPIキーでもエラー発生', {
+            status: operatorErrorStatus,
+            error: operatorErrorMessage,
+          });
+
+          // 運営者のAPIキーでもエラーの場合、より詳細なエラーメッセージを表示
+          if (operatorErrorStatus === 429 || operatorErrorMessage.includes('429') || operatorErrorMessage.includes('Quota exceeded')) {
+            throw new Error(`両方のAPIキーで使用制限に達しました。\n\nユーザーAPIキー: ${errorMessage}\n運営者APIキー: ${operatorErrorMessage}\n\nしばらく待ってから再度お試しください。`);
+          }
+
+          throw error; // ユーザーのAPIキーのエラーを優先して表示
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // ユーザーのAPIキーがない場合、運営者のAPIキーで試行
+  if (operatorKey) {
+    try {
+      console.log('[Gemini] 運営者のAPIキーで試行');
+      return await retryOn429(
+        () => generateRecipeWithKey(operatorKey, ingredients, dietaryRestriction, difficulty, customRequest),
+        1, // 最大1回リトライ
+        '運営者APIキー'
+      );
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      console.error('[Gemini] 運営者のAPIキーでエラー発生', {
+        status: errorStatus,
+        error: errorMessage,
+        errorType: typeof error,
+        errorKeys: error instanceof Error ? Object.keys(error) : [],
+      });
+      throw error;
+    }
+  }
+
+  // APIキーが全くない場合
+  console.warn('Gemini APIキーが設定されていません。モックデータを返します。');
+  return getMockRecipe(ingredients, dietaryRestriction, difficulty);
 }
 
 /**
  * Gemini APIが有効かどうかを返す
  */
 export function isGeminiEnabled(): boolean {
-  return API_ENABLED;
+  return isApiEnabled();
+}
+
+/**
+ * テキスト生成（内部実装：指定されたAPIキーで試行）
+ */
+async function generateTextWithKey(apiKey: string, prompt: string): Promise<string> {
+  // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+
+  logRequestStats('recipe'); // テキスト生成もrecipeとしてカウント
+
+  console.log('[Gemini Text] APIリクエスト送信');
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+      },
+    }),
+  });
+
+  console.log('[Gemini Text] APIレスポンス受信', { status: response.status });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Gemini Text] APIエラー', errorText);
+    const error = new Error(`Gemini API エラー: ${response.status}`) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  const data: GeminiResponse = await response.json();
+  console.log('[Gemini Text] レスポンスデータ受信');
+
+  // レスポンスからテキストを抽出
+  if (data.candidates && data.candidates.length > 0) {
+    const candidate = data.candidates[0];
+    if (candidate.content?.parts && candidate.content.parts.length > 0) {
+      const text = candidate.content.parts[0].text.trim();
+      console.log('[Gemini Text] テキスト生成成功');
+      return text;
+    }
+  }
+
+  throw new Error('テキストを生成できませんでした');
 }
 
 /**
@@ -281,67 +614,56 @@ export function isGeminiEnabled(): boolean {
 export async function generateText(prompt: string): Promise<string> {
   console.log('[Gemini Text] テキスト生成開始');
 
-  if (!API_ENABLED) {
-    throw new Error('Gemini APIキーが設定されていません');
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  const apiEnabled = isApiEnabled();
+
+  if (!apiEnabled) {
+    throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
   }
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
-
-    logRequestStats('recipe'); // テキスト生成もrecipeとしてカウント
-
-    console.log('[Gemini Text] APIリクエスト送信');
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        },
-      }),
-    });
-
-    console.log('[Gemini Text] APIレスポンス受信', { status: response.status });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Gemini Text] APIエラー', errorText);
-      throw new Error(`Gemini API エラー: ${response.status}`);
-    }
-
-    const data: GeminiResponse = await response.json();
-    console.log('[Gemini Text] レスポンスデータ受信');
-
-    // レスポンスからテキストを抽出
-    if (data.candidates && data.candidates.length > 0) {
-      const candidate = data.candidates[0];
-      if (candidate.content?.parts && candidate.content.parts.length > 0) {
-        const text = candidate.content.parts[0].text.trim();
-        console.log('[Gemini Text] テキスト生成成功');
-        return text;
+  // まず運営者のAPIキーで試行
+  if (operatorKey) {
+    try {
+      console.log('[Gemini Text] 運営者のAPIキーで試行');
+      return await generateTextWithKey(operatorKey, prompt);
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      // 403または429エラーの場合、ユーザーのAPIキーで再試行
+      if (errorStatus === 403 || errorStatus === 429) {
+        console.warn('[Gemini Text] 運営者のAPIキーでエラー発生。ユーザーのAPIキーで再試行します。', {
+          status: errorStatus,
+        });
+        if (userKey) {
+          try {
+            console.log('[Gemini Text] ユーザーのAPIキーで再試行');
+            return await generateTextWithKey(userKey, prompt);
+          } catch (userError) {
+            console.error('[Gemini Text] ユーザーのAPIキーでもエラー発生', userError);
+            throw userError;
+          }
+        } else {
+          console.error('[Gemini Text] ユーザーのAPIキーが設定されていません');
+          throw error;
+        }
+      } else {
+        throw error;
       }
     }
-
-    throw new Error('テキストを生成できませんでした');
-  } catch (error) {
-    console.error('[Gemini Text] エラー:', error);
-    throw error;
   }
+
+  // 運営者のAPIキーがない場合、ユーザーのAPIキーで試行
+  if (userKey) {
+    try {
+      console.log('[Gemini Text] ユーザーのAPIキーで試行');
+      return await generateTextWithKey(userKey, prompt);
+    } catch (error) {
+      console.error('[Gemini Text] ユーザーのAPIキーでエラー発生', error);
+      throw error;
+    }
+  }
+
+  throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
 }
 
 /**
@@ -366,19 +688,9 @@ let lastReceiptScanTime = 0;
 const MIN_INTERVAL_MS = 5000; // 5秒間隔
 
 /**
- * レシート画像からOCRで商品情報を抽出
+ * レシート画像からOCRで商品情報を抽出（内部実装：指定されたAPIキーで試行）
  */
-export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
-  console.log('[Gemini Receipt] OCR処理開始', {
-    fileName: imageFile.name,
-    fileSize: imageFile.size,
-    API_ENABLED,
-  });
-
-  if (!API_ENABLED) {
-    throw new Error('Gemini APIキーが設定されていません');
-  }
-
+async function scanReceiptWithKey(apiKey: string, imageFile: File): Promise<ReceiptOCRResult> {
   // レート制限チェック
   const now = Date.now();
   const timeSinceLastScan = now - lastReceiptScanTime;
@@ -387,12 +699,11 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
     throw new Error(`レート制限: ${waitTime}秒後に再試行してください`);
   }
 
-  try {
-    lastReceiptScanTime = now;
-    // 画像をBase64に変換
-    const base64Image = await fileToBase64(imageFile);
+  lastReceiptScanTime = now;
+  // 画像をBase64に変換
+  const base64Image = await fileToBase64(imageFile);
 
-    const prompt = `
+  const prompt = `
 あなたは日本語のレシート解析の専門家です。
 このレシート画像から商品名と価格を正確に抽出してください。
 
@@ -419,157 +730,209 @@ export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
 6. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
-    // リクエスト統計を記録
-    logRequestStats('receipt');
+  // リクエスト統計を記録
+  logRequestStats('receipt');
 
-    console.log('[Gemini Receipt] APIリクエスト送信');
+  console.log('[Gemini Receipt] APIリクエスト送信');
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+            {
+              inlineData: {
+                mimeType: imageFile.type || 'image/jpeg',
+                data: base64Image,
               },
-              {
-                inlineData: {
-                  mimeType: imageFile.type || 'image/jpeg',
-                  data: base64Image,
-                },
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.1, // 低めにして正確性を重視
-          topK: 32,
-          topP: 1,
-          maxOutputTokens: 2048,
+            },
+          ],
         },
-      }),
-    });
+      ],
+      generationConfig: {
+        temperature: 0.1, // 低めにして正確性を重視
+        topK: 32,
+        topP: 1,
+        maxOutputTokens: 2048,
+      },
+    }),
+  });
 
-    console.log('[Gemini Receipt] APIレスポンス受信', { status: response.status });
+  console.log('[Gemini Receipt] APIレスポンス受信', { status: response.status });
 
-    // レート制限情報をログ出力（開発者向け）
-    console.log('[Gemini Receipt] Rate Limit Info:', {
-      limit: response.headers.get('x-ratelimit-limit'),
-      remaining: response.headers.get('x-ratelimit-remaining'),
-      reset: response.headers.get('x-ratelimit-reset'),
-      retryAfter: response.headers.get('retry-after'),
-    });
+  // レート制限情報をログ出力（開発者向け）
+  console.log('[Gemini Receipt] Rate Limit Info:', {
+    limit: response.headers.get('x-ratelimit-limit'),
+    remaining: response.headers.get('x-ratelimit-remaining'),
+    reset: response.headers.get('x-ratelimit-reset'),
+    retryAfter: response.headers.get('retry-after'),
+  });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData: GeminiError;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { rawError: errorText };
-      }
-
-      // 403エラーの詳細をログ出力
-      if (response.status === 403) {
-        console.error('[Gemini Receipt] 403エラー詳細', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData: errorData,
-          errorMessage: errorData.error?.message,
-          apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし',
-        });
-      }
-
-      console.error('[Gemini Receipt] APIエラー', errorText);
-
-      // 429エラー（レート制限）の場合
-      if (response.status === 429) {
-        throw new Error('レート制限に達しました。数秒後に再試行してください。');
-      }
-
-      // 403エラーの場合
-      if (response.status === 403) {
-        let errorMessage = 'Gemini API 403エラー: APIキーが無効または権限が不足しています';
-        if (errorData.error?.message) {
-          errorMessage += ` (${errorData.error.message})`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      throw new Error(`Gemini API エラー: ${response.status}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorData: GeminiError;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { rawError: errorText };
     }
 
-    const data: GeminiResponse = await response.json();
-    console.log('[Gemini Receipt] レスポンスデータ', data);
-
-    // レスポンスからテキストを抽出
-    if (data.candidates && data.candidates.length > 0) {
-      const candidate = data.candidates[0];
-      if (candidate.content?.parts && candidate.content.parts.length > 0) {
-        const text = candidate.content.parts[0].text.trim();
-        console.log('[Gemini Receipt] 抽出テキスト:', text);
-
-        // JSONを抽出（マークダウンのコードブロックを除去）
-        let jsonText = text;
-        const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          jsonText = jsonMatch[1];
-        } else if (text.includes('```')) {
-          const codeMatch = text.match(/```\s*([\s\S]*?)\s*```/);
-          if (codeMatch) {
-            jsonText = codeMatch[1];
-          }
-        }
-
-        // JSONをパース
-        const parsedData = JSON.parse(jsonText);
-
-        const result: ReceiptOCRResult = {
-          items: parsedData.items || [],
-          total: parsedData.total,
-          storeName: parsedData.storeName,
-          date: parsedData.date,
-          rawText: text,
-        };
-
-        console.log('[Gemini Receipt] OCR成功', result);
-        return result;
-      }
+    // 403エラーの詳細をログ出力
+    if (response.status === 403) {
+      console.error('[Gemini Receipt] 403エラー詳細', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData: errorData,
+        errorMessage: errorData.error?.message,
+        apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'なし',
+      });
     }
 
-    throw new Error('レシートからテキストを抽出できませんでした');
-  } catch (error) {
-    console.error('[Gemini Receipt] エラー:', error);
+    console.error('[Gemini Receipt] APIエラー', errorText);
+
+    // 429エラー（レート制限）の場合
+    if (response.status === 429) {
+      throw new Error('レート制限に達しました。数秒後に再試行してください。');
+    }
+
+    // 403エラーの場合
+    if (response.status === 403) {
+      let errorMessage = 'Gemini API 403エラー: APIキーが無効または権限が不足しています';
+      if (errorData.error?.message) {
+        errorMessage += ` (${errorData.error.message})`;
+      }
+      const error = new Error(errorMessage) as Error & { status?: number };
+      error.status = response.status;
+      throw error;
+    }
+
+    const error = new Error(`Gemini API エラー: ${response.status}`) as Error & { status?: number };
+    error.status = response.status;
     throw error;
   }
+
+  const data: GeminiResponse = await response.json();
+  console.log('[Gemini Receipt] レスポンスデータ', data);
+
+  // レスポンスからテキストを抽出
+  if (data.candidates && data.candidates.length > 0) {
+    const candidate = data.candidates[0];
+    if (candidate.content?.parts && candidate.content.parts.length > 0) {
+      const text = candidate.content.parts[0].text.trim();
+      console.log('[Gemini Receipt] 抽出テキスト:', text);
+
+      // JSONを抽出（マークダウンのコードブロックを除去）
+      let jsonText = text;
+      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      } else if (text.includes('```')) {
+        const codeMatch = text.match(/```\s*([\s\S]*?)\s*```/);
+        if (codeMatch) {
+          jsonText = codeMatch[1];
+        }
+      }
+
+      // JSONをパース
+      const parsedData = JSON.parse(jsonText);
+
+      const result: ReceiptOCRResult = {
+        items: parsedData.items || [],
+        total: parsedData.total,
+        storeName: parsedData.storeName,
+        date: parsedData.date,
+        rawText: text,
+      };
+
+      console.log('[Gemini Receipt] OCR成功', result);
+      return result;
+    }
+  }
+
+  throw new Error('レシートからテキストを抽出できませんでした');
 }
 
 /**
- * 料理画像からカロリーを推定
+ * レシート画像からOCRで商品情報を抽出
  */
-export async function scanCalorie(mealName: string, imageFile: File): Promise<{ calories: number; reasoning: string; confidence?: number }> {
-  console.log('[Gemini Calorie] カロリー計測開始', {
-    mealName,
+export async function scanReceipt(imageFile: File): Promise<ReceiptOCRResult> {
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  const apiEnabled = isApiEnabled();
+
+  console.log('[Gemini Receipt] OCR処理開始', {
     fileName: imageFile.name,
     fileSize: imageFile.size,
-    API_ENABLED,
+    API_ENABLED: apiEnabled,
+    hasOperatorKey: !!operatorKey,
+    hasUserKey: !!userKey,
   });
 
-  if (!API_ENABLED) {
-    throw new Error('Gemini APIキーが設定されていません');
+  if (!apiEnabled) {
+    throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
   }
 
-  try {
-    // 画像をBase64に変換
-    const base64Image = await fileToBase64(imageFile);
+  // まず運営者のAPIキーで試行
+  if (operatorKey) {
+    try {
+      console.log('[Gemini Receipt] 運営者のAPIキーで試行');
+      return await scanReceiptWithKey(operatorKey, imageFile);
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      // 403または429エラーの場合、ユーザーのAPIキーで再試行
+      if (errorStatus === 403 || errorStatus === 429) {
+        console.warn('[Gemini Receipt] 運営者のAPIキーでエラー発生。ユーザーのAPIキーで再試行します。', {
+          status: errorStatus,
+        });
+        if (userKey) {
+          try {
+            console.log('[Gemini Receipt] ユーザーのAPIキーで再試行');
+            return await scanReceiptWithKey(userKey, imageFile);
+          } catch (userError) {
+            console.error('[Gemini Receipt] ユーザーのAPIキーでもエラー発生', userError);
+            throw userError;
+          }
+        } else {
+          console.error('[Gemini Receipt] ユーザーのAPIキーが設定されていません');
+          throw error;
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
 
-    const prompt = `
+  // 運営者のAPIキーがない場合、ユーザーのAPIキーで試行
+  if (userKey) {
+    try {
+      console.log('[Gemini Receipt] ユーザーのAPIキーで試行');
+      return await scanReceiptWithKey(userKey, imageFile);
+    } catch (error) {
+      console.error('[Gemini Receipt] ユーザーのAPIキーでエラー発生', error);
+      throw error;
+    }
+  }
+
+  throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
+}
+
+/**
+ * 料理画像からカロリーを推定（内部実装：指定されたAPIキーで試行）
+ */
+async function scanCalorieWithKey(apiKey: string, mealName: string, imageFile: File): Promise<{ calories: number; reasoning: string; confidence?: number }> {
+  // 画像をBase64に変換
+  const base64Image = await fileToBase64(imageFile);
+
+  const prompt = `
 あなたは栄養学の専門家です。
 この料理画像を見て、料理名「${mealName}」のカロリーを推定してください。
 
@@ -587,92 +950,155 @@ export async function scanCalorie(mealName: string, imageFile: File): Promise<{ 
 4. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
-    // リクエスト統計を記録
-    logRequestStats('receipt'); // カロリー計測もreceiptとしてカウント
+  // リクエスト統計を記録
+  logRequestStats('receipt'); // カロリー計測もreceiptとしてカウント
 
-    console.log('[Gemini Calorie] APIリクエスト送信');
+  console.log('[Gemini Calorie] APIリクエスト送信');
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+            {
+              inlineData: {
+                mimeType: imageFile.type || 'image/jpeg',
+                data: base64Image,
               },
-              {
-                inlineData: {
-                  mimeType: imageFile.type || 'image/jpeg',
-                  data: base64Image,
-                },
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.3, // 低めにして正確性を重視
-          topK: 32,
-          topP: 1,
-          maxOutputTokens: 1024,
+            },
+          ],
         },
-      }),
-    });
+      ],
+      generationConfig: {
+        temperature: 0.3, // 低めにして正確性を重視
+        topK: 32,
+        topP: 1,
+        maxOutputTokens: 1024,
+      },
+    }),
+  });
 
-    console.log('[Gemini Calorie] APIレスポンス受信', { status: response.status });
+  console.log('[Gemini Calorie] APIレスポンス受信', { status: response.status });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Gemini Calorie] APIエラー', errorText);
-      throw new Error(`Gemini API エラー: ${response.status}`);
-    }
-
-    const data: GeminiResponse = await response.json();
-    console.log('[Gemini Calorie] レスポンスデータ', data);
-
-    // レスポンスからテキストを抽出
-    if (data.candidates && data.candidates.length > 0) {
-      const candidate = data.candidates[0];
-      if (candidate.content?.parts && candidate.content.parts.length > 0) {
-        const text = candidate.content.parts[0].text.trim();
-        console.log('[Gemini Calorie] 抽出テキスト:', text);
-
-        // JSONを抽出（マークダウンのコードブロックを除去）
-        let jsonText = text;
-        const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          jsonText = jsonMatch[1];
-        } else if (text.includes('```')) {
-          const codeMatch = text.match(/```\s*([\s\S]*?)\s*```/);
-          if (codeMatch) {
-            jsonText = codeMatch[1];
-          }
-        }
-
-        // JSONをパース
-        const parsedData = JSON.parse(jsonText);
-
-        const result = {
-          calories: parsedData.calories || 0,
-          reasoning: parsedData.reasoning || 'カロリーを推定しました',
-          confidence: parsedData.confidence,
-        };
-
-        console.log('[Gemini Calorie] カロリー計測成功', result);
-        return result;
-      }
-    }
-
-    throw new Error('カロリーを推定できませんでした');
-  } catch (error) {
-    console.error('[Gemini Calorie] エラー:', error);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Gemini Calorie] APIエラー', errorText);
+    const error = new Error(`Gemini API エラー: ${response.status}`) as Error & { status?: number };
+    error.status = response.status;
     throw error;
   }
+
+  const data: GeminiResponse = await response.json();
+  console.log('[Gemini Calorie] レスポンスデータ', data);
+
+  // レスポンスからテキストを抽出
+  if (data.candidates && data.candidates.length > 0) {
+    const candidate = data.candidates[0];
+    if (candidate.content?.parts && candidate.content.parts.length > 0) {
+      const text = candidate.content.parts[0].text.trim();
+      console.log('[Gemini Calorie] 抽出テキスト:', text);
+
+      // JSONを抽出（マークダウンのコードブロックを除去）
+      let jsonText = text;
+      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      } else if (text.includes('```')) {
+        const codeMatch = text.match(/```\s*([\s\S]*?)\s*```/);
+        if (codeMatch) {
+          jsonText = codeMatch[1];
+        }
+      }
+
+      // JSONをパース
+      const parsedData = JSON.parse(jsonText);
+
+      const result = {
+        calories: parsedData.calories || 0,
+        reasoning: parsedData.reasoning || 'カロリーを推定しました',
+        confidence: parsedData.confidence,
+      };
+
+      console.log('[Gemini Calorie] カロリー計測成功', result);
+      return result;
+    }
+  }
+
+  throw new Error('カロリーを推定できませんでした');
+}
+
+/**
+ * 料理画像からカロリーを推定
+ */
+export async function scanCalorie(mealName: string, imageFile: File): Promise<{ calories: number; reasoning: string; confidence?: number }> {
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  const apiEnabled = isApiEnabled();
+
+  console.log('[Gemini Calorie] カロリー計測開始', {
+    mealName,
+    fileName: imageFile.name,
+    fileSize: imageFile.size,
+    API_ENABLED: apiEnabled,
+    hasOperatorKey: !!operatorKey,
+    hasUserKey: !!userKey,
+  });
+
+  if (!apiEnabled) {
+    throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
+  }
+
+  // まず運営者のAPIキーで試行
+  if (operatorKey) {
+    try {
+      console.log('[Gemini Calorie] 運営者のAPIキーで試行');
+      return await scanCalorieWithKey(operatorKey, mealName, imageFile);
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      // 403または429エラーの場合、ユーザーのAPIキーで再試行
+      if (errorStatus === 403 || errorStatus === 429) {
+        console.warn('[Gemini Calorie] 運営者のAPIキーでエラー発生。ユーザーのAPIキーで再試行します。', {
+          status: errorStatus,
+        });
+        if (userKey) {
+          try {
+            console.log('[Gemini Calorie] ユーザーのAPIキーで再試行');
+            return await scanCalorieWithKey(userKey, mealName, imageFile);
+          } catch (userError) {
+            console.error('[Gemini Calorie] ユーザーのAPIキーでもエラー発生', userError);
+            throw userError;
+          }
+        } else {
+          console.error('[Gemini Calorie] ユーザーのAPIキーが設定されていません');
+          throw error;
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // 運営者のAPIキーがない場合、ユーザーのAPIキーで試行
+  if (userKey) {
+    try {
+      console.log('[Gemini Calorie] ユーザーのAPIキーで試行');
+      return await scanCalorieWithKey(userKey, mealName, imageFile);
+    } catch (error) {
+      console.error('[Gemini Calorie] ユーザーのAPIキーでエラー発生', error);
+      throw error;
+    }
+  }
+
+  throw new Error('Gemini APIキーが設定されていません。設定画面でAPIキーを設定してください。');
 }
 
 /**

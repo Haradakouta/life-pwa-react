@@ -30,10 +30,113 @@ interface GoalStore {
   unsubscribeFromFirestore: () => void;
 }
 
+// 目標タイプに応じた達成条件を判定する関数
+const isGoalAchieved = (goal: Goal, currentValue: number): boolean => {
+  switch (goal.type) {
+    case 'calorie':
+      // カロリー目標: 目標値以上摂取で達成
+      return currentValue >= goal.targetValue;
+    
+    case 'budget':
+      // 予算目標: 予算内に収める（目標値以下）で達成
+      return currentValue <= goal.targetValue;
+    
+    case 'weight':
+      // 体重目標: 目標設定時の現在体重と目標体重を比較
+      // 目標体重が現在体重より小さい → 減量目標 → currentValue <= targetValue で達成
+      // 目標体重が現在体重より大きい → 増量目標 → currentValue >= targetValue で達成
+      // 目標設定時の現在体重は、goalの初期currentValueから推測
+      // または、目標設定時に保存した初期体重を使用
+      const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+      if (goal.targetValue < initialWeight) {
+        // 減量目標
+        return currentValue <= goal.targetValue;
+      } else {
+        // 増量目標
+        return currentValue >= goal.targetValue;
+      }
+    
+    case 'exercise':
+      // 運動目標: 目標時間以上運動で達成
+      return currentValue >= goal.targetValue;
+    
+    default:
+      return false;
+  }
+};
+
+// 目標タイプに応じた進捗率を計算する関数
+const calculatePercentage = (goal: Goal, currentValue: number): number => {
+  switch (goal.type) {
+    case 'calorie':
+      // カロリー目標: 現在値 / 目標値 * 100（100%以上で達成）
+      return goal.targetValue > 0 ? Math.min((currentValue / goal.targetValue) * 100, 100) : 0;
+    
+    case 'budget':
+      // 予算目標: 現在値 / 目標値 * 100（100%以下で達成、超過時は100%を超える）
+      return goal.targetValue > 0 ? (currentValue / goal.targetValue) * 100 : 0;
+    
+    case 'weight':
+      // 体重目標: 目標設定時の現在体重と目標体重を比較
+      const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+      if (goal.targetValue < initialWeight) {
+        // 減量目標: (初期体重 - 現在体重) / (初期体重 - 目標体重) * 100
+        const totalToLose = initialWeight - goal.targetValue;
+        const lost = initialWeight - currentValue;
+        if (totalToLose <= 0) return 100;
+        return Math.min((lost / totalToLose) * 100, 100);
+      } else {
+        // 増量目標: (現在体重 - 初期体重) / (目標体重 - 初期体重) * 100
+        const totalToGain = goal.targetValue - initialWeight;
+        const gained = currentValue - initialWeight;
+        if (totalToGain <= 0) return 100;
+        return Math.min((gained / totalToGain) * 100, 100);
+      }
+    
+    case 'exercise':
+      // 運動目標: 現在値 / 目標値 * 100（100%以上で達成）
+      return goal.targetValue > 0 ? Math.min((currentValue / goal.targetValue) * 100, 100) : 0;
+    
+    default:
+      return 0;
+  }
+};
+
+// 目標タイプに応じた残り値を計算する関数
+const calculateRemaining = (goal: Goal, currentValue: number): number => {
+  switch (goal.type) {
+    case 'calorie':
+      // カロリー目標: 目標値 - 現在値（負の値は0）
+      return Math.max(goal.targetValue - currentValue, 0);
+    
+    case 'budget':
+      // 予算目標: 目標値 - 現在値（負の値は超過）
+      return goal.targetValue - currentValue;
+    
+    case 'weight':
+      // 体重目標: 目標設定時の現在体重と目標体重を比較
+      const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+      if (goal.targetValue < initialWeight) {
+        // 減量目標: 現在体重 - 目標体重（まだ減らす必要がある量）
+        return Math.max(currentValue - goal.targetValue, 0);
+      } else {
+        // 増量目標: 目標体重 - 現在体重（まだ増やす必要がある量）
+        return Math.max(goal.targetValue - currentValue, 0);
+      }
+    
+    case 'exercise':
+      // 運動目標: 目標値 - 現在値（負の値は0）
+      return Math.max(goal.targetValue - currentValue, 0);
+    
+    default:
+      return 0;
+  }
+};
+
 // 目標の進捗を計算する関数
 const calculateGoalProgress = (goal: Goal): GoalProgress => {
-  const percentage = goal.targetValue > 0 ? (goal.currentValue / goal.targetValue) * 100 : 0;
-  const remaining = goal.targetValue - goal.currentValue;
+  const percentage = calculatePercentage(goal, goal.currentValue);
+  const remaining = calculateRemaining(goal, goal.currentValue);
   
   let daysRemaining: number | undefined;
   let averageDailyProgress: number | undefined;
@@ -48,8 +151,31 @@ const calculateGoalProgress = (goal: Goal): GoalProgress => {
     
     if (daysElapsed > 0) {
       averageDailyProgress = goal.currentValue / daysElapsed;
-      const requiredDailyProgress = goal.targetValue / 1; // 1日で達成
-      isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8; // 80%以上で順調
+      // 目標タイプに応じた必要進捗を計算
+      let requiredDailyProgress: number;
+      if (goal.type === 'budget') {
+        // 予算目標は目標値以下で達成
+        requiredDailyProgress = goal.targetValue / 1;
+        isOnTrack = averageDailyProgress <= requiredDailyProgress * 1.2; // 120%以下で順調
+      } else if (goal.type === 'weight') {
+        // 体重目標は目標設定時の現在体重と目標体重を比較
+        const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+        if (goal.targetValue < initialWeight) {
+          // 減量目標: 1日あたりの減量ペース
+          const totalToLose = initialWeight - goal.targetValue;
+          requiredDailyProgress = totalToLose / 1;
+          isOnTrack = (initialWeight - averageDailyProgress) >= (initialWeight - goal.targetValue) * 0.8;
+        } else {
+          // 増量目標: 1日あたりの増量ペース
+          const totalToGain = goal.targetValue - initialWeight;
+          requiredDailyProgress = totalToGain / 1;
+          isOnTrack = (averageDailyProgress - initialWeight) >= (goal.targetValue - initialWeight) * 0.8;
+        }
+      } else {
+        // カロリー・運動目標は目標値以上で達成
+        requiredDailyProgress = goal.targetValue / 1;
+        isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8; // 80%以上で順調
+      }
     }
   } else if (goal.period === 'weekly') {
     const startDate = new Date(goal.startDate);
@@ -59,11 +185,36 @@ const calculateGoalProgress = (goal: Goal): GoalProgress => {
     
     if (daysElapsed > 0) {
       averageDailyProgress = goal.currentValue / daysElapsed;
-      const requiredDailyProgress = goal.targetValue / 7;
-      isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      // 目標タイプに応じた必要進捗を計算
+      let requiredDailyProgress: number;
+      if (goal.type === 'budget') {
+        requiredDailyProgress = goal.targetValue / 7;
+        isOnTrack = averageDailyProgress <= requiredDailyProgress * 1.2;
+      } else if (goal.type === 'weight') {
+        const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+        if (goal.targetValue < initialWeight) {
+          // 減量目標
+          const totalToLose = initialWeight - goal.targetValue;
+          const lost = initialWeight - goal.currentValue;
+          isOnTrack = lost >= totalToLose * 0.8;
+        } else {
+          // 増量目標
+          const totalToGain = goal.targetValue - initialWeight;
+          const gained = goal.currentValue - initialWeight;
+          isOnTrack = gained >= totalToGain * 0.8;
+        }
+      } else {
+        requiredDailyProgress = goal.targetValue / 7;
+        isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      }
       
-      if (averageDailyProgress > 0 && isOnTrack) {
-        const estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+      if (averageDailyProgress > 0 && isOnTrack && goal.type !== 'weight') {
+        let estimatedDays: number;
+        if (goal.type === 'budget') {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        } else {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        }
         const estimatedDate = new Date(startDate);
         estimatedDate.setDate(estimatedDate.getDate() + estimatedDays);
         estimatedCompletionDate = estimatedDate.toISOString();
@@ -78,11 +229,36 @@ const calculateGoalProgress = (goal: Goal): GoalProgress => {
     
     if (daysElapsed > 0) {
       averageDailyProgress = goal.currentValue / daysElapsed;
-      const requiredDailyProgress = goal.targetValue / daysInMonth;
-      isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      // 目標タイプに応じた必要進捗を計算
+      let requiredDailyProgress: number;
+      if (goal.type === 'budget') {
+        requiredDailyProgress = goal.targetValue / daysInMonth;
+        isOnTrack = averageDailyProgress <= requiredDailyProgress * 1.2;
+      } else if (goal.type === 'weight') {
+        const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+        if (goal.targetValue < initialWeight) {
+          // 減量目標
+          const totalToLose = initialWeight - goal.targetValue;
+          const lost = initialWeight - goal.currentValue;
+          isOnTrack = lost >= totalToLose * 0.8;
+        } else {
+          // 増量目標
+          const totalToGain = goal.targetValue - initialWeight;
+          const gained = goal.currentValue - initialWeight;
+          isOnTrack = gained >= totalToGain * 0.8;
+        }
+      } else {
+        requiredDailyProgress = goal.targetValue / daysInMonth;
+        isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      }
       
-      if (averageDailyProgress > 0 && isOnTrack) {
-        const estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+      if (averageDailyProgress > 0 && isOnTrack && goal.type !== 'weight') {
+        let estimatedDays: number;
+        if (goal.type === 'budget') {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        } else {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        }
         const estimatedDate = new Date(startDate);
         estimatedDate.setDate(estimatedDate.getDate() + estimatedDays);
         estimatedCompletionDate = estimatedDate.toISOString();
@@ -98,11 +274,36 @@ const calculateGoalProgress = (goal: Goal): GoalProgress => {
     
     if (daysElapsed > 0) {
       averageDailyProgress = goal.currentValue / daysElapsed;
-      const requiredDailyProgress = goal.targetValue / totalDays;
-      isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      // 目標タイプに応じた必要進捗を計算
+      let requiredDailyProgress: number;
+      if (goal.type === 'budget') {
+        requiredDailyProgress = goal.targetValue / totalDays;
+        isOnTrack = averageDailyProgress <= requiredDailyProgress * 1.2;
+      } else if (goal.type === 'weight') {
+        const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+        if (goal.targetValue < initialWeight) {
+          // 減量目標
+          const totalToLose = initialWeight - goal.targetValue;
+          const lost = initialWeight - goal.currentValue;
+          isOnTrack = lost >= totalToLose * 0.8;
+        } else {
+          // 増量目標
+          const totalToGain = goal.targetValue - initialWeight;
+          const gained = goal.currentValue - initialWeight;
+          isOnTrack = gained >= totalToGain * 0.8;
+        }
+      } else {
+        requiredDailyProgress = goal.targetValue / totalDays;
+        isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8;
+      }
       
-      if (averageDailyProgress > 0 && isOnTrack) {
-        const estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+      if (averageDailyProgress > 0 && isOnTrack && goal.type !== 'weight') {
+        let estimatedDays: number;
+        if (goal.type === 'budget') {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        } else {
+          estimatedDays = Math.ceil(goal.targetValue / averageDailyProgress);
+        }
         const estimatedDate = new Date(startDate);
         estimatedDate.setDate(estimatedDate.getDate() + estimatedDays);
         estimatedCompletionDate = estimatedDate.toISOString();
@@ -142,6 +343,19 @@ const updateGoalCurrentValue = (goal: Goal): Goal => {
     // 設定から現在の体重を取得
     const settingsStore = useSettingsStore.getState();
     currentValue = settingsStore.settings.weight || 0;
+    
+    // 体重目標の場合、進捗履歴に初期体重を保存（初回のみ）
+    if (!goal.progressHistory || goal.progressHistory.length === 0) {
+      const initialWeight = settingsStore.settings.weight || 0;
+      return {
+        ...goal,
+        currentValue,
+        progressHistory: [{
+          date: goal.startDate,
+          value: initialWeight,
+        }],
+      };
+    }
   } else if (goal.type === 'exercise') {
     // 運動記録はまだ実装されていないので、現在値はそのまま
     currentValue = goal.currentValue;
@@ -167,10 +381,37 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     const user = auth.currentUser;
     if (!user) throw new Error('ユーザーがログインしていません');
 
+    // 目標タイプに応じた初期値を設定
+    let initialValue = 0;
+    let progressHistory: { date: string; value: number }[] | undefined = undefined;
+    
+    if (data.type === 'calorie') {
+      // カロリー目標: 今日のカロリーを初期値に
+      const today = new Date().toISOString().split('T')[0];
+      const intakeStore = useIntakeStore.getState();
+      initialValue = intakeStore.getTotalCaloriesByDate(today);
+    } else if (data.type === 'budget') {
+      // 予算目標: 今月の支出を初期値に
+      const now = new Date();
+      const expenseStore = useExpenseStore.getState();
+      initialValue = expenseStore.getTotalByMonth(now.getFullYear(), now.getMonth() + 1);
+    } else if (data.type === 'weight') {
+      // 体重目標: 現在の体重を初期値に、進捗履歴にも保存
+      const settingsStore = useSettingsStore.getState();
+      initialValue = settingsStore.settings.weight || 0;
+      progressHistory = [{
+        date: data.startDate,
+        value: initialValue,
+      }];
+    } else if (data.type === 'exercise') {
+      // 運動目標: 0から開始
+      initialValue = 0;
+    }
+
     // undefinedのフィールドを削除（Firestoreはundefinedをサポートしない）
     const goalData: Omit<Goal, 'id'> = {
       userId: user.uid,
-      currentValue: 0,
+      currentValue: initialValue,
       status: 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -182,6 +423,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       startDate: data.startDate,
       ...(data.description && { description: data.description }),
       ...(data.endDate && { endDate: data.endDate }),
+      ...(progressHistory && { progressHistory }),
     };
 
     const newGoal: Goal = {
@@ -284,10 +526,10 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     if (!goal) return;
 
     const updatedGoal = updateGoalCurrentValue(goal);
-    const progress = calculateGoalProgress(updatedGoal);
 
-    // 目標達成チェック
-    if (progress.percentage >= 100 && goal.status === 'active') {
+    // 目標達成チェック（目標タイプに応じた達成条件を使用）
+    const isAchieved = isGoalAchieved(updatedGoal, updatedGoal.currentValue);
+    if (isAchieved && goal.status === 'active') {
       await get().updateGoal(goalId, {
         status: 'completed',
         completedAt: new Date().toISOString(),

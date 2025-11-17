@@ -83,45 +83,100 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
     }
   }, [goal.type]);
 
-  // ステータス判定
+  // ステータス判定（目標タイプに応じた判定）
   const status = useMemo(() => {
-    if (progress.percentage >= 100) {
+    // 目標達成判定
+    const isAchieved = (() => {
+      switch (goal.type) {
+        case 'calorie':
+          return goal.currentValue >= goal.targetValue;
+        case 'budget':
+          return goal.currentValue <= goal.targetValue;
+        case 'weight':
+          const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
+          if (goal.targetValue < initialWeight) {
+            return goal.currentValue <= goal.targetValue;
+          } else {
+            return goal.currentValue >= goal.targetValue;
+          }
+        case 'exercise':
+          return goal.currentValue >= goal.targetValue;
+        default:
+          return false;
+      }
+    })();
+
+    if (isAchieved) {
       return {
         icon: <MdCheckCircle size={24} />,
         message: '達成！',
         color: '#10b981',
         bgColor: 'rgba(16, 185, 129, 0.1)',
       };
-    } else if (progress.percentage >= 80) {
-      return {
-        icon: <MdTrendingUp size={24} />,
-        message: '順調',
-        color: '#10b981',
-        bgColor: 'rgba(16, 185, 129, 0.1)',
-      };
-    } else if (!progress.isOnTrack && progress.percentage < 50) {
-      return {
-        icon: <MdTrendingDown size={24} />,
-        message: 'ペースアップ',
-        color: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.1)',
-      };
-    } else if (progress.percentage < 30) {
-      return {
-        icon: <MdWarning size={24} />,
-        message: '要努力',
-        color: '#ef4444',
-        bgColor: 'rgba(239, 68, 68, 0.1)',
-      };
+    } else if (goal.type === 'budget') {
+      // 予算目標の特別な判定
+      if (progress.percentage >= 100) {
+        return {
+          icon: <MdWarning size={24} />,
+          message: '予算超過',
+          color: '#ef4444',
+          bgColor: 'rgba(239, 68, 68, 0.1)',
+        };
+      } else if (progress.percentage >= 80) {
+        return {
+          icon: <MdTrendingUp size={24} />,
+          message: '予算残りわずか',
+          color: '#f59e0b',
+          bgColor: 'rgba(245, 158, 11, 0.1)',
+        };
+      } else if (progress.percentage >= 50) {
+        return {
+          icon: <MdTrendingUp size={24} />,
+          message: '順調',
+          color: '#10b981',
+          bgColor: 'rgba(16, 185, 129, 0.1)',
+        };
+      } else {
+        return {
+          icon: <MdTrendingUp size={24} />,
+          message: '進行中',
+          color: goalConfig.color,
+          bgColor: `${goalConfig.color}15`,
+        };
+      }
     } else {
-      return {
-        icon: <MdTrendingUp size={24} />,
-        message: '進行中',
-        color: goalConfig.color,
-        bgColor: `${goalConfig.color}15`,
-      };
+      // その他の目標タイプ
+      if (progress.percentage >= 80) {
+        return {
+          icon: <MdTrendingUp size={24} />,
+          message: '順調',
+          color: '#10b981',
+          bgColor: 'rgba(16, 185, 129, 0.1)',
+        };
+      } else if (!progress.isOnTrack && progress.percentage < 50) {
+        return {
+          icon: <MdTrendingDown size={24} />,
+          message: 'ペースアップ',
+          color: '#f59e0b',
+          bgColor: 'rgba(245, 158, 11, 0.1)',
+        };
+      } else if (progress.percentage < 30) {
+        return {
+          icon: <MdWarning size={24} />,
+          message: '要努力',
+          color: '#ef4444',
+          bgColor: 'rgba(239, 68, 68, 0.1)',
+        };
+      } else {
+        return {
+          icon: <MdTrendingUp size={24} />,
+          message: '進行中',
+          color: goalConfig.color,
+          bgColor: `${goalConfig.color}15`,
+        };
+      }
     }
-  }, [progress.percentage, progress.isOnTrack, goalConfig.color]);
+  }, [progress.percentage, progress.isOnTrack, goalConfig.color, goal.type, goal.currentValue, goal.targetValue, goal.progressHistory]);
 
   // 期間表示
   const periodLabel = useMemo(() => {
@@ -357,13 +412,26 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
                 {formatCount(goal.targetValue)} {goal.unit}
               </strong>
             </div>
-            {progress.remaining > 0 && (
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                残り: <strong style={{ color: goalConfig.color }}>
-                  {formatCount(progress.remaining)} {goal.unit}
-                </strong>
-              </div>
-            )}
+            {(() => {
+              if (goal.type === 'budget' && progress.remaining < 0) {
+                return (
+                  <div style={{ fontSize: '13px', color: '#ef4444', marginTop: '4px' }}>
+                    超過: <strong style={{ color: '#ef4444' }}>
+                      {formatCount(Math.abs(progress.remaining))} {goal.unit}
+                    </strong>
+                  </div>
+                );
+              } else if (progress.remaining > 0) {
+                return (
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    残り: <strong style={{ color: goalConfig.color }}>
+                      {formatCount(progress.remaining)} {goal.unit}
+                    </strong>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
 

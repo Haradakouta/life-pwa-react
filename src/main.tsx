@@ -21,22 +21,44 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('[SW] Registered:', registration.scope);
 
+        // Service Workerからのメッセージを受信
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'SW_UPDATED') {
+            console.log('[SW] Service Worker updated, reloading...');
+            window.location.reload();
+          }
+        });
+
         // 更新をチェック
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // 新しいService Workerが利用可能
-                console.log('[SW] New version available');
-                if (confirm('新しいバージョンが利用可能です。更新しますか？')) {
+              if (newWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // 新しいService Workerが利用可能
+                  console.log('[SW] New version available');
+                  // 自動的に更新を適用
                   newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  window.location.reload();
+                  // Service Workerがアクティブになったらリロード
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') {
+                      window.location.reload();
+                    }
+                  });
+                } else {
+                  // 初回インストール
+                  console.log('[SW] Service Worker installed');
                 }
               }
             });
           }
         });
+
+        // 定期的に更新をチェック
+        setInterval(() => {
+          registration.update();
+        }, 60000); // 1分ごと
       })
       .catch((error) => {
         console.error('[SW] Registration failed:', error);

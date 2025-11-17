@@ -206,6 +206,161 @@ async function retryOn429<T>(
 /**
  * 材料からレシピを生成（内部実装：指定されたAPIキーで試行）
  */
+/**
+ * 在庫からレシピを生成（在庫リストをすべて送信）
+ */
+async function generateRecipeFromStockWithKey(
+  apiKey: string,
+  stockItems: Array<{ name: string; quantity: number; daysRemaining?: number; category?: string }>,
+  dietaryRestriction: DietaryRestriction,
+  difficulty: RecipeDifficulty,
+  customRequest: string
+): Promise<string> {
+  try {
+    const dietLabel =
+      dietaryRestriction === 'vegetarian'
+        ? 'ベジタリアン'
+        : dietaryRestriction === 'vegan'
+          ? 'ヴィーガン'
+          : '';
+
+    // 難易度に応じた条件を追加
+    let difficultyCondition = '';
+    if (difficulty === 'super_easy') {
+      difficultyCondition =
+        '\n\n**重要**: 料理初心者でも絶対に失敗しない超簡単なレシピにしてください。調理工程は3ステップ以内、特別な道具や技術は不要にしてください。';
+    } else if (difficulty === 'under_5min') {
+      difficultyCondition = '\n\n**重要**: 調理時間5分以内で完成するレシピにしてください。';
+    } else if (difficulty === 'under_10min') {
+      difficultyCondition = '\n\n**重要**: 調理時間10分以内で完成するレシピにしてください。';
+    } else if (difficulty === 'no_fire') {
+      difficultyCondition =
+        '\n\n**重要**: 火を使わずに作れるレシピにしてください（電子レンジやトースターは可）。';
+    }
+
+    // 自由記入欄の内容を追加
+    const additionalRequirements = customRequest
+      ? `\n\n**追加のリクエスト**: ${customRequest}`
+      : '';
+
+    // 在庫リストをフォーマット
+    const stockList = stockItems.map((item) => {
+      let info = item.name;
+      if (item.quantity > 1) {
+        info += ` (${item.quantity}個)`;
+      }
+      if (item.daysRemaining !== undefined && item.daysRemaining <= 3) {
+        info += ' ⚠️期限間近';
+      }
+      return info;
+    }).join('\n');
+
+    const prompt = `
+あなたは日本語で答えるプロの料理アドバイザーです。
+必ず日本語で回答してください。英語は使わないでください。
+
+以下の在庫から使える${dietLabel}向けの家庭向けレシピを1つ提案してください。
+**重要**: 提案するレシピは、以下の在庫リストの中から材料を選んで作れるものにしてください。
+在庫にない材料は使わないでください。ただし、基本的な調味料（塩、胡椒、油など）は使用可能とします。
+
+在庫リスト:
+${stockList}
+
+料理名・材料・手順・ポイントを含めて出力してください。${difficultyCondition}${additionalRequirements}
+
+出力フォーマットは以下の形式でお願いします：
+
+---
+【料理名】
+（料理名）
+
+【材料】
+（材料一覧 - 在庫リストから選んだ材料を明記）
+
+【作り方】
+1.
+2.
+3.
+
+【ポイント】
+（料理のコツやアドバイス）
+---
+
+在庫から使える材料を最大限活用したレシピを提案してください。
+`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+
+    logRequestStats('recipe');
+
+    console.log('[Gemini] 在庫からレシピ生成APIリクエスト送信', {
+      stockCount: stockItems.length,
+      url: apiKey ? url.replace(apiKey, 'HIDDEN') : url
+    });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048, // 在庫リストが長い場合があるので増やす
+        },
+      }),
+    });
+
+    console.log('[Gemini] APIレスポンス受信', { status: response.status, ok: response.ok });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData: GeminiError;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { rawError: errorText };
+      }
+
+      console.error('[Gemini] APIエラー発生', {
+        status: response.status,
+        error: errorData,
+      });
+
+      const errorMessage = errorData.error?.message || errorData.rawError || 'Unknown error';
+      const errorStatus = response.status;
+
+      const error = new Error(errorMessage) as Error & { status?: number; errorData?: GeminiError };
+      error.status = errorStatus;
+      error.errorData = errorData;
+
+      throw error;
+    }
+
+    const data: GeminiResponse = await response.json();
+    const recipeText =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'レシピの生成に失敗しました。';
+
+    console.log('[Gemini] レシピ生成成功', { length: recipeText.length });
+    return recipeText;
+  } catch (error) {
+    console.error('[Gemini] レシピ生成エラー', error);
+    throw error;
+  }
+}
+
 async function generateRecipeWithKey(
   apiKey: string,
   ingredients: string[],
@@ -538,6 +693,108 @@ export async function generateRecipe(
   // APIキーが全くない場合
   console.warn('Gemini APIキーが設定されていません。モックデータを返します。');
   return getMockRecipe(ingredients, dietaryRestriction, difficulty);
+}
+
+/**
+ * 在庫からレシピを生成（在庫リストをすべて送信）
+ */
+export async function generateRecipeFromStock(
+  stockItems: Array<{ name: string; quantity: number; daysRemaining?: number; category?: string }>,
+  dietaryRestriction: DietaryRestriction = 'none',
+  difficulty: RecipeDifficulty = 'none',
+  customRequest = ''
+): Promise<string> {
+  const operatorKey = getOperatorApiKey();
+  const userKey = getUserApiKey();
+  const apiEnabled = isApiEnabled();
+
+  console.log('[Gemini] 在庫からレシピ生成API呼び出し開始', {
+    stockCount: stockItems.length,
+    dietaryRestriction,
+    difficulty,
+    customRequest,
+    API_ENABLED: apiEnabled,
+    hasOperatorKey: !!operatorKey,
+    hasUserKey: !!userKey,
+  });
+
+  if (!apiEnabled) {
+    console.warn('Gemini APIが無効です。モックデータを返します。');
+    const ingredientNames = stockItems.map(item => item.name);
+    return getMockRecipe(ingredientNames, dietaryRestriction, difficulty);
+  }
+
+  // ユーザーのAPIキーが設定されている場合、優先的に使用
+  if (userKey) {
+    try {
+      console.log('[Gemini] ユーザーのAPIキーで在庫からレシピ生成を試行（優先）');
+      return await retryOn429(
+        () => generateRecipeFromStockWithKey(userKey, stockItems, dietaryRestriction, difficulty, customRequest),
+        1,
+        'ユーザーAPIキー'
+      );
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      const isQuotaError = errorStatus === 429 ||
+        errorMessage.includes('429') ||
+        errorMessage.includes('Quota exceeded') ||
+        errorMessage.includes('quota') ||
+        errorMessage.includes('制限');
+
+      console.error('[Gemini] ユーザーのAPIキーでエラー発生', {
+        status: errorStatus,
+        error: errorMessage,
+        isQuotaError: isQuotaError,
+        hasOperatorKey: !!operatorKey,
+      });
+
+      // ユーザーのAPIキーでエラーが発生した場合、運営者のAPIキーで再試行
+      if (operatorKey && (errorStatus === 403 || errorStatus === 429 || errorStatus === 0 || isQuotaError)) {
+        console.warn('[Gemini] ユーザーのAPIキーでエラー発生。運営者のAPIキーで再試行します。');
+        try {
+          console.log('[Gemini] 運営者のAPIキーで在庫からレシピ生成を再試行');
+          return await retryOn429(
+            () => generateRecipeFromStockWithKey(operatorKey, stockItems, dietaryRestriction, difficulty, customRequest),
+            1,
+            '運営者APIキー'
+          );
+        } catch (operatorError) {
+          console.error('[Gemini] 運営者のAPIキーでもエラー発生', operatorError);
+          throw operatorError;
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // ユーザーのAPIキーがない場合、運営者のAPIキーで試行
+  if (operatorKey) {
+    try {
+      console.log('[Gemini] 運営者のAPIキーで在庫からレシピ生成を試行');
+      return await retryOn429(
+        () => generateRecipeFromStockWithKey(operatorKey, stockItems, dietaryRestriction, difficulty, customRequest),
+        1,
+        '運営者APIキー'
+      );
+    } catch (error) {
+      const errorStatus = (error as Error & { status?: number })?.status;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      console.error('[Gemini] 運営者のAPIキーでエラー発生', {
+        status: errorStatus,
+        error: errorMessage,
+      });
+      throw error;
+    }
+  }
+
+  // APIキーが全くない場合
+  console.warn('Gemini APIキーが設定されていません。モックデータを返します。');
+  const ingredientNames = stockItems.map(item => item.name);
+  return getMockRecipe(ingredientNames, dietaryRestriction, difficulty);
 }
 
 /**

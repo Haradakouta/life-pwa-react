@@ -3,10 +3,10 @@
  */
 import React, { useState, useMemo } from 'react';
 import { useStockStore, useRecipeStore } from '../../store';
-import { generateRecipe } from '../../api/gemini';
+import { generateRecipe, generateRecipeFromStock } from '../../api/gemini';
 import type { RecipeDifficulty, DietaryRestriction, Recipe, StockCategory } from '../../types';
 import { generateUUID } from '../../utils/uuid';
-import { MdRestaurantMenu, MdInventory, MdAutoAwesome, MdClose, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
+import { MdRestaurantMenu, MdInventory, MdAutoAwesome, MdClose, MdCheckBox, MdCheckBoxOutlineBlank, MdSmartToy } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
 
@@ -106,6 +106,112 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
     setSelectedStockIds(new Set());
   };
 
+  const handleGenerateFromStock = async () => {
+    if (ingredientStocks.length === 0) {
+      alert('食材として使える在庫がありません');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // すべての在庫をAIに送信
+      const stockItems = ingredientStocks.map(stock => ({
+        name: stock.name,
+        quantity: stock.quantity,
+        daysRemaining: stock.daysRemaining,
+        category: stock.category,
+      }));
+
+      const recipeContent = await generateRecipeFromStock(
+        stockItems,
+        dietaryRestriction,
+        difficulty,
+        customRequest
+      );
+
+      // レシピから料理名を抽出
+      const titleMatch = recipeContent.match(/【料理名】\s*([^\n]+)/);
+      const recipeTitle = titleMatch ? titleMatch[1].trim() : '在庫から作れるレシピ';
+
+      // レシピから材料を抽出（AIが提案した材料を使用）
+      const ingredientMatch = recipeContent.match(/【材料】\s*([\s\S]*?)(?=【作り方】|【ポイント】|$)/);
+      const extractedIngredients: string[] = [];
+      if (ingredientMatch) {
+        const ingredientsText = ingredientMatch[1];
+        // 材料リストから材料名を抽出（「・」「-」「*」などの記号で始まる行を抽出）
+        const lines = ingredientsText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        lines.forEach(line => {
+          // 記号を除去して材料名を抽出
+          const cleaned = line.replace(/^[・\-\*\d\.\s]+/, '').trim();
+          if (cleaned && cleaned.length > 0) {
+            // 数量や単位を除去（例：「鶏肉 200g」→「鶏肉」）
+            // ただし、「：」や「:」の後は材料名として扱う
+            const parts = cleaned.split(/[：:]/);
+            const materialName = parts.length > 1 ? parts[1].trim() : cleaned;
+            const nameOnly = materialName.split(/\s+/)[0];
+            if (nameOnly && nameOnly.length > 0 && nameOnly.length < 50) {
+              extractedIngredients.push(nameOnly);
+            }
+          }
+        });
+      }
+
+      // 材料が抽出できなかった場合は、在庫から主要なものを使用
+      const finalIngredients = extractedIngredients.length > 0 
+        ? extractedIngredients 
+        : ingredientStocks.slice(0, 5).map(s => s.name);
+
+      const newRecipe: Recipe = {
+        id: generateUUID(),
+        title: recipeTitle,
+        content: recipeContent,
+        ingredients: finalIngredients,
+        difficulty,
+        dietaryRestriction,
+        customRequest: customRequest || '在庫から自動提案',
+        isFavorite: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      addToHistory(newRecipe);
+      onRecipeGenerated(newRecipe);
+    } catch (error) {
+      console.error('在庫からレシピ生成エラー:', error);
+      interface ErrorWithStatus extends Error {
+        status?: number;
+        errorData?: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
+      }
+
+      console.error('エラー詳細:', {
+        error: error,
+        errorType: typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        hasStatus: error instanceof Error && 'status' in error,
+        status: error instanceof Error && 'status' in error ? (error as ErrorWithStatus).status : undefined,
+        errorData: error instanceof Error && 'errorData' in error ? (error as ErrorWithStatus).errorData : undefined,
+      });
+
+      let errorMessage = '在庫からレシピの生成に失敗しました。';
+      if (error instanceof Error) {
+        errorMessage += `\n\n${error.message}`;
+        
+        if (error.message.includes('403') || error.message.includes('無効') || error.message.includes('権限')) {
+          errorMessage += '\n\n【対処法】\n1. 設定画面でAPIキーを確認してください\n2. APIキーが正しく入力されているか確認してください\n3. Google AI StudioでAPIキーが有効か確認してください';
+        } else if (error.message.includes('429') || error.message.includes('制限')) {
+          errorMessage += '\n\n【対処法】\n1. しばらく待ってから再度お試しください\n2. API使用量を確認してください';
+        } else if (error.message.includes('ネットワーク') || error.message.includes('Failed to fetch')) {
+          errorMessage += '\n\n【対処法】\n1. インターネット接続を確認してください\n2. ファイアウォールやプロキシの設定を確認してください';
+        } else if (error.message.includes('400') || error.message.includes('リクエスト形式')) {
+          errorMessage += '\n\n【対処法】\n1. 在庫データを確認してください\n2. しばらく待ってから再度お試しください';
+        }
+      }
+      alert(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!ingredients.trim()) {
       alert('材料を入力してください');
@@ -189,26 +295,53 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         disabled={isLoading}
       />
 
-      <button
-        onClick={handleOpenStockModal}
-        style={{
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}
-        disabled={isLoading || ingredientStocks.length === 0}
-      >
-        <MdInventory size={18} />
-        在庫から材料を選択 ({ingredientStocks.length}件)
-      </button>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <button
+          onClick={handleOpenStockModal}
+          style={{
+            background: '#10b981',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            flex: 1,
+            minWidth: '150px',
+          }}
+          disabled={isLoading || ingredientStocks.length === 0}
+        >
+          <MdInventory size={18} />
+          在庫から材料を選択 ({ingredientStocks.length}件)
+        </button>
+
+        <button
+          onClick={handleGenerateFromStock}
+          style={{
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            flex: 1,
+            minWidth: '150px',
+            fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+          }}
+          disabled={isLoading || ingredientStocks.length === 0}
+        >
+          <MdSmartToy size={18} />
+          AIが在庫から自動提案
+        </button>
+      </div>
 
       {/* 在庫選択モーダル */}
       {showStockModal && (

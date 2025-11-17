@@ -13,6 +13,7 @@ export interface Settings {
   weightHistory?: WeightRecord[]; // 体重履歴（週次記録用）
   lastWeightInputDate?: string; // 最後に体重を入力した日（ISO形式）
   geminiApiKey?: string; // Gemini APIキー（ユーザーが各自設定）
+  pushNotificationsEnabled?: boolean; // プッシュ通知の有効/無効（デフォルト: true）
 }
 
 export interface WeightRecord {

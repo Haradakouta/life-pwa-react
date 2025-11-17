@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
+import { getMessaging, type Messaging } from 'firebase/messaging';
 
 // Firebase設定
 const firebaseConfig = {
@@ -29,5 +30,16 @@ export const functions = getFunctions(app, 'us-central1');
 
 // Firebase Storageのインスタンス
 export const storage = getStorage(app);
+
+// Firebase Cloud Messagingのインスタンス（ブラウザ環境でのみ初期化）
+let messaging: Messaging | null = null;
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  try {
+    messaging = getMessaging(app);
+  } catch (error) {
+    console.warn('Firebase Messaging initialization failed:', error);
+  }
+}
+export { messaging };
 
 export default app;

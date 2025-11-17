@@ -134,3 +134,98 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// プッシュ通知受信時
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push notification received:', event);
+
+  let notificationData = {
+    title: '健康家計アプリ',
+    body: '新しい通知があります',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: 'notification',
+    requireInteraction: false,
+    data: {},
+  };
+
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      notificationData = {
+        title: payload.notification?.title || payload.data?.title || notificationData.title,
+        body: payload.notification?.body || payload.data?.body || notificationData.body,
+        icon: payload.notification?.icon || payload.data?.icon || notificationData.icon,
+        badge: payload.notification?.badge || payload.data?.badge || notificationData.badge,
+        tag: payload.data?.tag || notificationData.tag,
+        requireInteraction: payload.data?.requireInteraction === 'true' || false,
+        data: payload.data || {},
+      };
+    } catch (error) {
+      console.error('[SW] Error parsing push payload:', error);
+      // テキストデータの場合
+      if (event.data.text) {
+        notificationData.body = event.data.text();
+      }
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      tag: notificationData.tag,
+      requireInteraction: notificationData.requireInteraction,
+      data: notificationData.data,
+      actions: [
+        {
+          action: 'open',
+          title: '開く',
+        },
+        {
+          action: 'close',
+          title: '閉じる',
+        },
+      ],
+    })
+  );
+});
+
+// 通知クリック時
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event);
+
+  event.notification.close();
+
+  if (event.action === 'close') {
+    return;
+  }
+
+  // 通知のデータに基づいて適切なURLに遷移
+  const data = event.notification.data || {};
+  let url = '/';
+
+  if (data.postId) {
+    url = `/social?post=${data.postId}`;
+  } else if (data.userId) {
+    url = `/social?user=${data.userId}`;
+  } else if (data.type === 'notification') {
+    url = '/social?tab=notifications';
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // 既に開いているウィンドウがあればフォーカス
+      for (const client of clientList) {
+        if (client.url === url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // 新しいウィンドウを開く
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
+});

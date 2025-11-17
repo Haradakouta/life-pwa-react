@@ -258,7 +258,35 @@ function App() {
         // 目標ストアと運動ストアのリアルタイム同期を開始
         goalStore.subscribeToFirestore();
         exerciseStore.subscribeToFirestore();
+        console.log('Realtime sync started');
         console.log('Sync completed for user:', user.uid);
+
+        // プッシュ通知を初期化（設定で有効になっている場合のみ）
+        const { settings } = useSettingsStore.getState();
+        if (settings.pushNotificationsEnabled !== false) {
+          try {
+            const { initializePushNotifications, onForegroundMessage } = await import('./utils/pushNotification');
+            await initializePushNotifications();
+            
+            // フォアグラウンドでの通知受信をリッスン
+            onForegroundMessage((payload) => {
+              // ブラウザ通知を表示
+              if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = payload.notification || payload.data;
+                new Notification(notification?.title || '健康家計アプリ', {
+                  body: notification?.body || '新しい通知があります',
+                  icon: notification?.icon || '/icon-192.png',
+                  badge: '/icon-192.png',
+                  tag: payload.data?.tag || 'notification',
+                  data: payload.data || {},
+                });
+              }
+            });
+            console.log('Push notifications initialized');
+          } catch (error) {
+            console.error('Error initializing push notifications:', error);
+          }
+        }
 
         // ミッション進捗をチェック（ログイン時）
         try {

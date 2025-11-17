@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff, MdNotifications, MdNotificationsOff } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
@@ -321,6 +321,54 @@ export const SettingsScreen: React.FC = () => {
               type="checkbox"
               checked={settings.darkMode}
               onChange={toggleDarkMode}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>通知</h3>
+        <div className="setting-item">
+          <div className="setting-item-left">
+            <div className="setting-icon">
+              {settings.pushNotificationsEnabled !== false ? (
+                <MdNotifications size={24} />
+              ) : (
+                <MdNotificationsOff size={24} />
+              )}
+            </div>
+            <div>
+              <span className="setting-label">プッシュ通知</span>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
+                {settings.pushNotificationsEnabled !== false
+                  ? '新しい通知を受け取ります'
+                  : 'プッシュ通知は無効です'}
+              </p>
+            </div>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={settings.pushNotificationsEnabled !== false}
+              onChange={async (e) => {
+                const enabled = e.target.checked;
+                await updateSettings({ pushNotificationsEnabled: enabled });
+                
+                if (enabled) {
+                  // プッシュ通知を有効化
+                  try {
+                    const { initializePushNotifications } = await import('../../utils/pushNotification');
+                    await initializePushNotifications();
+                    alert('プッシュ通知を有効にしました');
+                  } catch (error) {
+                    console.error('Error enabling push notifications:', error);
+                    alert('プッシュ通知の有効化に失敗しました。ブラウザの通知許可を確認してください。');
+                  }
+                } else {
+                  alert('プッシュ通知を無効にしました');
+                }
+              }}
             />
             <span className="toggle-slider"></span>
           </label>

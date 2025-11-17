@@ -665,6 +665,47 @@ type NotificationType =
   | 'mention';
 ```
 
+### `Goal`
+```typescript
+type GoalType = 'calorie' | 'budget' | 'weight' | 'exercise';
+type GoalPeriod = 'daily' | 'weekly' | 'monthly' | 'custom';
+type GoalStatus = 'active' | 'completed' | 'paused' | 'cancelled';
+
+interface Goal {
+  id: string;
+  userId: string;
+  type: GoalType;
+  title: string;
+  description?: string;
+  targetValue: number;
+  currentValue: number;
+  unit: string; // 'kcal', '円', 'kg', '分' など
+  period: GoalPeriod;
+  startDate: string; // ISO string
+  endDate?: string; // ISO string (custom periodの場合)
+  status: GoalStatus;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  progressHistory?: { date: string; value: number }[]; // 進捗履歴（日次）
+}
+```
+
+### `Exercise`
+```typescript
+interface Exercise {
+  id: string;
+  userId: string;
+  name: string; // 運動名（例: ランニング、筋トレ）
+  duration: number; // 運動時間（分）
+  caloriesBurned: number; // 消費カロリー
+  date: string; // ISO date string
+  category?: string; // カテゴリ（例: 有酸素運動）
+  createdAt: string;
+  updatedAt?: string;
+}
+```
+
 ---
 
 ## 🎯 開発時の注意事項

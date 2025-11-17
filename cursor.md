@@ -1,6 +1,6 @@
 # Cursor 開発用メモ - 健康家計アプリ (React版)
 
-**最終更新: 2025-01-XX（Firestore管理者APIキー管理・無料プラン対応・自動リトライ機能追加）**
+**最終更新: 2025-01-XX（目標管理機能・運動記録機能追加・ダッシュボードUI改善）**
 
 このドキュメントは、AIコーディング（Cursor）で作業を引き継ぐ際に必要な情報をまとめたものです。
 **⚠️ 重要: このドキュメントを必ず最初に読んでください。設定を誤るとアプリが動かなくなります。**
@@ -83,6 +83,8 @@ life-pwa-react/
 │   │   ├── expense/               # 家計簿（収入・支出管理）
 │   │   ├── report/                # レポート（MonthlyReport, CalorieChart, ExpenseChart, ProductRanking）
 │   │   ├── badges/                # バッジ（BadgeScreen, BadgeUnlockedModal）
+│   │   ├── goals/                 # 目標管理（GoalsScreen, GoalSettingScreen, GoalProgressCard, GoalsSummary）
+│   │   ├── exercise/              # 運動記録（ExerciseScreen, ExerciseForm, ExerciseList）
 │   │   ├── social/                # SNS機能
 │   │   │   ├── SocialScreen.tsx   # SNSメイン画面
 │   │   │   ├── TimelineScreen.tsx # タイムライン
@@ -109,6 +111,8 @@ life-pwa-react/
 │   │   ├── useShoppingStore.ts    # 買い物リスト
 │   │   ├── useRecipeStore.ts      # レシピ履歴・お気に入り
 │   │   ├── useSettingsStore.ts    # 設定（ダークモード、月間予算、健康情報）
+│   │   ├── useGoalStore.ts        # 目標管理（カロリー・予算・体重・運動）
+│   │   ├── useExerciseStore.ts    # 運動記録
 │   │   └── useBadgeStore.ts       # バッジ・アチーブメント
 │   │
 │   ├── config/
@@ -120,6 +124,8 @@ life-pwa-react/
 │   │   ├── stock.ts               # 在庫（expiryDate: ISO string）
 │   │   ├── shopping.ts            # 買い物リスト（price削除済み）
 │   │   ├── settings.ts            # 設定（health: age, height, weight, savings）
+│   │   ├── goal.ts                # 目標（GoalType: calorie, budget, weight, exercise）
+│   │   ├── exercise.ts            # 運動記録（name, duration, calories, date）
 │   │   ├── post.ts                # 投稿（quotedPostId, replyToPostId, replyToUserId）
 │   │   ├── notification.ts        # 通知（type: 'quote' | 'reply'）
 │   │   └── cosmetic.ts            # コスメティック（skinConfig.cssClass）
@@ -480,6 +486,8 @@ firebase deploy --only storage
     ├── shopping (買い物リスト)
     ├── recipes (レシピ履歴・お気に入り)
     ├── settings (設定 - geminiApiKey含む)
+    ├── goals (目標 - calorie, budget, weight, exercise)
+    ├── exercises (運動記録)
     ├── badges (バッジ)
     ├── missions (日次ミッション)
     ├── cosmetics (コスメティック)
@@ -510,7 +518,7 @@ firebase deploy --only storage
 ## 📦 データ永続化
 
 ### localStorage
-- **キー:** `app-intakes`, `app-expenses`, `app-stocks`, `app-shopping`, `app-recipes`, `app-settings`, `app-badges`
+- **キー:** `app-intakes`, `app-expenses`, `app-stocks`, `app-shopping`, `app-recipes`, `app-settings`, `app-badges`, `goals`, `exercises`
 - **実装:** `src/utils/localStorage.ts`
 
 ### Firestore
@@ -718,6 +726,7 @@ type NotificationType =
 ## 🔄 バージョン管理
 
 ### 重要な変更履歴
+- **2025-01-XX:** 目標管理機能追加（カロリー・予算・体重・運動の4種類）、運動記録機能追加、ダッシュボードUI改善
 - **2025-01-XX:** Firestore管理者APIキー管理機能追加、`gemini-2.5-flash-lite`への統一、429エラー自動リトライ機能追加
 - **2025-01-XX:** Firebase Hostingへの移行、カスタムドメイン（healthfinanse.jp）設定、PWA設定修正
 - **2025-11-06:** X風UI改善、健康管理機能強化

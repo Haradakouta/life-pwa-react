@@ -308,12 +308,11 @@ export const goalOperations = {
       .filter((goal) => goal.status === 'active');
   },
 
-  add: async (userId: string, goal: Omit<Goal, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.GOALS)),
-      goal
-    );
-    return docRef.id;
+  add: async (userId: string, goal: Goal) => {
+    // 指定されたIDでドキュメントを作成（IDの一貫性を保つため）
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.GOALS), goal.id);
+    await setDoc(docRef, goal);
+    return goal.id;
   },
 
   update: async (userId: string, id: string, goal: Partial<Goal>) => {

@@ -441,7 +441,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       return { goals: newGoals };
     });
 
-    // Firestoreに保存
+    // Firestoreに保存（IDを指定して保存）
     try {
       await goalOperations.add(user.uid, newGoal);
     } catch (error) {
@@ -482,11 +482,38 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     // Firestoreに保存
     try {
       await goalOperations.update(user.uid, id, cleanUpdates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('目標の更新に失敗しました:', error);
-      // Firestoreから再取得してロールバック
-      await get().syncWithFirestore();
-      throw error;
+      
+      // ドキュメントが存在しない場合は、目標全体を再作成
+      if (error?.code === 'not-found' || error?.message?.includes('No document to update')) {
+        const goal = get().goals.find((g) => g.id === id);
+        if (goal) {
+          try {
+            // 目標全体を再作成（更新内容を含む）
+            const updatedGoal = { ...goal, ...cleanUpdates };
+            await goalOperations.add(user.uid, updatedGoal);
+            console.log('目標を再作成しました:', id);
+          } catch (recreateError) {
+            console.error('目標の再作成に失敗しました:', recreateError);
+            // Firestoreから再取得してロールバック
+            await get().syncWithFirestore();
+            throw recreateError;
+          }
+        } else {
+          // ローカルにも存在しない場合は削除
+          set((state) => {
+            const newGoals = state.goals.filter((g) => g.id !== id);
+            saveToStorage(STORAGE_KEYS.GOALS, newGoals);
+            return { goals: newGoals };
+          });
+          throw new Error('目標が見つかりません');
+        }
+      } else {
+        // その他のエラーの場合はFirestoreから再取得してロールバック
+        await get().syncWithFirestore();
+        throw error;
+      }
     }
   },
 

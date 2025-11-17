@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useTransition, Suspense, useMemo, useDeferredValue } from 'react';
-import { MdArrowBack, MdEdit, MdLink, MdCalendarToday, MdChat } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdLink, MdCalendarToday } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
-import { getOrCreateConversation } from '../../utils/chat';
 import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
 import { getEquippedTitle } from '../../utils/title';
 import type { Title } from '../../types/title';
@@ -22,7 +21,6 @@ interface UserProfileScreenProps {
   onBack: () => void;
   onPostClick: (postId: string) => void;
   onUserClick: (userId: string) => void;
-  onNavigateToDM: (conversationId: string, participantIds: string[]) => void;
 }
 
 export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
@@ -30,7 +28,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
   onBack,
   onPostClick,
   onUserClick,
-  onNavigateToDM,
 }) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -113,17 +110,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
 
     fetchPosts();
   }, [userId, activeTab, profile, user?.uid]);
-
-  const handleSendMessageClick = async () => {
-    if (!user || !profile) return;
-    try {
-      const conversationId = await getOrCreateConversation(user.uid, profile.uid);
-      onNavigateToDM(conversationId, [user.uid, profile.uid]);
-    } catch (error) {
-      console.error('Failed to start DM:', error);
-      alert('DMの開始に失敗しました。');
-    }
-  };
 
   const handlePinToggle = async () => {
     startTransition(async () => {
@@ -257,7 +243,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
       <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '-40px', marginBottom: '12px' }}>
           <AvatarWithFrame userId={profile.uid} avatarUrl={profile.avatarUrl} size="medium" />
-          {isOwnProfile ? (
+          {isOwnProfile && (
             <button
               onClick={() => {
                 startTransition(() => {
@@ -291,37 +277,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
             >
               <MdEdit size={18} />
               プロフィールを編集
-            </button>
-          ) : (
-            <button
-              onClick={handleSendMessageClick}
-              className="message-button-modern"
-              style={{
-                padding: '10px 20px',
-                background: 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
-                border: 'none',
-                borderRadius: '24px',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-              }}
-            >
-              <MdChat size={18} />
-              メッセージ
             </button>
           )}
         </div>

@@ -4,17 +4,12 @@ import { PostDetailScreen } from './PostDetailScreen';
 import { UserProfileScreen } from './UserProfileScreen';
 import { SearchScreen } from './SearchScreen';
 import NotificationScreen from './NotificationScreen';
-import { ConversationListScreen } from './ConversationListScreen';
-import { ChatScreen } from './ChatScreen';
-import { RankingScreen } from './RankingScreen';
-import { MdHome, MdSearch, MdNotifications, MdChat, MdTrendingUp, MdPerson } from 'react-icons/md';
+import { MdHome, MdSearch, MdNotifications, MdPerson } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
-import { subscribeToConversations } from '../../utils/chat';
 import { subscribeToUnreadCount, markAllNotificationsAsRead } from '../../utils/notification';
-import type { Conversation } from '../../utils/chat';
 
-type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm' | 'ranking';
-type View = 'main' | 'post-detail' | 'profile' | 'chat';
+type SocialTab = 'timeline' | 'search' | 'notifications';
+type View = 'main' | 'post-detail' | 'profile';
 
 export const SocialScreen: React.FC = React.memo(() => {
   const { user } = useAuth();
@@ -22,29 +17,8 @@ export const SocialScreen: React.FC = React.memo(() => {
   const [currentView, setCurrentView] = useState<View>('main');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
-  const [dmUnreadCount, setDmUnreadCount] = useState(0);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [isPending, startTransition] = useTransition();
-
-  // DM未読数を取得
-  useEffect(() => {
-    if (!user) {
-      setDmUnreadCount(0);
-      return;
-    }
-
-    const unsubscribe = subscribeToConversations(user.uid, (conversations: Conversation[]) => {
-      const totalUnread = conversations.reduce((sum, conv) => {
-        const unread = conv.unreadCount?.[user.uid] || 0;
-        return sum + unread;
-      }, 0);
-      setDmUnreadCount(totalUnread);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
 
   // 通知の未読数を取得
   useEffect(() => {
@@ -74,21 +48,11 @@ export const SocialScreen: React.FC = React.memo(() => {
     });
   };
 
-  const handleNavigateToDM = (conversationId: string, participantIds: string[]) => {
-    startTransition(() => {
-      setSelectedConversationId(conversationId);
-      setSelectedParticipantIds(participantIds);
-      setCurrentView('chat');
-    });
-  };
-
   const handleBackToTimeline = () => {
     startTransition(() => {
       setCurrentView('main');
       setSelectedPostId(null);
       setSelectedUserId(null);
-      setSelectedConversationId(null);
-      setSelectedParticipantIds([]);
     });
   };
 
@@ -105,18 +69,6 @@ export const SocialScreen: React.FC = React.memo(() => {
     });
   };
 
-  // Chat画面
-  if (currentView === 'chat' && selectedConversationId) {
-    return (
-      <ChatScreen
-        conversationId={selectedConversationId}
-        participants={selectedParticipantIds}
-        onBack={handleBackToTimeline}
-        onNavigateToProfile={handleUserClick}
-      />
-    );
-  }
-
   // プロフィール画面
   if (currentView === 'profile' && selectedUserId) {
     return (
@@ -125,7 +77,6 @@ export const SocialScreen: React.FC = React.memo(() => {
         onBack={handleBackToTimeline}
         onPostClick={handlePostClick}
         onUserClick={handleUserClick}
-        onNavigateToDM={handleNavigateToDM}
       />
     );
   }
@@ -227,8 +178,6 @@ export const SocialScreen: React.FC = React.memo(() => {
           { id: 'timeline' as SocialTab, icon: MdHome, label: 'ホーム' },
           { id: 'search' as SocialTab, icon: MdSearch, label: '検索' },
           { id: 'notifications' as SocialTab, icon: MdNotifications, label: '通知', badge: notificationUnreadCount },
-          { id: 'dm' as SocialTab, icon: MdChat, label: 'DM', badge: dmUnreadCount },
-          { id: 'ranking' as SocialTab, icon: MdTrendingUp, label: 'ランキング' },
         ]).map((tab) => (
           <button
             key={tab.id}
@@ -239,24 +188,6 @@ export const SocialScreen: React.FC = React.memo(() => {
                   await markAllNotificationsAsRead(user.uid);
                 } catch (error) {
                   console.error('通知を既読にするエラー:', error);
-                }
-              }
-              if (tab.id === 'dm' && user && dmUnreadCount > 0) {
-                try {
-                  const { getConversations } = await import('../../utils/chat');
-                  const { doc, updateDoc } = await import('firebase/firestore');
-                  const { db } = await import('../../config/firebase');
-                  const conversations = await getConversations(user.uid);
-                  await Promise.all(
-                    conversations.map((conv) => {
-                      const conversationRef = doc(db, 'conversations', conv.id);
-                      return updateDoc(conversationRef, {
-                        [`unreadCount.${user.uid}`]: 0,
-                      });
-                    })
-                  );
-                } catch (error) {
-                  console.error('DM未読数をリセットするエラー:', error);
                 }
               }
             }}
@@ -331,18 +262,6 @@ export const SocialScreen: React.FC = React.memo(() => {
           {currentTab === 'notifications' && (
             <NotificationScreen
               onNavigateToPost={handlePostClick}
-            />
-          )}
-          {currentTab === 'dm' && (
-            <ConversationListScreen
-              onBack={handleBackToTimeline}
-              onNavigateToProfile={handleUserClick}
-            />
-          )}
-          {currentTab === 'ranking' && (
-            <RankingScreen
-              onPostClick={handlePostClick}
-              onUserClick={handleUserClick}
             />
           )}
         </Suspense>

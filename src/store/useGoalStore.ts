@@ -167,14 +167,26 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     const user = auth.currentUser;
     if (!user) throw new Error('ユーザーがログインしていません');
 
-    const newGoal: Goal = {
-      id: generateUUID(),
+    // undefinedのフィールドを削除（Firestoreはundefinedをサポートしない）
+    const goalData: Omit<Goal, 'id'> = {
       userId: user.uid,
       currentValue: 0,
       status: 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      ...data,
+      type: data.type,
+      title: data.title,
+      targetValue: data.targetValue,
+      unit: data.unit,
+      period: data.period,
+      startDate: data.startDate,
+      ...(data.description && { description: data.description }),
+      ...(data.endDate && { endDate: data.endDate }),
+    };
+
+    const newGoal: Goal = {
+      id: generateUUID(),
+      ...goalData,
     };
 
     // ローカル更新
@@ -203,10 +215,20 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     const user = auth.currentUser;
     if (!user) throw new Error('ユーザーがログインしていません');
 
+    // undefinedのフィールドを削除（Firestoreはundefinedをサポートしない）
+    const cleanUpdates: Record<string, unknown> = {};
+    Object.keys(updates).forEach((key) => {
+      const value = updates[key as keyof Goal];
+      if (value !== undefined) {
+        cleanUpdates[key] = value;
+      }
+    });
+    cleanUpdates.updatedAt = new Date().toISOString();
+
     // ローカル更新
     set((state) => {
       const newGoals = state.goals.map((goal) =>
-        goal.id === id ? { ...goal, ...updates, updatedAt: new Date().toISOString() } : goal
+        goal.id === id ? { ...goal, ...cleanUpdates } : goal
       );
       saveToStorage(STORAGE_KEYS.GOALS, newGoals);
       return { goals: newGoals };
@@ -214,7 +236,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
 
     // Firestoreに保存
     try {
-      await goalOperations.update(user.uid, id, updates);
+      await goalOperations.update(user.uid, id, cleanUpdates);
     } catch (error) {
       console.error('目標の更新に失敗しました:', error);
       // Firestoreから再取得してロールバック

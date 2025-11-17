@@ -7,6 +7,7 @@ import { useGoalStore } from '../../store/useGoalStore';
 import { GoalProgressCard } from './GoalProgressCard';
 import { GoalSettingScreen } from './GoalSettingScreen';
 import { MdAdd, MdFilterList } from 'react-icons/md';
+import type { GoalProgress } from '../../types';
 
 type GoalsView = 'list' | 'create' | 'edit';
 
@@ -16,6 +17,7 @@ export const GoalsScreen: React.FC = () => {
   const [editingGoalId, setEditingGoalId] = useState<string | undefined>();
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('active');
   const [isPending, startTransition] = useTransition();
+  const [progressMap, setProgressMap] = useState<Record<string, GoalProgress>>({});
 
   // 初期化とリアルタイム同期
   useEffect(() => {
@@ -55,6 +57,21 @@ export const GoalsScreen: React.FC = () => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [goals, filterStatus]);
+
+  // 目標の進捗を非同期で取得
+  useEffect(() => {
+    const updateProgresses = async () => {
+      const progresses: Record<string, GoalProgress> = {};
+      for (const goal of filteredGoals) {
+        const progress = await getGoalProgress(goal.id);
+        if (progress) {
+          progresses[goal.id] = progress;
+        }
+      }
+      setProgressMap(progresses);
+    };
+    updateProgresses();
+  }, [filteredGoals, getGoalProgress]);
 
   // 統計情報
   const stats = useMemo(() => {
@@ -330,7 +347,7 @@ export const GoalsScreen: React.FC = () => {
           <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>読み込み中...</div>}>
             <div>
               {filteredGoals.map((goal, index) => {
-                const progress = getGoalProgress(goal.id);
+                const progress = progressMap[goal.id];
                 if (!progress) return null;
                 return (
                   <div

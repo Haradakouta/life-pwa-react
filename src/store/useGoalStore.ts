@@ -23,7 +23,7 @@ interface GoalStore {
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   getActiveGoals: () => Goal[];
-  getGoalProgress: (goalId: string) => GoalProgress | null;
+  getGoalProgress: (goalId: string) => Promise<GoalProgress | null>;
   updateGoalProgress: (goalId: string) => Promise<void>;
   syncWithFirestore: () => Promise<void>;
   subscribeToFirestore: () => void;
@@ -134,46 +134,47 @@ const calculateRemaining = (goal: Goal, currentValue: number): number => {
 };
 
 // 目標の進捗を計算する関数
-const calculateGoalProgress = (goal: Goal): GoalProgress => {
-  const percentage = calculatePercentage(goal, goal.currentValue);
-  const remaining = calculateRemaining(goal, goal.currentValue);
+const calculateGoalProgress = async (goal: Goal): Promise<GoalProgress> => {
+  const updatedGoal = await updateGoalCurrentValue(goal);
+  const percentage = calculatePercentage(updatedGoal, updatedGoal.currentValue);
+  const remaining = calculateRemaining(updatedGoal, updatedGoal.currentValue);
   
   let daysRemaining: number | undefined;
   let averageDailyProgress: number | undefined;
   let estimatedCompletionDate: string | undefined;
   let isOnTrack = true;
 
-  if (goal.period === 'daily') {
+  if (updatedGoal.period === 'daily') {
     const today = new Date().toISOString().split('T')[0];
-    const startDate = new Date(goal.startDate);
+    const startDate = new Date(updatedGoal.startDate);
     const todayDate = new Date(today);
     const daysElapsed = Math.floor((todayDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
     if (daysElapsed > 0) {
-      averageDailyProgress = goal.currentValue / daysElapsed;
+      averageDailyProgress = updatedGoal.currentValue / daysElapsed;
       // 目標タイプに応じた必要進捗を計算
       let requiredDailyProgress: number;
-      if (goal.type === 'budget') {
+      if (updatedGoal.type === 'budget') {
         // 予算目標は目標値以下で達成
-        requiredDailyProgress = goal.targetValue / 1;
+        requiredDailyProgress = updatedGoal.targetValue / 1;
         isOnTrack = averageDailyProgress <= requiredDailyProgress * 1.2; // 120%以下で順調
-      } else if (goal.type === 'weight') {
+      } else if (updatedGoal.type === 'weight') {
         // 体重目標は目標設定時の現在体重と目標体重を比較
-        const initialWeight = goal.progressHistory?.[0]?.value || goal.currentValue;
-        if (goal.targetValue < initialWeight) {
-          // 減量目標: 1日あたりの減量ペース
-          const totalToLose = initialWeight - goal.targetValue;
-          requiredDailyProgress = totalToLose / 1;
-          isOnTrack = (initialWeight - averageDailyProgress) >= (initialWeight - goal.targetValue) * 0.8;
+        const initialWeight = updatedGoal.progressHistory?.[0]?.value || updatedGoal.currentValue;
+        if (updatedGoal.targetValue < initialWeight) {
+          // 減量目標
+          const totalToLose = initialWeight - updatedGoal.targetValue;
+          const lost = initialWeight - updatedGoal.currentValue;
+          isOnTrack = lost >= totalToLose * 0.8;
         } else {
-          // 増量目標: 1日あたりの増量ペース
-          const totalToGain = goal.targetValue - initialWeight;
-          requiredDailyProgress = totalToGain / 1;
-          isOnTrack = (averageDailyProgress - initialWeight) >= (goal.targetValue - initialWeight) * 0.8;
+          // 増量目標
+          const totalToGain = updatedGoal.targetValue - initialWeight;
+          const gained = updatedGoal.currentValue - initialWeight;
+          isOnTrack = gained >= totalToGain * 0.8;
         }
       } else {
         // カロリー・運動目標は目標値以上で達成
-        requiredDailyProgress = goal.targetValue / 1;
+        requiredDailyProgress = updatedGoal.targetValue / 1;
         isOnTrack = averageDailyProgress >= requiredDailyProgress * 0.8; // 80%以上で順調
       }
     }
@@ -323,7 +324,7 @@ const calculateGoalProgress = (goal: Goal): GoalProgress => {
 };
 
 // 目標の現在値を自動更新する関数
-const updateGoalCurrentValue = (goal: Goal): Goal => {
+const updateGoalCurrentValue = async (goal: Goal): Promise<Goal> => {
   const now = new Date();
   const today = now.toISOString().split('T')[0];
   
@@ -357,8 +358,10 @@ const updateGoalCurrentValue = (goal: Goal): Goal => {
       };
     }
   } else if (goal.type === 'exercise') {
-    // 運動記録はまだ実装されていないので、現在値はそのまま
-    currentValue = goal.currentValue;
+    // 運動記録から今日の運動時間を取得
+    const { useExerciseStore } = await import('./useExerciseStore');
+    const exerciseStore = useExerciseStore.getState();
+    currentValue = exerciseStore.getTotalDurationByDate(today);
   }
 
   return {
@@ -513,19 +516,18 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     return get().goals.filter((goal) => goal.status === 'active');
   },
 
-  getGoalProgress: (goalId) => {
+  getGoalProgress: async (goalId) => {
     const goal = get().goals.find((g) => g.id === goalId);
     if (!goal) return null;
     
-    const updatedGoal = updateGoalCurrentValue(goal);
-    return calculateGoalProgress(updatedGoal);
+    return await calculateGoalProgress(goal);
   },
 
   updateGoalProgress: async (goalId) => {
     const goal = get().goals.find((g) => g.id === goalId);
     if (!goal) return;
 
-    const updatedGoal = updateGoalCurrentValue(goal);
+    const updatedGoal = await updateGoalCurrentValue(goal);
 
     // 目標達成チェック（目標タイプに応じた達成条件を使用）
     const isAchieved = isGoalAchieved(updatedGoal, updatedGoal.currentValue);
@@ -580,7 +582,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     try {
       const goals = await goalOperations.getAll(user.uid);
       // 各目標の現在値を自動更新
-      const updatedGoals = goals.map(updateGoalCurrentValue);
+      const updatedGoals = await Promise.all(goals.map(updateGoalCurrentValue));
       set({ goals: updatedGoals, initialized: true });
       saveToStorage(STORAGE_KEYS.GOALS || 'goals', updatedGoals);
     } catch (error) {
@@ -595,9 +597,9 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
     const user = auth.currentUser;
     if (!user) return;
 
-    const unsubscribe = goalOperations.subscribe(user.uid, (goals) => {
+    const unsubscribe = goalOperations.subscribe(user.uid, async (goals) => {
       // 各目標の現在値を自動更新
-      const updatedGoals = goals.map(updateGoalCurrentValue);
+      const updatedGoals = await Promise.all(goals.map(updateGoalCurrentValue));
       set({ goals: updatedGoals });
       saveToStorage(STORAGE_KEYS.GOALS || 'goals', updatedGoals);
     });

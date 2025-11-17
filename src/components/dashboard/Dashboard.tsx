@@ -40,9 +40,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <section className="screen active dashboard-screen">
-      <div className="dashboard-header">
-        <h2 className="dashboard-title">ホーム</h2>
-        <div className="dashboard-subtitle">健康と家計を管理</div>
+      <div className="dashboard-header" style={{ padding: '12px 16px', marginBottom: '8px' }}>
+        <h2 className="dashboard-title" style={{ fontSize: '22px', marginBottom: '2px' }}>ホーム</h2>
+        <div className="dashboard-subtitle" style={{ fontSize: '13px' }}>健康と家計を管理</div>
       </div>
       <Suspense fallback={<SummaryCardSkeleton />}>
         <SummaryCard />

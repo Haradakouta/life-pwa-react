@@ -205,6 +205,12 @@ function App() {
       if (!user) {
         // ログアウト時はリアルタイム同期を停止
         intakeStore.unsubscribeFromFirestore();
+        import('./store/useGoalStore').then(({ useGoalStore }) => {
+          useGoalStore.getState().unsubscribeFromFirestore();
+        });
+        import('./store/useExerciseStore').then(({ useExerciseStore }) => {
+          useExerciseStore.getState().unsubscribeFromFirestore();
+        });
         return;
       }
 
@@ -234,7 +240,9 @@ function App() {
         }
 
         const { useGoalStore } = await import('./store/useGoalStore');
+        const { useExerciseStore } = await import('./store/useExerciseStore');
         const goalStore = useGoalStore.getState();
+        const exerciseStore = useExerciseStore.getState();
         
         await Promise.all([
           intakeStore.syncWithFirestore(),
@@ -244,10 +252,12 @@ function App() {
           recipeStore.syncWithFirestore(),
           settingsStore.syncWithFirestore(),
           goalStore.syncWithFirestore(),
+          exerciseStore.syncWithFirestore(),
         ]);
         
-        // 目標ストアのリアルタイム同期を開始
+        // 目標ストアと運動ストアのリアルタイム同期を開始
         goalStore.subscribeToFirestore();
+        exerciseStore.subscribeToFirestore();
         console.log('Sync completed for user:', user.uid);
 
         // ミッション進捗をチェック（ログイン時）
@@ -286,6 +296,12 @@ function App() {
     return () => {
       if (user) {
         intakeStore.unsubscribeFromFirestore();
+        import('./store/useGoalStore').then(({ useGoalStore }) => {
+          useGoalStore.getState().unsubscribeFromFirestore();
+        });
+        import('./store/useExerciseStore').then(({ useExerciseStore }) => {
+          useExerciseStore.getState().unsubscribeFromFirestore();
+        });
       }
     };
   }, [user?.uid]); // user.uidが変わったら再同期

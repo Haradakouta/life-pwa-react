@@ -41,6 +41,12 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
       color: '#3b82f6',
     },
     {
+      screen: 'exercise' as Screen,
+      icon: <MdTrendingUp size={32} />,
+      label: '運動記録',
+      color: '#ec4899',
+    },
+    {
       screen: 'barcode',
       icon: <MdCamera size={32} />,
       label: 'スキャン',

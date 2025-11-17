@@ -2,11 +2,12 @@
  * ダッシュボード用の目標サマリーコンポーネント
  * アクティブな目標の進捗を簡潔に表示
  */
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useGoalStore } from '../../store/useGoalStore';
 import { GoalProgressCard } from './GoalProgressCard';
 import { MdTrendingUp, MdAdd } from 'react-icons/md';
 import type { Screen } from '../layout/BottomNav';
+import type { GoalProgress } from '../../types';
 
 interface GoalsSummaryProps {
   onNavigate: (screen: Screen) => void;
@@ -14,6 +15,7 @@ interface GoalsSummaryProps {
 
 export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
   const { goals, getActiveGoals, getGoalProgress, syncWithFirestore, subscribeToFirestore, initialized } = useGoalStore();
+  const [progressMap, setProgressMap] = useState<Record<string, GoalProgress>>({});
 
   // 初期化とリアルタイム同期
   useEffect(() => {
@@ -26,9 +28,25 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
     };
   }, [initialized]);
 
-  // アクティブな目標を最大3つまで取得
+  // 目標の進捗を非同期で取得
+  useEffect(() => {
+    const updateProgresses = async () => {
+      const activeGoals = getActiveGoals().slice(0, 1);
+      const progresses: Record<string, GoalProgress> = {};
+      for (const goal of activeGoals) {
+        const progress = await getGoalProgress(goal.id);
+        if (progress) {
+          progresses[goal.id] = progress;
+        }
+      }
+      setProgressMap(progresses);
+    };
+    updateProgresses();
+  }, [goals, getActiveGoals, getGoalProgress]);
+
+  // アクティブな目標を最大1つまで取得（ダッシュボード用）
   const activeGoals = useMemo(() => {
-    return getActiveGoals().slice(0, 3);
+    return getActiveGoals().slice(0, 1);
   }, [goals]);
 
   // 目標がない場合の表示
@@ -126,7 +144,7 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
               目標進捗
             </h3>
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              {activeGoals.length}件のアクティブな目標
+              {getActiveGoals().length}件のアクティブな目標
             </div>
           </div>
         </div>
@@ -159,7 +177,7 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
       {/* 目標カード */}
       <div>
         {activeGoals.map((goal) => {
-          const progress = getGoalProgress(goal.id);
+          const progress = progressMap[goal.id];
           if (!progress) return null;
           return (
             <div key={goal.id} style={{ marginBottom: '12px' }}>

@@ -12,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal } from '../types';
+import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal, Exercise } from '../types';
 
 // コレクション名の定義
 const COLLECTIONS = {
@@ -23,6 +23,7 @@ const COLLECTIONS = {
   RECIPES: 'recipes',
   SETTINGS: 'settings',
   GOALS: 'goals',
+  EXERCISES: 'exercises',
 };
 
 // ユーザーIDベースのコレクションパスを取得
@@ -333,6 +334,47 @@ export const goalOperations = {
     return onSnapshot(q, (snapshot) => {
       const goals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Goal));
       callback(goals);
+    });
+  },
+};
+
+// 運動記録（Exercise）の操作
+export const exerciseOperations = {
+  getAll: async (userId: string): Promise<Exercise[]> => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES)),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Exercise));
+  },
+
+  add: async (userId: string, exercise: Omit<Exercise, 'id'>) => {
+    const docRef = await addDoc(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES)),
+      exercise
+    );
+    return docRef.id;
+  },
+
+  update: async (userId: string, id: string, exercise: Partial<Exercise>) => {
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES), id);
+    await updateDoc(docRef, exercise);
+  },
+
+  delete: async (userId: string, id: string) => {
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES), id);
+    await deleteDoc(docRef);
+  },
+
+  subscribe: (userId: string, callback: (exercises: Exercise[]) => void) => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES)),
+      orderBy('createdAt', 'desc')
+    );
+    return onSnapshot(q, (snapshot) => {
+      const exercises = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Exercise));
+      callback(exercises);
     });
   },
 };

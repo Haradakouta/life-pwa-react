@@ -59,4 +59,5 @@ export const STORAGE_KEYS = {
   SETTINGS: 'settings',
   BADGES: 'app-badges',
   GOALS: 'goals',
+  EXERCISES: 'exercises',
 } as const;

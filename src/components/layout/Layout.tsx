@@ -20,6 +20,7 @@ const BadgeScreen = lazy(() => import('../badges/BadgeScreen').then(m => ({ defa
 const SocialScreen = lazy(() => import('../social/SocialScreen').then(m => ({ default: m.SocialScreen })));
 const AdminScreen = lazy(() => import('../admin/AdminScreen').then(m => ({ default: m.AdminScreen })));
 const GoalsScreen = lazy(() => import('../goals/GoalsScreen').then(m => ({ default: m.GoalsScreen })));
+const ExerciseScreen = lazy(() => import('../exercise/ExerciseScreen').then(m => ({ default: m.ExerciseScreen })));
 
 // ローディングコンポーネント
 const ScreenLoader: React.FC = () => (
@@ -75,6 +76,7 @@ export const Layout: React.FC = () => {
       badges: 'アチーブメント',
       admin: '管理者パネル',
       goals: '目標管理',
+      exercise: '運動記録',
     };
     return titles[screen];
   };
@@ -119,6 +121,8 @@ export const Layout: React.FC = () => {
         return <AdminScreen {...screenProps} />;
       case 'goals':
         return <GoalsScreen />;
+      case 'exercise':
+        return <ExerciseScreen />;
       default:
         return <Dashboard {...screenProps} />;
     }

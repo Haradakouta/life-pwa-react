@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useExpenseStore, useShoppingStore, useStockStore, useIntakeStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
+import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart, MdInventory, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
 
 interface ReceiptResultProps {
@@ -190,6 +191,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             quantity: 1,
             daysRemaining: daysRemaining,
             price: item.price,
+            category: detectStockCategory(item.name),
           });
           addedCount++;
         }

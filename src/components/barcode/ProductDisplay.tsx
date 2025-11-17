@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useIntakeStore, useStockStore } from '../../store';
 import type { ProductInfo } from '../../types';
+import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdCheckCircle, MdRestaurant, MdInventory } from 'react-icons/md';
 
 interface ProductDisplayProps {
@@ -55,6 +56,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       quantity: 1,
       daysRemaining: Number(daysRemaining),
       price: price ? Number(price) : undefined,
+      category: detectStockCategory(product.name),
     });
 
     if (onNavigateToStock) {

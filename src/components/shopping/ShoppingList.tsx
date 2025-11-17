@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useShoppingStore, useStockStore } from '../../store';
+import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdDelete, MdInventory, MdCheckCircle } from 'react-icons/md';
 
 export const ShoppingList: React.FC = () => {
@@ -38,6 +39,7 @@ export const ShoppingList: React.FC = () => {
         name: item.name,
         quantity: item.quantity,
         daysRemaining: 7,
+        category: detectStockCategory(item.name),
       });
     });
 

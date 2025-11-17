@@ -4,6 +4,7 @@
 import React from 'react';
 import type { Recipe } from '../../types';
 import { useRecipeStore, useStockStore, useShoppingStore, useIntakeStore } from '../../store';
+import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdStar, MdStarBorder, MdInventory, MdShoppingCart, MdShare, MdRestaurantMenu } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
@@ -45,6 +46,7 @@ export const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onAttachTo
         name: ingredient,
         quantity: 1,
         daysRemaining: 7,
+        category: detectStockCategory(ingredient),
       });
     });
 

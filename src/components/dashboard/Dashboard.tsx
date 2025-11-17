@@ -2,10 +2,12 @@
  * Dashboard画面コンポーネント
  * React 19の機能を活用したモダンなUI
  */
-import React, { useTransition, Suspense } from 'react';
+import React, { useTransition, Suspense, lazy } from 'react';
 import { SummaryCard } from './SummaryCard';
 import { QuickActions } from './QuickActions';
 import type { Screen } from '../layout/BottomNav';
+
+const GoalsSummary = lazy(() => import('../goals/GoalsSummary').then(m => ({ default: m.GoalsSummary })));
 
 interface DashboardProps {
   onNavigate: (screen: Screen) => void;
@@ -44,6 +46,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
       <Suspense fallback={<SummaryCardSkeleton />}>
         <SummaryCard />
+      </Suspense>
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>読み込み中...</div>}>
+        <GoalsSummary onNavigate={handleNavigate} />
       </Suspense>
       <QuickActions onNavigate={handleNavigate} />
       {isPending && (

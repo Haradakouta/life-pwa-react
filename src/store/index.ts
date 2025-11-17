@@ -8,3 +8,4 @@ export { useShoppingStore } from './useShoppingStore';
 export { useRecipeStore } from './useRecipeStore';
 export { useSettingsStore } from './useSettingsStore';
 export { useBadgeStore } from './useBadgeStore';
+export { useGoalStore } from './useGoalStore';

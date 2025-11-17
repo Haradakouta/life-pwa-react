@@ -233,6 +233,9 @@ function App() {
           console.log('✅ プロフィールが存在します');
         }
 
+        const { useGoalStore } = await import('./store/useGoalStore');
+        const goalStore = useGoalStore.getState();
+        
         await Promise.all([
           intakeStore.syncWithFirestore(),
           expenseStore.syncWithFirestore(),
@@ -240,7 +243,11 @@ function App() {
           shoppingStore.syncWithFirestore(),
           recipeStore.syncWithFirestore(),
           settingsStore.syncWithFirestore(),
+          goalStore.syncWithFirestore(),
         ]);
+        
+        // 目標ストアのリアルタイム同期を開始
+        goalStore.subscribeToFirestore();
         console.log('Sync completed for user:', user.uid);
 
         // ミッション進捗をチェック（ログイン時）

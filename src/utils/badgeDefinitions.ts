@@ -82,6 +82,62 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     checkCondition: (data) => data.budgetAchieved,
   },
 
+  // 🎯 目標達成系
+  {
+    id: 'goal-first',
+    name: '目標達成者',
+    description: '初めて目標を達成しました！',
+    icon: '🎯',
+    category: 'goal',
+    requirement: '目標達成1回',
+    checkCondition: (data) => (data.goalsCompleted ?? 0) >= 1,
+  },
+  {
+    id: 'goal-calorie',
+    name: 'カロリーマスター',
+    description: 'カロリー目標を達成しました！',
+    icon: '🔥',
+    category: 'goal',
+    requirement: 'カロリー目標達成',
+    checkCondition: (data) => data.calorieGoalAchieved ?? false,
+  },
+  {
+    id: 'goal-budget-month',
+    name: '予算管理マスター',
+    description: '月次予算目標を達成しました！',
+    icon: '💰',
+    category: 'goal',
+    requirement: '月次予算目標達成',
+    checkCondition: (data) => data.monthlyBudgetGoalAchieved ?? false,
+  },
+  {
+    id: 'goal-weight',
+    name: '体重管理マスター',
+    description: '体重目標を達成しました！',
+    icon: '⚖️',
+    category: 'goal',
+    requirement: '体重目標達成',
+    checkCondition: (data) => data.weightGoalAchieved ?? false,
+  },
+  {
+    id: 'goal-5',
+    name: '目標達成の達人',
+    description: '5つの目標を達成しました！',
+    icon: '🏆',
+    category: 'goal',
+    requirement: '目標達成5回',
+    checkCondition: (data) => (data.goalsCompleted ?? 0) >= 5,
+  },
+  {
+    id: 'goal-10',
+    name: '目標達成のマスター',
+    description: '10つの目標を達成しました！',
+    icon: '👑',
+    category: 'goal',
+    requirement: '目標達成10回',
+    checkCondition: (data) => (data.goalsCompleted ?? 0) >= 10,
+  },
+
   // 🍽️ 機能活用系
   {
     id: 'feature-recipe-first',

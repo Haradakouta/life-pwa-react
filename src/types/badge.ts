@@ -33,4 +33,9 @@ export interface BadgeCheckData {
   budgetAchieved: boolean;
   recipesGenerated: number;
   barcodesScanned: number;
+  // 目標達成関連
+  goalsCompleted?: number;
+  calorieGoalAchieved?: boolean;
+  monthlyBudgetGoalAchieved?: boolean;
+  weightGoalAchieved?: boolean;
 }

@@ -12,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings } from '../types';
+import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal } from '../types';
 
 // コレクション名の定義
 const COLLECTIONS = {
@@ -22,6 +22,7 @@ const COLLECTIONS = {
   SHOPPING: 'shopping',
   RECIPES: 'recipes',
   SETTINGS: 'settings',
+  GOALS: 'goals',
 };
 
 // ユーザーIDベースのコレクションパスを取得
@@ -280,6 +281,58 @@ export const settingsOperations = {
         const settings = snapshot.docs[0].data() as Settings;
         callback(settings);
       }
+    });
+  },
+};
+
+// 目標（Goal）の操作
+export const goalOperations = {
+  getAll: async (userId: string): Promise<Goal[]> => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.GOALS)),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Goal));
+  },
+
+  getActive: async (userId: string): Promise<Goal[]> => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.GOALS)),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() } as Goal))
+      .filter((goal) => goal.status === 'active');
+  },
+
+  add: async (userId: string, goal: Omit<Goal, 'id'>) => {
+    const docRef = await addDoc(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.GOALS)),
+      goal
+    );
+    return docRef.id;
+  },
+
+  update: async (userId: string, id: string, goal: Partial<Goal>) => {
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.GOALS), id);
+    await updateDoc(docRef, { ...goal, updatedAt: new Date().toISOString() });
+  },
+
+  delete: async (userId: string, id: string) => {
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.GOALS), id);
+    await deleteDoc(docRef);
+  },
+
+  subscribe: (userId: string, callback: (goals: Goal[]) => void) => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.GOALS)),
+      orderBy('createdAt', 'desc')
+    );
+    return onSnapshot(q, (snapshot) => {
+      const goals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Goal));
+      callback(goals);
     });
   },
 };

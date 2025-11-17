@@ -13,7 +13,8 @@ import {
   MdShoppingCart,
   MdBarChart,
   MdSettings,
-  MdEmojiEvents
+  MdEmojiEvents,
+  MdTrendingUp
 } from 'react-icons/md';
 
 interface QuickActionsProps {
@@ -80,6 +81,12 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
       icon: <MdEmojiEvents size={32} />,
       label: 'バッジ',
       color: '#f59e0b',
+    },
+    {
+      screen: 'goals' as Screen,
+      icon: <MdTrendingUp size={32} />,
+      label: '目標',
+      color: '#6366f1',
     },
     {
       screen: 'settings',

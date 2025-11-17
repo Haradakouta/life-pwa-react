@@ -29,7 +29,7 @@ interface FunctionCard {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigate }) => {
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const functionCards: FunctionCard[] = useMemo(() => [
@@ -89,7 +89,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
     },
   ], []);
 
-  const handleClick = useCallback((card: FunctionCard, index: number) => {
+        const handleClick = useCallback((card: FunctionCard) => {
     startTransition(() => {
       if (card.onClick) {
         card.onClick();
@@ -111,7 +111,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
               '--card-color': card.color,
               '--card-index': index,
             } as React.CSSProperties & { '--card-index': number }}
-            onClick={() => handleClick(card, index)}
+                  onClick={() => handleClick(card)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             aria-label={card.label}

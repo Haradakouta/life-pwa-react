@@ -12,6 +12,7 @@ export interface Settings {
   savings?: number; // 貯金額（円）
   weightHistory?: WeightRecord[]; // 体重履歴（週次記録用）
   lastWeightInputDate?: string; // 最後に体重を入力した日（ISO形式）
+  geminiApiKey?: string; // Gemini APIキー（ユーザーが各自設定）
 }
 
 export interface WeightRecord {

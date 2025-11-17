@@ -3,7 +3,7 @@
  * オフライン対応とキャッシュ管理
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `life-pwa-react-${CACHE_VERSION}`;
 
 // キャッシュするリソース
@@ -53,7 +53,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// フェッチ時（ネットワーク優先戦略）
+// フェッチ時（ネットワーク優先戦略、アセットファイルはキャッシュしない）
 self.addEventListener('fetch', (event) => {
   // POSTリクエストやAPIリクエストはキャッシュしない
   if (event.request.method !== 'GET') {
@@ -65,10 +65,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const url = new URL(event.request.url);
+
+  // アセットファイル（/assets/）はキャッシュしない（常にネットワークから取得）
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // ネットワークエラー時のみエラーを返す（キャッシュからは返さない）
+        return new Response('Failed to fetch asset', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // レスポンスが有効な場合のみキャッシュ
+        // 静的リソース（HTML、manifest、アイコンなど）のみキャッシュ
         if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
 
@@ -80,7 +96,7 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // ネットワークエラー時はキャッシュから返す
+        // ネットワークエラー時はキャッシュから返す（静的リソースのみ）
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             console.log('[SW] Serving from cache:', event.request.url);

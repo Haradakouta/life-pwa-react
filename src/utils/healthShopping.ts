@@ -4,6 +4,7 @@
 
 import type { Settings } from '../types/settings';
 import type { Intake } from '../types/intake';
+import { useSettingsStore } from '../store';
 
 export interface HealthShoppingRecommendation {
     items: Array<{
@@ -30,8 +31,21 @@ export async function getHealthBasedShoppingList(
 
     // Gemini APIを使用して健康目標に基づいた食材を提案
     try {
-        const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBSqmtDaNAqF09NTYYKQsTKm-3fLl1LMr0';
-        const API_ENABLED = !!GEMINI_API_KEY && GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE';
+        // 運営者のAPIキーを取得（環境変数から取得、なければデフォルト）
+        const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+        const operatorKey = (envKey && envKey !== 'YOUR_GEMINI_API_KEY_HERE')
+            ? envKey
+            : 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M'; // 新しい運営者APIキー
+
+        // ユーザーのAPIキーを取得（設定から取得）
+        const userSettings = useSettingsStore.getState().settings;
+        const userKey = userSettings.geminiApiKey && userSettings.geminiApiKey.trim() !== ''
+            ? userSettings.geminiApiKey.trim()
+            : null;
+
+        // 優先順位: ユーザーのAPIキー > 運営者のAPIキー
+        const GEMINI_API_KEY = userKey || operatorKey;
+        const API_ENABLED = !!GEMINI_API_KEY;
 
         if (!API_ENABLED) {
             // APIが無効な場合は、基本的な推奨リストを返す
@@ -99,59 +113,23 @@ ${getHealthGoal(bmi)}
 
         if (!response.ok) {
             const errorText = await response.text();
-            let errorData: any;
+            let errorData: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
             try {
                 errorData = JSON.parse(errorText);
             } catch {
                 errorData = { rawError: errorText };
             }
-            
-            // 403エラーの詳細をログ出力
-            if (response.status === 403) {
-                console.error('[Health Shopping] 403エラー詳細', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorData: errorData,
-                    errorMessage: errorData.error?.message,
-                    errorCode: errorData.error?.code,
-                    apiKeyPrefix: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'なし',
-                    model: 'gemini-2.5-flash-lite',
-                });
-                
-                // 403エラーの一般的な原因を表示
-                console.error('[Health Shopping] 403エラーの一般的な原因:');
-                console.error('  1. APIキーが無効または期限切れ');
-                console.error('  2. APIキーに必要な権限がない（Google Cloud Consoleで確認）');
-                console.error('  3. 請求情報が未設定（Google AI Studioで課金を有効化）');
-                console.error('  4. APIキーにIP制限やリファラー制限が設定されている');
-                console.error('  5. モデル名が正しくない');
-                console.error('  6. APIキーの使用制限に達している（1日あたりの制限など）');
-                
-                // エラーメッセージから原因を推測
-                if (errorData.error?.message) {
-                    const errorMsg = errorData.error.message.toLowerCase();
-                    if (errorMsg.includes('permission') || errorMsg.includes('permission denied')) {
-                        console.error('  → 原因: APIキーに権限がありません');
-                    } else if (errorMsg.includes('quota') || errorMsg.includes('limit')) {
-                        console.error('  → 原因: 使用制限に達しています');
-                    } else if (errorMsg.includes('billing') || errorMsg.includes('payment')) {
-                        console.error('  → 原因: 請求情報が未設定です');
-                    } else if (errorMsg.includes('invalid') || errorMsg.includes('key')) {
-                        console.error('  → 原因: APIキーが無効です');
-                    }
-                }
-            }
-            
-            // 403エラーの場合
-            if (response.status === 403) {
-                let errorMessage = 'Gemini API 403エラー: APIキーが無効または権限が不足しています';
-                if (errorData.error?.message) {
-                    errorMessage += ` (${errorData.error.message})`;
-                }
-                throw new Error(errorMessage);
-            }
-            
-            throw new Error(`Gemini API エラー: ${response.status}`);
+
+            // エラーをログ出力
+            console.error('[Health Shopping] APIエラー', {
+                status: response.status,
+                statusText: response.statusText,
+                errorMessage: errorData.error?.message,
+            });
+
+            // エラーが発生した場合は基本的な推奨リストを返す
+            console.warn('[Health Shopping] APIエラーのため、基本的な推奨リストを返します');
+            return getBasicHealthRecommendation(bmi);
         }
 
         const data = await response.json();

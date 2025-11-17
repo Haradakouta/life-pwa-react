@@ -127,7 +127,8 @@ export async function getAIHealthAnalysis(
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+      // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {

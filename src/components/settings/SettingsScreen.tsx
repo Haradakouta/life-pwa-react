@@ -1,9 +1,9 @@
 /**
  * 設定画面コンポーネント
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
@@ -52,12 +52,26 @@ export const SettingsScreen: React.FC = () => {
   const [showDailyMission, setShowDailyMission] = useState(false);
   const [showCosmeticShop, setShowCosmeticShop] = useState(false);
   const [showHealthSetting, setShowHealthSetting] = useState(false);
+  const [apiKey, setApiKey] = useState(settings.geminiApiKey || '');
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  // 設定が変更されたらAPIキー入力欄を更新
+  useEffect(() => {
+    setApiKey(settings.geminiApiKey || '');
+  }, [settings.geminiApiKey]);
 
   const handleSaveSettings = () => {
     updateSettings({
       monthlyBudget: Number(budget),
     });
     alert('設定を保存しました！');
+  };
+
+  const handleSaveApiKey = () => {
+    updateSettings({
+      geminiApiKey: apiKey.trim() || undefined,
+    });
+    alert('APIキーを保存しました！');
   };
 
   const handleExportCSV = () => {
@@ -388,6 +402,70 @@ export const SettingsScreen: React.FC = () => {
             </p>
           )}
         </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdKey size={24} color="var(--primary)" />
+          AI設定（Gemini API）
+        </h3>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          AI機能（レシピ生成、レシートOCR、カロリー計測など）を使用するには、Google Gemini APIキーが必要です。
+          <br />
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--primary)', textDecoration: 'underline' }}
+          >
+            APIキーを取得する
+          </a>
+        </p>
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <input
+            type={showApiKey ? 'text' : 'password'}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="AIzaSy..."
+            style={{
+              width: '100%',
+              padding: '12px 40px 12px 12px',
+              fontSize: '14px',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              background: 'var(--background)',
+              color: 'var(--text)',
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowApiKey(!showApiKey)}
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {showApiKey ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
+          </button>
+        </div>
+        <button className="submit" onClick={handleSaveApiKey}>
+          <MdSave size={18} style={{ marginRight: '8px' }} />
+          APIキーを保存
+        </button>
+        {settings.geminiApiKey && (
+          <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginTop: '8px', marginBottom: '0' }}>
+            ✓ APIキーが設定されています
+          </p>
+        )}
       </div>
 
       <div className="card">

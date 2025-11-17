@@ -83,7 +83,37 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
       onRecipeGenerated(newRecipe);
     } catch (error) {
       console.error('レシピ生成エラー:', error);
-      alert('レシピの生成に失敗しました。もう一度お試しください。');
+      interface ErrorWithStatus extends Error {
+        status?: number;
+        errorData?: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
+      }
+
+      console.error('エラー詳細:', {
+        error: error,
+        errorType: typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        hasStatus: error instanceof Error && 'status' in error,
+        status: error instanceof Error && 'status' in error ? (error as ErrorWithStatus).status : undefined,
+        errorData: error instanceof Error && 'errorData' in error ? (error as ErrorWithStatus).errorData : undefined,
+      });
+
+      let errorMessage = 'レシピの生成に失敗しました。';
+      if (error instanceof Error) {
+        errorMessage += `\n\n${error.message}`;
+
+        // エラーの種類に応じた追加情報
+        if (error.message.includes('403') || error.message.includes('無効') || error.message.includes('権限')) {
+          errorMessage += '\n\n【対処法】\n1. 設定画面でAPIキーを確認してください\n2. APIキーが正しく入力されているか確認してください\n3. Google AI StudioでAPIキーが有効か確認してください';
+        } else if (error.message.includes('429') || error.message.includes('制限')) {
+          errorMessage += '\n\n【対処法】\n1. しばらく待ってから再度お試しください\n2. API使用量を確認してください';
+        } else if (error.message.includes('ネットワーク') || error.message.includes('Failed to fetch')) {
+          errorMessage += '\n\n【対処法】\n1. インターネット接続を確認してください\n2. ファイアウォールやプロキシの設定を確認してください';
+        } else if (error.message.includes('400') || error.message.includes('リクエスト形式')) {
+          errorMessage += '\n\n【対処法】\n1. 材料を正しく入力してください\n2. しばらく待ってから再度お試しください';
+        }
+      }
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +148,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         }}
         disabled={isLoading}
       >
-<MdInventory size={18} style={{ marginRight: '6px' }} />
+        <MdInventory size={18} style={{ marginRight: '6px' }} />
         在庫の材料を使う
       </button>
 

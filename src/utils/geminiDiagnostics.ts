@@ -3,7 +3,7 @@
  * 403エラーの原因を調査するためのユーティリティ
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBSqmtDaNAqF09NTYYKQsTKm-3fLl1LMr0';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
 
 /**
  * APIキーの基本情報を取得
@@ -35,7 +35,7 @@ export async function testModelAvailability(modelName: string): Promise<{
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -61,23 +61,24 @@ export async function testModelAvailability(modelName: string): Promise<{
       return { available: true, status: response.status };
     } else {
       const errorText = await response.text();
-      let errorData: any;
+      let errorData: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
       try {
         errorData = JSON.parse(errorText);
       } catch {
         errorData = { rawError: errorText };
       }
-      
+
       return {
         available: false,
         error: errorData.error?.message || errorText,
         status: response.status,
       };
     }
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       available: false,
-      error: error.message || 'テストに失敗しました',
+      error: errorMessage || 'テストに失敗しました',
     };
   }
 }
@@ -99,8 +100,14 @@ export async function testAllModels(): Promise<{
     'gemini-2.5-flash-lite',
   ];
 
-  const results: { [key: string]: any } = {};
-  
+  const results: {
+    [key: string]: {
+      available: boolean;
+      error?: string;
+      status?: number;
+    };
+  } = {};
+
   for (const model of models) {
     console.log(`[診断] ${model}をテスト中...`);
     results[model] = await testModelAvailability(model);

@@ -124,10 +124,11 @@ export const Layout: React.FC = () => {
     <>
       <Header title={getScreenTitle(currentScreen)} currentScreen={currentScreen} onNavigate={handleNavigate} />
       <main 
-        className={`screen-transition ${isTransitioning ? 'transitioning' : ''}`}
+        className={`screen-transition-modern ${isTransitioning ? 'transitioning' : ''}`}
         style={{
           opacity: isTransitioning ? 0.7 : 1,
-          transition: 'opacity 0.3s ease-in-out',
+          transform: isTransitioning ? 'translateY(10px)' : 'translateY(0)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <Suspense fallback={<ScreenLoader />}>

@@ -198,6 +198,13 @@ service cloud.firestore {
       allow delete: if false; // 削除は不可
     }
 
+    // 管理者設定（全ユーザーが読み取り可能、認証済みユーザーが書き込み可能）
+    // 注意: 実際の管理者チェックはアプリケーション側（AdminScreen）で行う
+    match /admin/config {
+      allow read: if true; // 全ユーザーが読み取り可能（APIキー取得のため、認証不要）
+      allow write: if isAuth(); // 認証済みユーザーは書き込み可能（管理者画面から設定）
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

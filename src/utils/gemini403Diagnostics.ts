@@ -3,7 +3,7 @@
  * 403エラーの詳細な原因を調査するためのユーティリティ
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBSqmtDaNAqF09NTYYKQsTKm-3fLl1LMr0';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
 
 export interface DiagnosticResult {
   timestamp: string;
@@ -16,7 +16,7 @@ export interface DiagnosticResult {
     [modelName: string]: {
       status: number;
       error?: string;
-      errorDetails?: any;
+      errorDetails?: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
     };
   };
   recommendations: string[];
@@ -54,18 +54,19 @@ export async function diagnose403Error(): Promise<DiagnosticResult> {
     try {
       const testResult = await testModel(model);
       result.testResults[model] = testResult;
-      
+
       if (testResult.status === 403) {
         // 403エラーの詳細を分析
         analyze403Error(testResult, result);
       }
-      
+
       // レート制限を避けるため、少し待機
       await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       result.testResults[model] = {
         status: 0,
-        error: error.message || 'テストに失敗しました',
+        error: errorMessage || 'テストに失敗しました',
       };
     }
   }
@@ -82,11 +83,11 @@ export async function diagnose403Error(): Promise<DiagnosticResult> {
 async function testModel(modelName: string): Promise<{
   status: number;
   error?: string;
-  errorDetails?: any;
+  errorDetails?: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
 }> {
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -112,23 +113,24 @@ async function testModel(modelName: string): Promise<{
       return { status: response.status };
     } else {
       const errorText = await response.text();
-      let errorData: any;
+      let errorData: { error?: { message?: string; code?: number; status?: string }; rawError?: string };
       try {
         errorData = JSON.parse(errorText);
       } catch {
         errorData = { rawError: errorText };
       }
-      
+
       return {
         status: response.status,
         error: errorData.error?.message || errorText,
         errorDetails: errorData,
       };
     }
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       status: 0,
-      error: error.message || 'テストに失敗しました',
+      error: errorMessage || 'テストに失敗しました',
     };
   }
 }
@@ -136,7 +138,10 @@ async function testModel(modelName: string): Promise<{
 /**
  * 403エラーを分析
  */
-function analyze403Error(testResult: { error?: string; errorDetails?: any }, result: DiagnosticResult): void {
+function analyze403Error(
+  testResult: { error?: string; errorDetails?: { error?: { message?: string; code?: number; status?: string }; rawError?: string } },
+  result: DiagnosticResult
+): void {
   if (!testResult.error) return;
 
   const errorMsg = testResult.error.toLowerCase();

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
+import { adminOperations } from '../../utils/firestore';
+import { clearOperatorApiKeyCache } from '../../api/gemini';
+import { MdKey, MdVisibility, MdVisibilityOff, MdSave } from 'react-icons/md';
 import app from '../../config/firebase';
 
 interface AdminScreenProps {
@@ -14,6 +17,9 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [loadingApiKey, setLoadingApiKey] = useState(false);
 
   // deleteAllPostsとdeleteAllFollowsはus-central1リージョンにデプロイされている
   const functions = getFunctions(app, 'us-central1');
@@ -31,6 +37,11 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
         const profile = await getUserProfile(user.uid);
         if (profile && profile.username === 'haachan') {
           setIsAdmin(true);
+          // 管理者の場合、現在のAPIキーを取得
+          const config = await adminOperations.getConfig();
+          if (config?.geminiApiKey) {
+            setApiKey(config.geminiApiKey);
+          }
         } else {
           setIsAdmin(false);
         }
@@ -43,6 +54,32 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
     };
     checkAdmin();
   }, [user]);
+
+  const handleSaveApiKey = async () => {
+    if (!user) return;
+
+    setLoadingApiKey(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      await adminOperations.updateConfig(
+        { geminiApiKey: apiKey.trim() || undefined },
+        user.uid
+      );
+
+      // キャッシュをクリア
+      clearOperatorApiKeyCache();
+
+      setMessage('運営者APIキーを保存しました。キャッシュをクリアしました。');
+    } catch (e) {
+      console.error("Error saving API key:", e);
+      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
+      setError(`APIキーの保存に失敗しました: ${errorMessage}`);
+    } finally {
+      setLoadingApiKey(false);
+    }
+  };
 
   const handleDeleteAllPosts = async () => {
     if (!window.confirm('本当にすべての投稿を削除しますか？この操作は元に戻せません。')) return;
@@ -85,50 +122,131 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
       <h2 style={{ fontSize: '24px', marginBottom: '20px', color: 'var(--text)' }}>管理者パネル</h2>
       {message && <div style={{ background: '#d4edda', color: '#155724', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{message}</div>}
       {error && <div style={{ background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{error}</div>}
-      
-      <button 
-        onClick={handleDeleteAllPosts} 
-        style={{ 
-          width: '100%', 
-          padding: '15px', 
-          background: '#dc3545', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '5px', 
-          fontSize: '18px', 
-          cursor: 'pointer', 
-          marginBottom: '10px' 
+
+      <div style={{
+        background: 'var(--card-background)',
+        padding: '20px',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        border: '2px solid var(--border)'
+      }}>
+        <h3 style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '15px',
+          color: 'var(--text)'
+        }}>
+          <MdKey size={24} color="var(--primary)" />
+          運営者Gemini APIキー設定
+        </h3>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          全ユーザーが使用する運営者APIキーを設定します。
+          <br />
+          このAPIキーはFirestoreの`admin/config`コレクションに保存されます。
+        </p>
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <input
+            type={showApiKey ? 'text' : 'password'}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="AIzaSy..."
+            style={{
+              width: '100%',
+              padding: '12px 40px 12px 12px',
+              fontSize: '14px',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              background: 'var(--background)',
+              color: 'var(--text)',
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowApiKey(!showApiKey)}
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {showApiKey ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
+          </button>
+        </div>
+        <button
+          onClick={handleSaveApiKey}
+          disabled={loadingApiKey}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: loadingApiKey ? 'var(--border)' : 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            cursor: loadingApiKey ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
+          <MdSave size={18} />
+          {loadingApiKey ? '保存中...' : 'APIキーを保存'}
+        </button>
+      </div>
+
+      <button
+        onClick={handleDeleteAllPosts}
+        style={{
+          width: '100%',
+          padding: '15px',
+          background: '#dc3545',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          fontSize: '18px',
+          cursor: 'pointer',
+          marginBottom: '10px'
         }}
       >
         すべての投稿を削除
       </button>
-      <button 
-        onClick={handleDeleteAllFollows} 
-        style={{ 
-          width: '100%', 
-          padding: '15px', 
-          background: '#dc3545', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '5px', 
-          fontSize: '18px', 
-          cursor: 'pointer' 
+      <button
+        onClick={handleDeleteAllFollows}
+        style={{
+          width: '100%',
+          padding: '15px',
+          background: '#dc3545',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          fontSize: '18px',
+          cursor: 'pointer'
         }}
       >
         すべてのフォロー関係を削除
       </button>
-      <button 
-        onClick={onBack} 
-        style={{ 
-          width: '100%', 
-          padding: '15px', 
-          background: 'var(--background)', 
-          color: 'var(--text)', 
-          border: '1px solid var(--border)', 
-          borderRadius: '5px', 
-          fontSize: '18px', 
-          cursor: 'pointer', 
-          marginTop: '20px' 
+      <button
+        onClick={onBack}
+        style={{
+          width: '100%',
+          padding: '15px',
+          background: 'var(--background)',
+          color: 'var(--text)',
+          border: '1px solid var(--border)',
+          borderRadius: '5px',
+          fontSize: '18px',
+          cursor: 'pointer',
+          marginTop: '20px'
         }}
       >
         戻る

@@ -5,6 +5,8 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  getDoc,
+  setDoc,
   query,
   orderBy,
   onSnapshot,
@@ -279,5 +281,53 @@ export const settingsOperations = {
         callback(settings);
       }
     });
+  },
+};
+
+// 管理者設定（Admin Config）の操作
+export interface AdminConfig {
+  geminiApiKey?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const adminOperations = {
+  // 管理者設定を取得
+  getConfig: async (): Promise<AdminConfig | null> => {
+    try {
+      const docRef = doc(db, 'admin', 'config');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data() as AdminConfig;
+      }
+      return null;
+    } catch (error) {
+      // エラーをログに記録するが、例外を投げない（フォールバックを使用）
+      console.warn('[Admin] Failed to get config (will use fallback):', error);
+      return null;
+    }
+  },
+
+  // 管理者設定を更新（管理者のみ）
+  updateConfig: async (config: Partial<AdminConfig>, userId?: string): Promise<void> => {
+    try {
+      const docRef = doc(db, 'admin', 'config');
+      const docSnap = await getDoc(docRef);
+
+      const updateData: Record<string, unknown> = {
+        ...config,
+        updatedAt: new Date().toISOString(),
+        ...(userId && { updatedBy: userId }),
+      };
+
+      if (docSnap.exists()) {
+        await updateDoc(docRef, updateData);
+      } else {
+        await setDoc(docRef, updateData);
+      }
+    } catch (error) {
+      console.error('[Admin] Failed to update config:', error);
+      throw error;
+    }
   },
 };

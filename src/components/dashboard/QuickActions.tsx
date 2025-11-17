@@ -1,7 +1,8 @@
 /**
  * クイックアクションコンポーネント（3x3グリッド）
+ * React 19のuseTransitionとstartTransitionを活用
  */
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useTransition } from 'react';
 import type { Screen } from '../layout/BottomNav';
 import {
   MdRestaurant,
@@ -27,7 +28,10 @@ interface FunctionCard {
   onClick?: () => void;
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
+export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigate }) => {
+  const [isPending, startTransition] = useTransition();
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const functionCards: FunctionCard[] = useMemo(() => [
     {
       screen: 'meals',
@@ -85,27 +89,72 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
     },
   ], []);
 
-  const handleClick = useCallback((card: FunctionCard) => {
-    if (card.onClick) {
-      card.onClick();
-    } else if (card.screen) {
-      onNavigate(card.screen);
-    }
+  const handleClick = useCallback((card: FunctionCard, index: number) => {
+    startTransition(() => {
+      if (card.onClick) {
+        card.onClick();
+      } else if (card.screen) {
+        onNavigate(card.screen);
+      }
+    });
   }, [onNavigate]);
 
   return (
-    <div className="function-grid">
-      {functionCards.map((card, index) => (
-        <button
-          key={index}
-          className="function-card"
-          style={{ '--card-color': card.color } as React.CSSProperties}
-          onClick={() => handleClick(card)}
-        >
-          <div className="function-icon" style={{ color: card.color }}>{card.icon}</div>
-          <div className="function-label">{card.label}</div>
-        </button>
-      ))}
+    <div className="function-grid-modern">
+      {functionCards.map((card, index) => {
+        const isHovered = hoveredIndex === index;
+        return (
+          <button
+            key={index}
+            className={`function-card-modern ${isHovered ? 'hovered' : ''}`}
+            style={{ 
+              '--card-color': card.color,
+              '--card-index': index,
+            } as React.CSSProperties & { '--card-index': number }}
+            onClick={() => handleClick(card, index)}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            aria-label={card.label}
+          >
+            <div 
+              className="function-icon-modern" 
+              style={{ 
+                color: card.color,
+                transform: isHovered ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+            >
+              {card.icon}
+            </div>
+            <div 
+              className="function-label-modern"
+              style={{
+                transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+            >
+              {card.label}
+            </div>
+            {isHovered && (
+              <div 
+                className="function-ripple"
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, ${card.color}20 0%, transparent 70%)`,
+                  transform: 'translate(-50%, -50%)',
+                  animation: 'ripple 0.6s ease-out',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
-};
+});

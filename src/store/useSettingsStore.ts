@@ -49,6 +49,21 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       try {
         const currentSettings = get().settings;
         await settingsOperations.set(user.uid, currentSettings);
+        
+        // 体重目標の進捗を自動更新（体重が変更された場合）
+        if ('weight' in updates) {
+          try {
+            const { useGoalStore } = await import('./useGoalStore');
+            const goalStore = useGoalStore.getState();
+            const activeGoals = goalStore.getActiveGoals();
+            const weightGoals = activeGoals.filter((g) => g.type === 'weight');
+            for (const goal of weightGoals) {
+              await goalStore.updateGoalProgress(goal.id);
+            }
+          } catch (error) {
+            console.debug('目標進捗更新エラー:', error);
+          }
+        }
       } catch (error) {
         console.error('Failed to update settings in Firestore:', error);
       }

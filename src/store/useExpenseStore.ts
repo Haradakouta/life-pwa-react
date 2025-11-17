@@ -48,6 +48,19 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     if (user) {
       try {
         await expenseOperations.add(user.uid, newExpense);
+        
+        // 予算目標の進捗を自動更新
+        try {
+          const { useGoalStore } = await import('./useGoalStore');
+          const goalStore = useGoalStore.getState();
+          const activeGoals = goalStore.getActiveGoals();
+          const budgetGoals = activeGoals.filter((g) => g.type === 'budget');
+          for (const goal of budgetGoals) {
+            await goalStore.updateGoalProgress(goal.id);
+          }
+        } catch (error) {
+          console.debug('目標進捗更新エラー:', error);
+        }
       } catch (error) {
         console.error('Failed to add expense to Firestore:', error);
       }
@@ -66,6 +79,19 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     if (user) {
       try {
         await expenseOperations.delete(user.uid, id);
+        
+        // 予算目標の進捗を自動更新
+        try {
+          const { useGoalStore } = await import('./useGoalStore');
+          const goalStore = useGoalStore.getState();
+          const activeGoals = goalStore.getActiveGoals();
+          const budgetGoals = activeGoals.filter((g) => g.type === 'budget');
+          for (const goal of budgetGoals) {
+            await goalStore.updateGoalProgress(goal.id);
+          }
+        } catch (error) {
+          console.debug('目標進捗更新エラー:', error);
+        }
       } catch (error) {
         console.error('Failed to delete expense from Firestore:', error);
       }

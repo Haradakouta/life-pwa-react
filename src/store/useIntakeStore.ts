@@ -57,6 +57,19 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
     if (user) {
       try {
         await intakeOperations.add(user.uid, newIntake);
+        
+        // カロリー目標の進捗を自動更新
+        try {
+          const { useGoalStore } = await import('./useGoalStore');
+          const goalStore = useGoalStore.getState();
+          const activeGoals = goalStore.getActiveGoals();
+          const calorieGoals = activeGoals.filter((g) => g.type === 'calorie');
+          for (const goal of calorieGoals) {
+            await goalStore.updateGoalProgress(goal.id);
+          }
+        } catch (error) {
+          console.debug('目標進捗更新エラー:', error);
+        }
       } catch (error) {
         console.error('Failed to add intake to Firestore:', error);
       }
@@ -80,6 +93,19 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
     if (user) {
       try {
         await intakeOperations.update(user.uid, id, updatedData);
+        
+        // カロリー目標の進捗を自動更新
+        try {
+          const { useGoalStore } = await import('./useGoalStore');
+          const goalStore = useGoalStore.getState();
+          const activeGoals = goalStore.getActiveGoals();
+          const calorieGoals = activeGoals.filter((g) => g.type === 'calorie');
+          for (const goal of calorieGoals) {
+            await goalStore.updateGoalProgress(goal.id);
+          }
+        } catch (error) {
+          console.debug('目標進捗更新エラー:', error);
+        }
       } catch (error) {
         console.error('Failed to update intake in Firestore:', error);
       }
@@ -100,6 +126,19 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
     if (user) {
       try {
         await intakeOperations.delete(user.uid, id);
+        
+        // カロリー目標の進捗を自動更新
+        try {
+          const { useGoalStore } = await import('./useGoalStore');
+          const goalStore = useGoalStore.getState();
+          const activeGoals = goalStore.getActiveGoals();
+          const calorieGoals = activeGoals.filter((g) => g.type === 'calorie');
+          for (const goal of calorieGoals) {
+            await goalStore.updateGoalProgress(goal.id);
+          }
+        } catch (error) {
+          console.debug('目標進捗更新エラー:', error);
+        }
       } catch (error) {
         console.error('Failed to delete intake from Firestore:', error);
       }
@@ -151,10 +190,23 @@ export const useIntakeStore = create<IntakeStore>((set, get) => ({
     }
 
     console.log(`[IntakeStore] Starting realtime sync for user: ${user.uid}`);
-    const unsubscribeFn = intakeOperations.subscribe(user.uid, (intakes) => {
+    const unsubscribeFn = intakeOperations.subscribe(user.uid, async (intakes) => {
       console.log(`[IntakeStore] Realtime update: ${intakes.length} intakes`);
       set({ intakes });
       saveToStorage(STORAGE_KEYS.INTAKES, intakes);
+      
+      // カロリー目標の進捗を自動更新
+      try {
+        const { useGoalStore } = await import('./useGoalStore');
+        const goalStore = useGoalStore.getState();
+        const activeGoals = goalStore.getActiveGoals();
+        const calorieGoals = activeGoals.filter((g) => g.type === 'calorie');
+        for (const goal of calorieGoals) {
+          await goalStore.updateGoalProgress(goal.id);
+        }
+      } catch (error) {
+        console.debug('目標進捗更新エラー:', error);
+      }
     });
 
     set({ unsubscribe: unsubscribeFn });

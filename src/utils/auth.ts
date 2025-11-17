@@ -48,7 +48,11 @@ export const loginWithEmail = async (email: string, password: string) => {
     return { user: userCredential.user, error: null };
   } catch (error: any) {
     console.error('Login error:', error.code, error.message);
-    return { user: null, error: getErrorMessage(error.code) };
+    // エラーコードが存在しない場合のフォールバック
+    const errorCode = error?.code || 'auth/unknown-error';
+    const errorMessage = getErrorMessage(errorCode);
+    console.error('Translated error message:', errorMessage);
+    return { user: null, error: errorMessage };
   }
 };
 

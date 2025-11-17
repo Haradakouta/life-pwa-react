@@ -11,13 +11,44 @@ import {
 import type { User } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
+// Firebaseエラーコードを日本語メッセージに変換
+const getErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/invalid-email':
+      return 'メールアドレスの形式が正しくありません';
+    case 'auth/user-disabled':
+      return 'このアカウントは無効化されています';
+    case 'auth/user-not-found':
+      return 'メールアドレスまたはパスワードが正しくありません';
+    case 'auth/wrong-password':
+      return 'メールアドレスまたはパスワードが正しくありません';
+    case 'auth/invalid-credential':
+      return 'メールアドレスまたはパスワードが正しくありません';
+    case 'auth/email-already-in-use':
+      return 'このメールアドレスは既に使用されています';
+    case 'auth/weak-password':
+      return 'パスワードは6文字以上で設定してください';
+    case 'auth/operation-not-allowed':
+      return 'この認証方法は現在利用できません';
+    case 'auth/too-many-requests':
+      return 'リクエストが多すぎます。しばらく時間をおいてから再度お試しください';
+    case 'auth/network-request-failed':
+      return 'ネットワークエラーが発生しました。インターネット接続を確認してください';
+    case 'auth/popup-closed-by-user':
+      return 'ログインがキャンセルされました';
+    default:
+      return `認証エラーが発生しました (${errorCode})`;
+  }
+};
+
 // メールアドレスとパスワードでログイン
 export const loginWithEmail = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    console.error('Login error:', error.code, error.message);
+    return { user: null, error: getErrorMessage(error.code) };
   }
 };
 
@@ -27,7 +58,8 @@ export const registerWithEmail = async (email: string, password: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    console.error('Register error:', error.code, error.message);
+    return { user: null, error: getErrorMessage(error.code) };
   }
 };
 
@@ -39,13 +71,14 @@ export const registerWithEmailVerification = async (email: string, password: str
 
     // 確認メールを送信
     await sendEmailVerification(user, {
-      url: window.location.origin + '/life-pwa-react/', // 確認後のリダイレクトURL
+      url: window.location.origin + '/', // 確認後のリダイレクトURL (Firebase Hosting用)
       handleCodeInApp: false,
     });
 
     return { user, error: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    console.error('Register with verification error:', error.code, error.message);
+    return { user: null, error: getErrorMessage(error.code) };
   }
 };
 
@@ -55,7 +88,8 @@ export const confirmEmailVerification = async (code: string) => {
     await applyActionCode(auth, code);
     return { error: null };
   } catch (error: any) {
-    return { error: error.message };
+    console.error('Confirm email verification error:', error.code, error.message);
+    return { error: getErrorMessage(error.code) };
   }
 };
 
@@ -68,13 +102,14 @@ export const resendVerificationEmail = async () => {
     }
 
     await sendEmailVerification(user, {
-      url: window.location.origin + '/life-pwa-react/',
+      url: window.location.origin + '/', // Firebase Hosting用
       handleCodeInApp: false,
     });
 
     return { error: null };
   } catch (error: any) {
-    return { error: error.message };
+    console.error('Resend verification email error:', error.code, error.message);
+    return { error: getErrorMessage(error.code) };
   }
 };
 
@@ -85,7 +120,8 @@ export const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     return { user: result.user, error: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    console.error('Google login error:', error.code, error.message);
+    return { user: null, error: getErrorMessage(error.code) };
   }
 };
 
@@ -97,7 +133,8 @@ export const logout = async () => {
     localStorage.clear();
     return { error: null };
   } catch (error: any) {
-    return { error: error.message };
+    console.error('Logout error:', error.code, error.message);
+    return { error: getErrorMessage(error.code) };
   }
 };
 

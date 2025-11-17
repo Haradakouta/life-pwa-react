@@ -317,6 +317,11 @@ export const goalOperations = {
 
   update: async (userId: string, id: string, goal: Partial<Goal>) => {
     const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.GOALS), id);
+    // ドキュメントが存在するか確認
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      throw new Error(`No document to update: ${id}`);
+    }
     await updateDoc(docRef, { ...goal, updatedAt: new Date().toISOString() });
   },
 

@@ -55,6 +55,11 @@ export const getFCMToken = async (): Promise<string | null> => {
     }
 
     // FCMトークンを取得
+    if (!VAPID_KEY) {
+      console.warn('VAPID_KEY is not set. Please set VITE_FCM_VAPID_KEY in your environment variables.');
+      return null;
+    }
+
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
     });

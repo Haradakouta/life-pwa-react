@@ -24,7 +24,6 @@ interface NotificationScreenProps {
 
 const NotificationScreen: React.FC<NotificationScreenProps> = ({
   onNavigateToPost,
-  onNavigateToProfile,
 }) => {
   const { user } = useAuth();
   const [groupedNotifications, setGroupedNotifications] = useState<NotificationGroup[]>([]);
@@ -56,12 +55,7 @@ const NotificationScreen: React.FC<NotificationScreenProps> = ({
     }
 
     // 通知の種類に応じて適切な画面に遷移
-    if (group.type === 'follow') {
-      // フォロー通知の場合、フォローしたユーザーのプロフィールへ
-      if (group.actors.length === 1 && onNavigateToProfile) {
-        onNavigateToProfile(group.actors[0].id);
-      }
-    } else if (group.postId && onNavigateToPost) {
+    if (group.postId && onNavigateToPost) {
       // 投稿関連の通知の場合、その投稿へ
       onNavigateToPost(group.postId);
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import type { Post } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
@@ -9,7 +9,6 @@ import { getEquippedTitle } from '../../utils/title';
 import type { Title } from '../../types/title';
 import { TitleBadge } from '../common/TitleBadge';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote, MdPushPin, MdMoreVert } from 'react-icons/md';
-import React from 'react';
 import { AvatarWithFrame } from '../common/AvatarWithFrame';
 import { ImageModal } from '../common/ImageModal';
 
@@ -22,7 +21,7 @@ interface PostCardProps {
   onPinToggle?: () => void; // ピン留め後にプロフィールをリフレッシュ
 }
 
-const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserClick, onQuoteRepost, showPinButton = false, onPinToggle }) => {
+const PostCardComponent: React.FC<PostCardProps> = React.memo(({ post, onPostClick, onUserClick, onQuoteRepost, showPinButton = false, onPinToggle }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -35,6 +34,7 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showPinMenu, setShowPinMenu] = useState(false);
   const [authorTitle, setAuthorTitle] = useState<Title | null>(null);
+  const [, startTransition] = useTransition();
 
   // いいね・ブックマーク・リポスト状態と称号を取得（最適化）
   useEffect(() => {
@@ -213,22 +213,44 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
     }
   };
 
+  const handlePostClick = useCallback(() => {
+    startTransition(() => {
+      onPostClick(post.id);
+    });
+  }, [post.id, onPostClick]);
+
+  const handleUserClickWrapper = useCallback((e: React.MouseEvent) => {
+    if (onUserClick) {
+      e.stopPropagation();
+      startTransition(() => {
+        onUserClick(post.authorId);
+      });
+    }
+  }, [post.authorId, onUserClick]);
+
   return (
     <div
-      className="post-card"
-      onClick={() => onPostClick(post.id)}
+      className="post-card-modern"
+      onClick={handlePostClick}
       style={{
-        background: 'var(--card)',
-        padding: '12px 16px',
-        borderBottom: '1px solid var(--border)',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
+        backdropFilter: 'blur(10px)',
+        padding: '16px 20px',
+        borderBottom: '1px solid rgba(59, 130, 246, 0.1)',
         cursor: 'pointer',
-        transition: 'background-color 0.15s ease-out',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        position: 'relative',
+        overflow: 'hidden',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'var(--background)';
+        e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.03)';
+        e.currentTarget.style.transform = 'translateX(4px)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.1)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'var(--card)';
+        e.currentTarget.style.backgroundColor = 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)';
+        e.currentTarget.style.transform = 'translateX(0)';
+        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       {/* ピン留めインジケーター */}
@@ -251,29 +273,27 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
 
       {/* ヘッダー（プロフィール情報） */}
       <div
-        onClick={(e) => {
-          if (onUserClick) {
-            e.stopPropagation();
-            onUserClick(post.authorId);
-          }
-        }}
+        onClick={handleUserClickWrapper}
+        className="post-header-modern"
         style={{
           display: 'flex',
           alignItems: 'center',
           marginBottom: '12px',
           cursor: onUserClick ? 'pointer' : 'default',
-          padding: '4px',
-          marginLeft: '-4px',
-          borderRadius: '8px',
-          transition: 'background 0.2s',
+          padding: '8px',
+          marginLeft: '-8px',
+          borderRadius: '12px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         onMouseEnter={(e) => {
           if (onUserClick) {
-            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.08)';
+            e.currentTarget.style.transform = 'translateX(2px)';
           }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'none';
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.transform = 'translateX(0)';
         }}
       >
         <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
@@ -697,41 +717,51 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
 
       {/* アクションボタン */}
       <div
+        className="post-actions-modern"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginLeft: '52px', // アバターの幅 + マージンに合わせる
-          marginTop: '12px',
-          maxWidth: '425px', // X風の最大幅
+          marginLeft: '52px',
+          marginTop: '16px',
+          maxWidth: '425px',
         }}
       >
         {/* いいね */}
         <button
           onClick={handleLike}
+          className={`action-button-modern ${liked ? 'liked' : ''}`}
           style={{
             background: 'none',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '6px',
             cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '50%',
+            padding: '10px',
+            borderRadius: '12px',
             color: liked ? '#f4212e' : 'var(--text-secondary)',
-            transition: 'background-color 0.2s ease-out, color 0.2s ease-out',
+            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
             position: 'relative',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = liked ? 'rgba(244, 33, 46, 0.1)' : 'rgba(29, 155, 240, 0.1)';
+            e.currentTarget.style.backgroundColor = liked ? 'rgba(244, 33, 46, 0.1)' : 'rgba(244, 33, 46, 0.08)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+            if (!liked) {
+              e.currentTarget.style.color = '#f4212e';
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.transform = 'scale(1)';
+            if (!liked) {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }
           }}
         >
-          {liked ? <MdFavorite size={18.75} /> : <MdFavoriteBorder size={18.75} />}
+          {liked ? <MdFavorite size={20} /> : <MdFavoriteBorder size={20} />}
           {localLikes > 0 && (
-            <span style={{ fontSize: '13px', fontWeight: 400, marginLeft: '4px' }}>{formatCount(localLikes)}</span>
+            <span style={{ fontSize: '14px', fontWeight: 500, marginLeft: '2px' }}>{formatCount(localLikes)}</span>
           )}
         </button>
 
@@ -891,8 +921,8 @@ const PostCardComponent: React.FC<PostCardProps> = ({ post, onPostClick, onUserC
       )}
     </div>
   );
-};
+});
 
 // React.memoでメモ化してパフォーマンスを最適化
-export const PostCard = React.memo(PostCardComponent);
+export const PostCard = PostCardComponent;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition, Suspense } from 'react';
 import { TimelineScreen } from './TimelineScreen';
 import { PostDetailScreen } from './PostDetailScreen';
 import { UserProfileScreen } from './UserProfileScreen';
@@ -16,7 +16,7 @@ import type { Conversation } from '../../utils/chat';
 type SocialTab = 'timeline' | 'search' | 'notifications' | 'dm' | 'ranking';
 type View = 'main' | 'post-detail' | 'profile' | 'chat';
 
-export const SocialScreen: React.FC = () => {
+export const SocialScreen: React.FC = React.memo(() => {
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<SocialTab>('timeline');
   const [currentView, setCurrentView] = useState<View>('main');
@@ -26,6 +26,7 @@ export const SocialScreen: React.FC = () => {
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
   const [dmUnreadCount, setDmUnreadCount] = useState(0);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
+  const [isPending, startTransition] = useTransition();
 
   // DM未読数を取得
   useEffect(() => {
@@ -60,32 +61,48 @@ export const SocialScreen: React.FC = () => {
   }, [user]);
 
   const handlePostClick = (postId: string) => {
-    setSelectedPostId(postId);
-    setCurrentView('post-detail');
+    startTransition(() => {
+      setSelectedPostId(postId);
+      setCurrentView('post-detail');
+    });
   };
 
   const handleUserClick = (userId: string) => {
-    setSelectedUserId(userId);
-    setCurrentView('profile');
+    startTransition(() => {
+      setSelectedUserId(userId);
+      setCurrentView('profile');
+    });
   };
 
   const handleNavigateToDM = (conversationId: string, participantIds: string[]) => {
-    setSelectedConversationId(conversationId);
-    setSelectedParticipantIds(participantIds);
-    setCurrentView('chat');
+    startTransition(() => {
+      setSelectedConversationId(conversationId);
+      setSelectedParticipantIds(participantIds);
+      setCurrentView('chat');
+    });
   };
 
   const handleBackToTimeline = () => {
-    setCurrentView('main');
-    setSelectedPostId(null);
-    setSelectedUserId(null);
-    setSelectedConversationId(null);
-    setSelectedParticipantIds([]);
+    startTransition(() => {
+      setCurrentView('main');
+      setSelectedPostId(null);
+      setSelectedUserId(null);
+      setSelectedConversationId(null);
+      setSelectedParticipantIds([]);
+    });
   };
 
   const handlePostDeleted = () => {
-    setCurrentView('main');
-    setSelectedPostId(null);
+    startTransition(() => {
+      setCurrentView('main');
+      setSelectedPostId(null);
+    });
+  };
+
+  const handleTabChange = (tab: SocialTab) => {
+    startTransition(() => {
+      setCurrentTab(tab);
+    });
   };
 
   // Chat画面
@@ -132,45 +149,61 @@ export const SocialScreen: React.FC = () => {
       {/* ヘッダー（マイプロフィールボタン） */}
       {user && (
         <div
+          className="social-header-modern"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '12px 16px',
-            background: 'var(--card)',
-            borderBottom: '1px solid var(--border)',
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.02) 100%)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(59, 130, 246, 0.1)',
             position: 'sticky',
             top: 0,
             zIndex: 11,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: 'var(--text)' }}>
+          <h2 style={{ 
+            margin: 0, 
+            fontSize: '24px', 
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
             ソーシャル
           </h2>
           <button
             onClick={() => {
-              setSelectedUserId(user.uid);
-              setCurrentView('profile');
+              startTransition(() => {
+                setSelectedUserId(user.uid);
+                setCurrentView('profile');
+              });
             }}
+            className="my-profile-button-modern"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '8px 16px',
-              background: 'var(--primary)',
+              padding: '10px 20px',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
               color: 'white',
               border: 'none',
-              borderRadius: '20px',
+              borderRadius: '24px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: 500,
-              transition: 'opacity 0.2s',
+              fontWeight: 600,
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = '0.8';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
             }}
           >
             <MdPerson size={18} />
@@ -180,225 +213,140 @@ export const SocialScreen: React.FC = () => {
       )}
       {/* タブナビゲーション */}
       <div
+        className="social-tabs-modern"
         style={{
           display: 'flex',
           borderBottom: '1px solid var(--border)',
           background: 'var(--card)',
           position: 'sticky',
-          top: user ? '56px' : '0',
+          top: user ? '72px' : '0',
           zIndex: 10,
         }}
       >
-        <button
-          onClick={() => setCurrentTab('timeline')}
-          style={{
-            flex: 1,
-            padding: '16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: currentTab === 'timeline' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: currentTab === 'timeline' ? 'var(--primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            fontSize: '15px',
-            fontWeight: currentTab === 'timeline' ? 600 : 400,
-          }}
-        >
-          <MdHome size={20} />
-        </button>
-        <button
-          onClick={() => setCurrentTab('search')}
-          style={{
-            flex: 1,
-            padding: '16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: currentTab === 'search' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: currentTab === 'search' ? 'var(--primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            fontSize: '15px',
-            fontWeight: currentTab === 'search' ? 600 : 400,
-          }}
-        >
-          <MdSearch size={20} />
-        </button>
-        <button
-          onClick={async () => {
-            setCurrentTab('notifications');
-            // 通知タブを開いたらすべて既読にする
-            if (user && notificationUnreadCount > 0) {
-              try {
-                await markAllNotificationsAsRead(user.uid);
-              } catch (error) {
-                console.error('通知を既読にするエラー:', error);
+        {([
+          { id: 'timeline' as SocialTab, icon: MdHome, label: 'ホーム' },
+          { id: 'search' as SocialTab, icon: MdSearch, label: '検索' },
+          { id: 'notifications' as SocialTab, icon: MdNotifications, label: '通知', badge: notificationUnreadCount },
+          { id: 'dm' as SocialTab, icon: MdChat, label: 'DM', badge: dmUnreadCount },
+          { id: 'ranking' as SocialTab, icon: MdTrendingUp, label: 'ランキング' },
+        ]).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={async () => {
+              handleTabChange(tab.id);
+              if (tab.id === 'notifications' && user && notificationUnreadCount > 0) {
+                try {
+                  await markAllNotificationsAsRead(user.uid);
+                } catch (error) {
+                  console.error('通知を既読にするエラー:', error);
+                }
               }
-            }
-          }}
-          style={{
-            flex: 1,
-            padding: '16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: currentTab === 'notifications' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: currentTab === 'notifications' ? 'var(--primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            fontSize: '15px',
-            fontWeight: currentTab === 'notifications' ? 600 : 400,
-            position: 'relative',
-          }}
-        >
-          <MdNotifications size={20} />
-          {notificationUnreadCount > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: 'calc(50% - 20px)',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                minWidth: '18px',
-              }}
-            >
-              {notificationUnreadCount > 99 ? '99+' : notificationUnreadCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={async () => {
-            setCurrentTab('dm');
-            // DMタブを開いたら、すべての会話の未読数をリセット
-            if (user && dmUnreadCount > 0) {
-              try {
-                const { getConversations } = await import('../../utils/chat');
-                const { doc, updateDoc } = await import('firebase/firestore');
-                const { db } = await import('../../config/firebase');
-                const conversations = await getConversations(user.uid);
-                // すべての会話の未読数を0にする
-                await Promise.all(
-                  conversations.map((conv) => {
-                    const conversationRef = doc(db, 'conversations', conv.id);
-                    return updateDoc(conversationRef, {
-                      [`unreadCount.${user.uid}`]: 0,
-                    });
-                  })
-                );
-              } catch (error) {
-                console.error('DM未読数をリセットするエラー:', error);
+              if (tab.id === 'dm' && user && dmUnreadCount > 0) {
+                try {
+                  const { getConversations } = await import('../../utils/chat');
+                  const { doc, updateDoc } = await import('firebase/firestore');
+                  const { db } = await import('../../config/firebase');
+                  const conversations = await getConversations(user.uid);
+                  await Promise.all(
+                    conversations.map((conv) => {
+                      const conversationRef = doc(db, 'conversations', conv.id);
+                      return updateDoc(conversationRef, {
+                        [`unreadCount.${user.uid}`]: 0,
+                      });
+                    })
+                  );
+                } catch (error) {
+                  console.error('DM未読数をリセットするエラー:', error);
+                }
               }
-            }
-          }}
-          style={{
-            flex: 1,
-            padding: '16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: currentTab === 'dm' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: currentTab === 'dm' ? 'var(--primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            fontSize: '15px',
-            fontWeight: currentTab === 'dm' ? 600 : 400,
-            position: 'relative',
-          }}
-        >
-          <MdChat size={20} />
-          {dmUnreadCount > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: 'calc(50% - 20px)',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                minWidth: '18px',
-              }}
-            >
-              {dmUnreadCount > 99 ? '99+' : dmUnreadCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setCurrentTab('ranking')}
-          style={{
-            flex: 1,
-            padding: '16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: currentTab === 'ranking' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: currentTab === 'ranking' ? 'var(--primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            fontSize: '15px',
-            fontWeight: currentTab === 'ranking' ? 600 : 400,
-          }}
-        >
-          <MdTrendingUp size={20} />
-        </button>
+            }}
+            className={`social-tab-modern ${currentTab === tab.id ? 'active' : ''}`}
+            style={{
+              flex: 1,
+              padding: '16px',
+              background: 'none',
+              border: 'none',
+              borderBottom: currentTab === tab.id ? '3px solid var(--primary)' : '3px solid transparent',
+              color: currentTab === tab.id ? 'var(--primary)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontSize: '15px',
+              fontWeight: currentTab === tab.id ? 700 : 500,
+              position: 'relative',
+            }}
+            onMouseEnter={(e) => {
+              if (currentTab !== tab.id) {
+                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                e.currentTarget.style.color = 'var(--primary)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentTab !== tab.id) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }
+            }}
+          >
+            <tab.icon size={20} />
+            {tab.badge !== undefined && tab.badge > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: 'calc(50% - 20px)',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  minWidth: '18px',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+                }}
+              >
+                {tab.badge > 99 ? '99+' : tab.badge}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* タブコンテンツ */}
-      {currentTab === 'timeline' && (
-        <TimelineScreen onPostClick={handlePostClick} onUserClick={handleUserClick} />
-      )}
-      {currentTab === 'search' && (
-        <SearchScreen onPostClick={handlePostClick} onUserClick={handleUserClick} />
-      )}
-      {currentTab === 'notifications' && (
-        <NotificationScreen
-          onNavigateToPost={handlePostClick}
-          onNavigateToProfile={handleUserClick}
-        />
-      )}
-      {currentTab === 'dm' && (
-        <ConversationListScreen
-          onBack={handleBackToTimeline}
-          onNavigateToProfile={handleUserClick}
-        />
-      )}
-      {currentTab === 'ranking' && (
-        <RankingScreen
-          onPostClick={handlePostClick}
-          onUserClick={handleUserClick}
-        />
-      )}
+      <div style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 0.3s ease' }}>
+        <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>読み込み中...</div>}>
+          {currentTab === 'timeline' && (
+            <TimelineScreen onPostClick={handlePostClick} onUserClick={handleUserClick} />
+          )}
+          {currentTab === 'search' && (
+            <SearchScreen onPostClick={handlePostClick} onUserClick={handleUserClick} />
+          )}
+          {currentTab === 'notifications' && (
+            <NotificationScreen
+              onNavigateToPost={handlePostClick}
+            />
+          )}
+          {currentTab === 'dm' && (
+            <ConversationListScreen
+              onBack={handleBackToTimeline}
+              onNavigateToProfile={handleUserClick}
+            />
+          )}
+          {currentTab === 'ranking' && (
+            <RankingScreen
+              onPostClick={handlePostClick}
+              onUserClick={handleUserClick}
+            />
+          )}
+        </Suspense>
+      </div>
     </div>
   );
-};
+});

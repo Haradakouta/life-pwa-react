@@ -2,10 +2,12 @@
  * 食事一覧表示コンポーネント
  */
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useIntakeStore } from '../../store';
 import { MdDelete } from 'react-icons/md';
 
 export const MealList: React.FC = () => {
+  const { t } = useTranslation();
   const { intakes, deleteIntake, getTotalCaloriesByDate, getTotalPriceByDate } =
     useIntakeStore();
 
@@ -21,17 +23,17 @@ export const MealList: React.FC = () => {
   const todayPrice = getTotalPriceByDate(today);
 
   const handleDelete = (id: string) => {
-    if (confirm('この記録を削除しますか？')) {
+    if (confirm(t('meals.list.deleteConfirm'))) {
       deleteIntake(id);
     }
   };
 
   return (
     <div className="card">
-      <h3>今日の記録</h3>
+      <h3>{t('meals.list.title')}</h3>
       {todayIntakes.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-          まだ記録がありません
+          {t('meals.list.empty')}
         </p>
       ) : (
         <>
@@ -80,10 +82,10 @@ export const MealList: React.FC = () => {
             }}
           >
             <span>
-              <strong>合計カロリー:</strong> {todayCalories} kcal
+              <strong>{t('meals.list.totalCalories', { calories: todayCalories })}</strong>
             </span>
             <span>
-              <strong>合計金額:</strong> ¥{todayPrice}
+              <strong>{t('meals.list.totalPrice', { price: todayPrice })}</strong>
             </span>
           </div>
         </>

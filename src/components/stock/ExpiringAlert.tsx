@@ -2,10 +2,12 @@
  * 期限切れアラートコンポーネント
  */
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStockStore, useShoppingStore } from '../../store';
 import { MdShoppingCart } from 'react-icons/md';
 
 export const ExpiringAlert: React.FC = () => {
+  const { t } = useTranslation();
   const { getExpiringStocks } = useStockStore();
   const { addItem } = useShoppingStore();
 
@@ -23,7 +25,7 @@ export const ExpiringAlert: React.FC = () => {
 
     if (
       !confirm(
-        `期限切れ間近の商品 ${expiringItems.length}個を買い物リストに追加しますか？`
+        t('stock.expiringAlert.addConfirm', { count: expiringItems.length })
       )
     ) {
       return;
@@ -36,7 +38,7 @@ export const ExpiringAlert: React.FC = () => {
       });
     });
 
-    alert(`${expiringItems.length}個の商品を買い物リストに追加しました！`);
+    alert(t('stock.expiringAlert.addSuccess', { count: expiringItems.length }));
   };
 
   if (expiredToday.length === 0 && expireTomorrow.length === 0) {
@@ -55,7 +57,7 @@ export const ExpiringAlert: React.FC = () => {
           }}
         >
           <h3 style={{ margin: '0 0 8px 0', color: '#ef4444' }}>
-            🚨 今日使うべき食材
+            {t('stock.expiringAlert.today')}
           </h3>
           <ul style={{ margin: 0, paddingLeft: '20px' }}>
             {expiredToday.map((stock) => (
@@ -75,7 +77,7 @@ export const ExpiringAlert: React.FC = () => {
           }}
         >
           <h3 style={{ margin: '0 0 8px 0', color: '#f59e0b' }}>
-            ⏰ 明日期限切れ
+            {t('stock.expiringAlert.tomorrow')}
           </h3>
           <ul style={{ margin: 0, paddingLeft: '20px' }}>
             {expireTomorrow.map((stock) => (
@@ -101,7 +103,7 @@ export const ExpiringAlert: React.FC = () => {
           }}
         >
           <MdShoppingCart size={20} />
-          期限切れ間近の商品を買い物リストに追加
+          {t('stock.expiringAlert.addToShoppingList')}
         </button>
       </div>
     </>

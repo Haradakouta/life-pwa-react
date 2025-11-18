@@ -12,7 +12,20 @@
     "yes": "はい",
     "no": "いいえ",
     "year": "年",
-    "month": "月"
+    "month": "月",
+    "days": "日",
+    "selectDate": "日付を選択",
+    "selectMonth": "月を選択",
+    "selectMonthYear": "年月をタップして選択してください",
+    "weekday": {
+      "sun": "日",
+      "mon": "月",
+      "tue": "火",
+      "wed": "水",
+      "thu": "木",
+      "fri": "金",
+      "sat": "土"
+    }
   },
   "settings": {
     "title": "設定",
@@ -469,6 +482,13 @@
     },
     "screen": {
       "title": "食事記録"
+    },
+    "list": {
+      "title": "今日の記録",
+      "empty": "まだ記録がありません",
+      "deleteConfirm": "この記録を削除しますか？",
+      "totalCalories": "合計カロリー: {{calories}} kcal",
+      "totalPrice": "合計金額: ¥{{price}}"
     }
   },
   "stock": {
@@ -494,6 +514,50 @@
     },
     "screen": {
       "title": "在庫管理"
+    },
+    "list": {
+      "title": "在庫一覧（{{count}}個）",
+      "searchPlaceholder": "在庫を検索...",
+      "category": "カテゴリ",
+      "sortOrder": "並び順",
+      "allCategories": "すべて",
+      "sortOptions": {
+        "expiry": "期限順",
+        "name": "名前順",
+        "category": "カテゴリ順"
+      },
+      "empty": "在庫がありません",
+      "noResults": "該当する在庫がありません",
+      "deleteConfirm": "この在庫を削除しますか？",
+      "deleteWhenZero": "数量が0になります。在庫を削除しますか？",
+      "addToShoppingList": "「{{name}}」を買い物リストに追加しました！",
+      "addToShoppingListTitle": "買い物リストに追加",
+      "deleteTitle": "削除",
+      "expiryStatus": {
+        "expired": "期限切れ！",
+        "tomorrow": "明日期限",
+        "remaining": "残り{{days}}日"
+      }
+    },
+    "expiringAlert": {
+      "today": "🚨 今日使うべき食材",
+      "tomorrow": "⏰ 明日期限切れ",
+      "addToShoppingList": "期限切れ間近の商品を買い物リストに追加",
+      "addConfirm": "期限切れ間近の商品 {{count}}個を買い物リストに追加しますか？",
+      "addSuccess": "{{count}}個の商品を買い物リストに追加しました！"
+    },
+    "stats": {
+      "title": "在庫統計",
+      "totalStock": "総在庫数",
+      "items": "個",
+      "types": "種類の商品",
+      "byCategory": "カテゴリ別",
+      "byExpiry": "賞味期限",
+      "expired": "⚠️ 期限切れ",
+      "today": "🔔 今日期限",
+      "tomorrow": "📅 明日期限",
+      "soon": "⏰ 3日以内",
+      "safe": "✅ 安全"
     }
   },
   "expense": {
@@ -504,6 +568,23 @@
     "screen": {
       "title": "家計簿",
       "history": "支出履歴"
+    },
+    "summary": {
+      "title": "カテゴリ別集計",
+      "noData": "この月の支出データがありません",
+      "totalExpense": "合計支出"
+    },
+    "budget": {
+      "title": "月次予算",
+      "remaining": "残り ¥{{amount}}",
+      "exceeded": "超過 ¥{{amount}}",
+      "expense": "支出",
+      "budget": "予算",
+      "status": {
+        "exceeded": "予算超過",
+        "low": "予算残りわずか",
+        "onTrack": "順調"
+      }
     }
   },
   "shopping": {
@@ -617,6 +698,13 @@
       "paceUp": "ペースアップ",
       "needEffort": "要努力",
       "deleteConfirm": "この目標を削除しますか？",
+      "current": "現在",
+      "target": "目標",
+      "exceeded": "超過",
+      "remaining": "残り",
+      "daysRemaining": "残り日数",
+      "dailyAverage": "1日平均",
+      "estimatedDate": "予測達成日",
       "period": {
         "day": "1日",
         "week": "1週間",
@@ -624,6 +712,22 @@
         "daysRemaining": "日間",
         "custom": "カスタム"
       }
+    },
+    "progressCard": {
+      "current": "現在:",
+      "target": "目標:",
+      "exceeded": "超過:",
+      "remaining": "残り:",
+      "daysRemaining": "残り日数",
+      "dailyAverage": "1日平均",
+      "predictedDate": "予測達成日"
+    },
+    "settingScreen": {
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "select": "選択してください",
+      "update": "更新",
+      "create": "目標を作成"
     }
   }
 }

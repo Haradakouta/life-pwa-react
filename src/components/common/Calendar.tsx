@@ -2,6 +2,7 @@
  * カレンダーコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 
 interface CalendarProps {
@@ -21,6 +22,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   onMonthChange,
   mode = 'month',
 }) => {
+  const { t } = useTranslation();
   const [currentYear, setCurrentYear] = useState(selectedYear);
   const [currentMonth, setCurrentMonth] = useState(selectedMonth);
 
@@ -95,7 +97,15 @@ export const Calendar: React.FC<CalendarProps> = ({
     calendarDays.push(day);
   }
 
-  const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+  const weekDays = [
+    t('common.weekday.sun'),
+    t('common.weekday.mon'),
+    t('common.weekday.tue'),
+    t('common.weekday.wed'),
+    t('common.weekday.thu'),
+    t('common.weekday.fri'),
+    t('common.weekday.sat'),
+  ];
 
   return (
     <div

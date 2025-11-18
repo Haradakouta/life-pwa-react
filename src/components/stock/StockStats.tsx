@@ -2,10 +2,12 @@
  * 在庫統計情報表示コンポーネント
  */
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStockStore } from '../../store';
 import type { StockCategory } from '../../types';
 
 export const StockStats: React.FC = () => {
+  const { t } = useTranslation();
   const { stocks } = useStockStore();
 
   const stats = useMemo(() => {
@@ -70,22 +72,7 @@ export const StockStats: React.FC = () => {
   };
 
   const getCategoryLabel = (category: StockCategory | 'other') => {
-    switch (category) {
-      case 'staple':
-        return '主食';
-      case 'protein':
-        return 'たんぱく質';
-      case 'vegetable':
-        return '野菜';
-      case 'fruit':
-        return '果物';
-      case 'dairy':
-        return '乳製品';
-      case 'seasoning':
-        return '調味料';
-      default:
-        return 'その他';
-    }
+    return t(`stock.categories.${category}`);
   };
 
   if (stocks.length === 0) {
@@ -94,7 +81,7 @@ export const StockStats: React.FC = () => {
 
   return (
     <div className="card">
-      <h3>在庫統計</h3>
+      <h3>{t('stock.stats.title')}</h3>
 
       {/* 総在庫数 */}
       <div
@@ -107,19 +94,19 @@ export const StockStats: React.FC = () => {
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: '0.9rem', marginBottom: '8px', opacity: 0.9 }}>総在庫数</div>
+        <div style={{ fontSize: '0.9rem', marginBottom: '8px', opacity: 0.9 }}>{t('stock.stats.totalStock')}</div>
         <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
           {stats.totalQuantity}
-          <span style={{ fontSize: '1.2rem', marginLeft: '8px' }}>個</span>
+          <span style={{ fontSize: '1.2rem', marginLeft: '8px' }}>{t('stock.stats.items')}</span>
         </div>
         <div style={{ fontSize: '0.85rem', opacity: 0.8, marginTop: '4px' }}>
-          {stocks.length}種類の商品
+          {stocks.length}{t('stock.stats.types')}
         </div>
       </div>
 
       {/* カテゴリ別統計 */}
       <div style={{ marginBottom: '16px' }}>
-        <h4 style={{ fontSize: '1rem', marginBottom: '12px' }}>カテゴリ別</h4>
+        <h4 style={{ fontSize: '1rem', marginBottom: '12px' }}>{t('stock.stats.byCategory')}</h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
           {(Object.keys(stats.categoryCount) as (StockCategory | 'other')[]).map((category) => {
             const count = stats.categoryCount[category];
@@ -151,7 +138,7 @@ export const StockStats: React.FC = () => {
 
       {/* 期限別統計 */}
       <div>
-        <h4 style={{ fontSize: '1rem', marginBottom: '12px' }}>賞味期限</h4>
+        <h4 style={{ fontSize: '1rem', marginBottom: '12px' }}>{t('stock.stats.byExpiry')}</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {stats.expiryStats.expired > 0 && (
             <div
@@ -165,9 +152,9 @@ export const StockStats: React.FC = () => {
                 border: '2px solid #ef4444',
               }}
             >
-              <span style={{ color: '#ef4444', fontWeight: 600 }}>⚠️ 期限切れ</span>
+              <span style={{ color: '#ef4444', fontWeight: 600 }}>{t('stock.stats.expired')}</span>
               <span style={{ fontWeight: 'bold', color: '#ef4444' }}>
-                {stats.expiryStats.expired}個
+                {stats.expiryStats.expired}{t('stock.stats.items')}
               </span>
             </div>
           )}
@@ -183,9 +170,9 @@ export const StockStats: React.FC = () => {
                 border: '2px solid #f59e0b',
               }}
             >
-              <span style={{ color: '#f59e0b', fontWeight: 600 }}>🔔 今日期限</span>
+              <span style={{ color: '#f59e0b', fontWeight: 600 }}>{t('stock.stats.today')}</span>
               <span style={{ fontWeight: 'bold', color: '#f59e0b' }}>
-                {stats.expiryStats.today}個
+                {stats.expiryStats.today}{t('stock.stats.items')}
               </span>
             </div>
           )}
@@ -201,9 +188,9 @@ export const StockStats: React.FC = () => {
                 border: '2px solid #eab308',
               }}
             >
-              <span style={{ color: '#eab308', fontWeight: 600 }}>📅 明日期限</span>
+              <span style={{ color: '#eab308', fontWeight: 600 }}>{t('stock.stats.tomorrow')}</span>
               <span style={{ fontWeight: 'bold', color: '#eab308' }}>
-                {stats.expiryStats.tomorrow}個
+                {stats.expiryStats.tomorrow}{t('stock.stats.items')}
               </span>
             </div>
           )}
@@ -218,8 +205,8 @@ export const StockStats: React.FC = () => {
                 borderRadius: '6px',
               }}
             >
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>⏰ 3日以内</span>
-              <span style={{ fontWeight: 'bold' }}>{stats.expiryStats.soon}個</span>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{t('stock.stats.soon')}</span>
+              <span style={{ fontWeight: 'bold' }}>{stats.expiryStats.soon}{t('stock.stats.items')}</span>
             </div>
           )}
           {stats.expiryStats.safe > 0 && (
@@ -233,9 +220,9 @@ export const StockStats: React.FC = () => {
                 borderRadius: '6px',
               }}
             >
-              <span style={{ color: '#10b981', fontWeight: 600 }}>✅ 安全</span>
+              <span style={{ color: '#10b981', fontWeight: 600 }}>{t('stock.stats.safe')}</span>
               <span style={{ fontWeight: 'bold', color: '#10b981' }}>
-                {stats.expiryStats.safe}個
+                {stats.expiryStats.safe}{t('stock.stats.items')}
               </span>
             </div>
           )}

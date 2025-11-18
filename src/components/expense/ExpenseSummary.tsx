@@ -2,6 +2,7 @@
  * カテゴリ別支出集計コンポーネント（円グラフ表示）
  */
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import type { ExpenseCategory } from '../../types';
@@ -10,17 +11,18 @@ import { MonthPickerModal } from '../common/MonthPickerModal';
 import { getPredefinedCategoryColor, getColorForCustomCategory } from '../../utils/categoryColors';
 
 export const ExpenseSummary: React.FC = () => {
+  const { t } = useTranslation();
   const { getTotalByCategory, getExpensesByMonth } = useExpenseStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
 
   const categories: Array<{ value: ExpenseCategory; label: string }> = [
-    { value: 'food', label: '食費' },
-    { value: 'transport', label: '交通費' },
-    { value: 'utilities', label: '光熱費' },
-    { value: 'entertainment', label: '娯楽' },
-    { value: 'health', label: '医療' },
+    { value: 'food', label: t('expense.categories.food') },
+    { value: 'transport', label: t('expense.categories.transport') },
+    { value: 'utilities', label: t('expense.categories.utilities') },
+    { value: 'entertainment', label: t('expense.categories.entertainment') },
+    { value: 'health', label: t('expense.categories.health') },
   ];
 
   const monthlyExpenses = getExpensesByMonth(selectedYear, selectedMonth);
@@ -74,7 +76,7 @@ export const ExpenseSummary: React.FC = () => {
 
   return (
     <div className="card">
-      <h3 style={{ marginBottom: '15px' }}>カテゴリ別集計</h3>
+      <h3 style={{ marginBottom: '15px' }}>{t('expense.summary.title')}</h3>
 
       <button
         onClick={() => setIsMonthPickerOpen(true)}
@@ -93,13 +95,13 @@ export const ExpenseSummary: React.FC = () => {
           marginBottom: '20px',
         }}
       >
-        <span>{selectedYear}年 {selectedMonth}月</span>
+        <span>{selectedYear}{t('common.year')} {selectedMonth}{t('common.month')}</span>
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
 
       {monthlyExpenses.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
-          この月の支出データがありません
+          {t('expense.summary.noData')}
         </p>
       ) : (
         <>
@@ -113,7 +115,7 @@ export const ExpenseSummary: React.FC = () => {
             }}
           >
             <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '5px' }}>
-              合計支出
+              {t('expense.summary.totalExpense')}
             </div>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--danger)' }}>
               ¥{formatAmount(total)}

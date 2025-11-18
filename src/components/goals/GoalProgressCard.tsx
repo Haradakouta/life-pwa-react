@@ -3,6 +3,8 @@
  * MyFitnessPal/YNABレベルの美しいUI
  */
 import React, { useMemo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n/config';
 import type { Goal, GoalProgress } from '../../types';
 import { MdCheckCircle, MdTrendingUp, MdTrendingDown, MdWarning, MdCalendarToday, MdEdit, MdDelete } from 'react-icons/md';
 import { formatCount } from '../../utils/formatNumber';
@@ -404,12 +406,12 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
               <span style={{ fontSize: '16px', fontWeight: 600, color: status.color }}>{status.message}</span>
             </div>
             <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-              現在: <strong style={{ color: 'var(--text)', fontSize: '16px' }}>
+              {t('goals.progress.current')}: <strong style={{ color: 'var(--text)', fontSize: '16px' }}>
                 {formatCount(goal.currentValue)} {goal.unit}
               </strong>
             </div>
             <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-              目標: <strong style={{ color: goalConfig.color, fontSize: '16px' }}>
+              {t('goals.progress.target')}: <strong style={{ color: goalConfig.color, fontSize: '16px' }}>
                 {formatCount(goal.targetValue)} {goal.unit}
               </strong>
             </div>
@@ -417,7 +419,7 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
               if (goal.type === 'budget' && progress.remaining < 0) {
                 return (
                   <div style={{ fontSize: '13px', color: '#ef4444', marginTop: '4px' }}>
-                    超過: <strong style={{ color: '#ef4444' }}>
+                    {t('goals.progress.exceeded')}: <strong style={{ color: '#ef4444' }}>
                       {formatCount(Math.abs(progress.remaining))} {goal.unit}
                     </strong>
                   </div>
@@ -425,7 +427,7 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
               } else if (progress.remaining > 0) {
                 return (
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                    残り: <strong style={{ color: goalConfig.color }}>
+                    {t('goals.progress.remaining')}: <strong style={{ color: goalConfig.color }}>
                       {formatCount(progress.remaining)} {goal.unit}
                     </strong>
                   </div>
@@ -486,9 +488,9 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>残り日数</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{t('goals.progress.daysRemaining')}</div>
               <div style={{ fontSize: '20px', fontWeight: 700, color: status.color }}>
-                {progress.daysRemaining}日
+                {progress.daysRemaining}{t('common.days')}
               </div>
             </div>
           )}
@@ -501,7 +503,7 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>1日平均</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{t('goals.progress.dailyAverage')}</div>
               <div style={{ fontSize: '20px', fontWeight: 700, color: status.color }}>
                 {formatCount(Math.round(progress.averageDailyProgress))} {goal.unit}
               </div>
@@ -516,9 +518,9 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>予測達成日</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{t('goals.progress.estimatedDate')}</div>
               <div style={{ fontSize: '14px', fontWeight: 600, color: status.color }}>
-                {new Date(progress.estimatedCompletionDate).toLocaleDateString('ja-JP', {
+                {new Date(progress.estimatedCompletionDate).toLocaleDateString(i18n.language || 'ja-JP', {
                   month: 'short',
                   day: 'numeric',
                 })}

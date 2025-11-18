@@ -2,6 +2,7 @@
  * 月選択モーダルコンポーネント
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar } from './Calendar';
 import { MdClose } from 'react-icons/md';
 
@@ -20,6 +21,7 @@ export const MonthPickerModal: React.FC<MonthPickerModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const handleMonthChange = (year: number, month: number) => {
@@ -65,7 +67,7 @@ export const MonthPickerModal: React.FC<MonthPickerModalProps> = ({
             borderBottom: '1px solid var(--border)',
           }}
         >
-          <h3 style={{ margin: 0 }}>月を選択</h3>
+          <h3 style={{ margin: 0 }}>{t('common.selectMonth')}</h3>
           <button
             onClick={onClose}
             style={{
@@ -98,7 +100,7 @@ export const MonthPickerModal: React.FC<MonthPickerModalProps> = ({
             textAlign: 'center',
           }}
         >
-          年月をタップして選択してください
+          {t('common.selectMonthYear')}
         </div>
       </div>
     </div>

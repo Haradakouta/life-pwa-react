@@ -2,6 +2,7 @@
  * 日付選択モーダルコンポーネント
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar } from './Calendar';
 import { MdClose, MdCheck } from 'react-icons/md';
 
@@ -18,6 +19,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [tempDate, setTempDate] = React.useState(selectedDate);
 
   React.useEffect(() => {
@@ -69,7 +71,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             borderBottom: '1px solid var(--border)',
           }}
         >
-          <h3 style={{ margin: 0 }}>日付を選択</h3>
+          <h3 style={{ margin: 0 }}>{t('common.selectDate')}</h3>
           <button
             onClick={onClose}
             style={{
@@ -116,7 +118,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
               fontSize: '16px',
             }}
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleConfirm}
@@ -130,7 +132,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             }}
           >
             <MdCheck size={20} />
-            決定
+            {t('common.confirm')}
           </button>
         </div>
       </div>

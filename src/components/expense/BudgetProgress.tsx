@@ -2,12 +2,14 @@
  * 月次予算と進捗バー表示コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { MdTrendingUp, MdWarning, MdCheckCircle, MdCalendarToday } from 'react-icons/md';
 import { MonthPickerModal } from '../common/MonthPickerModal';
 
 export const BudgetProgress: React.FC = () => {
+  const { t } = useTranslation();
   const { getTotalByMonth } = useExpenseStore();
   const { settings } = useSettingsStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -26,11 +28,11 @@ export const BudgetProgress: React.FC = () => {
   // 進捗状態を判定
   const getStatus = () => {
     if (percentage >= 100) {
-      return { color: '#ef4444', icon: <MdWarning size={24} />, message: '予算超過' };
+      return { color: '#ef4444', icon: <MdWarning size={24} />, message: t('expense.budget.status.exceeded') };
     } else if (percentage >= 80) {
-      return { color: '#f59e0b', icon: <MdTrendingUp size={24} />, message: '予算残りわずか' };
+      return { color: '#f59e0b', icon: <MdTrendingUp size={24} />, message: t('expense.budget.status.low') };
     } else {
-      return { color: '#10b981', icon: <MdCheckCircle size={24} />, message: '順調' };
+      return { color: '#10b981', icon: <MdCheckCircle size={24} />, message: t('expense.budget.status.onTrack') };
     }
   };
 
@@ -43,7 +45,7 @@ export const BudgetProgress: React.FC = () => {
 
   return (
     <div className="card">
-      <h3 style={{ marginBottom: '15px' }}>月次予算</h3>
+      <h3 style={{ marginBottom: '15px' }}>{t('expense.budget.title')}</h3>
 
       <button
         onClick={() => setIsMonthPickerOpen(true)}
@@ -62,7 +64,7 @@ export const BudgetProgress: React.FC = () => {
           marginBottom: '20px',
         }}
       >
-        <span>{selectedYear}年 {selectedMonth}月</span>
+        <span>{selectedYear}{t('common.year')} {selectedMonth}{t('common.month')}</span>
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
 
@@ -82,7 +84,7 @@ export const BudgetProgress: React.FC = () => {
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 'bold', color: status.color }}>{status.message}</div>
           <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-            {remaining >= 0 ? `残り ¥${formatAmount(remaining)}` : `超過 ¥${formatAmount(Math.abs(remaining))}`}
+            {remaining >= 0 ? t('expense.budget.remaining', { amount: formatAmount(remaining) }) : t('expense.budget.exceeded', { amount: formatAmount(Math.abs(remaining)) })}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -137,7 +139,7 @@ export const BudgetProgress: React.FC = () => {
           }}
         >
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '5px' }}>
-            支出
+            {t('expense.budget.expense')}
           </div>
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--danger)' }}>
             ¥{formatAmount(totalExpense)}
@@ -152,7 +154,7 @@ export const BudgetProgress: React.FC = () => {
           }}
         >
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '5px' }}>
-            予算
+            {t('expense.budget.budget')}
           </div>
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--primary)' }}>
             ¥{formatAmount(monthlyBudget)}

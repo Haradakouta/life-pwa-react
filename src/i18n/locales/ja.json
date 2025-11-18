@@ -123,6 +123,68 @@
     "obese2": "肥満度2",
     "obese3": "肥満度3",
     "obese4": "肥満度4"
+  },
+  "exercise": {
+    "title": "運動記録",
+    "subtitle": "運動を記録して目標達成を目指しましょう",
+    "form": {
+      "title": "運動を記録",
+      "name": "運動名",
+      "namePlaceholder": "例: ランニング、筋トレ、ウォーキング",
+      "duration": "運動時間（分）",
+      "durationPlaceholder": "例: 30",
+      "calories": "消費カロリー（オプション）",
+      "caloriesPlaceholder": "例: 200",
+      "submit": "記録する",
+      "nameRequired": "運動名を入力してください",
+      "durationRequired": "運動時間を入力してください",
+      "recorded": "運動を記録しました！",
+      "recordFailed": "運動記録に失敗しました"
+    },
+    "list": {
+      "title": "今日の記録",
+      "empty": "まだ記録がありません",
+      "total": "合計",
+      "minutes": "分",
+      "deleteConfirm": "この記録を削除しますか？"
+    }
+  },
+  "goals": {
+    "title": "目標管理",
+    "subtitle": "件のアクティブな目標",
+    "newGoal": "新規目標",
+    "createGoal": "目標を作成",
+    "active": "アクティブ",
+    "completed": "達成",
+    "completionRate": "達成率",
+    "all": "すべて",
+    "activeFilter": "アクティブ",
+    "completedFilter": "達成済み",
+    "empty": {
+      "completed": "達成済みの目標がありません",
+      "active": "アクティブな目標がありません",
+      "all": "目標がありません",
+      "suggestion": "最初の目標を設定してみましょう！"
+    },
+    "deleteFailed": "目標の削除に失敗しました"
+  },
+  "summary": {
+    "todayCalories": "今日のカロリー",
+    "monthExpense": "今月の支出",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "食事記録",
+    "exercise": "運動記録",
+    "scan": "スキャン",
+    "expense": "家計簿",
+    "stock": "在庫管理",
+    "recipe": "AIレシピ",
+    "shopping": "買い物",
+    "report": "レポート",
+    "badges": "バッジ",
+    "goals": "目標",
+    "settings": "設定"
   }
 }
 

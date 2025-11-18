@@ -3,6 +3,7 @@
  * React 19のuseDeferredValueを活用した最適化版
  */
 import React, { useMemo, useDeferredValue, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useIntakeStore, useExpenseStore, useSettingsStore } from '../../store';
 import { MdHealthAndSafety, MdLocalFireDepartment, MdAccountBalanceWallet, MdTrendingUp } from 'react-icons/md';
 
@@ -14,19 +15,8 @@ const calculateBMI = (height: number, weight: number): number => {
   return weight / (heightInMeters * heightInMeters);
 };
 
-/**
- * BMIカテゴリを取得する関数
- */
-const getBMICategory = (bmi: number): string => {
-  if (bmi < 18.5) return '低体重';
-  if (bmi < 25) return '普通体重';
-  if (bmi < 30) return '肥満度1';
-  if (bmi < 35) return '肥満度2';
-  if (bmi < 40) return '肥満度3';
-  return '肥満度4';
-};
-
 export const SummaryCard: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const { getTotalCaloriesByDate } = useIntakeStore();
   const { getTotalByMonth } = useExpenseStore();
   const { settings } = useSettingsStore();
@@ -51,6 +41,15 @@ export const SummaryCard: React.FC = React.memo(() => {
     }
     return null;
   }, [settings.height, settings.weight]);
+
+  const getBMICategory = (bmi: number): string => {
+    if (bmi < 18.5) return t('bmi.underweight');
+    if (bmi < 25) return t('bmi.normal');
+    if (bmi < 30) return t('bmi.obese1');
+    if (bmi < 35) return t('bmi.obese2');
+    if (bmi < 40) return t('bmi.obese3');
+    return t('bmi.obese4');
+  };
 
   const bmiCategory = bmi ? getBMICategory(bmi) : null;
 
@@ -90,7 +89,7 @@ export const SummaryCard: React.FC = React.memo(() => {
             <MdLocalFireDepartment size={18} color="white" />
           </div>
           <div className="summary-content">
-            <span className="summary-label-modern" style={{ fontSize: '12px' }}>今日のカロリー</span>
+            <span className="summary-label-modern" style={{ fontSize: '12px' }}>{t('summary.todayCalories')}</span>
             <span className="summary-value-modern" style={{ color: '#f59e0b', fontSize: '18px' }}>
               {deferredCalories} <span style={{ fontSize: '12px', opacity: 0.7 }}>kcal</span>
             </span>
@@ -102,7 +101,7 @@ export const SummaryCard: React.FC = React.memo(() => {
             <MdAccountBalanceWallet size={18} color="white" />
           </div>
           <div className="summary-content">
-            <span className="summary-label-modern" style={{ fontSize: '12px' }}>今月の支出</span>
+            <span className="summary-label-modern" style={{ fontSize: '12px' }}>{t('summary.monthExpense')}</span>
             <span className="summary-value-modern" style={{ color: '#10b981', fontSize: '18px' }}>
               ¥{deferredExpense.toLocaleString()}
             </span>
@@ -119,7 +118,7 @@ export const SummaryCard: React.FC = React.memo(() => {
               <MdHealthAndSafety size={18} color="white" />
             </div>
             <div className="summary-content">
-              <span className="summary-label-modern" style={{ fontSize: '12px' }}>BMI</span>
+              <span className="summary-label-modern" style={{ fontSize: '12px' }}>{t('summary.bmi')}</span>
               <span 
                 className="summary-value-modern" 
                 style={{ 

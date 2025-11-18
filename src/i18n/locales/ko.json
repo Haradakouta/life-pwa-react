@@ -123,6 +123,68 @@
     "obese2": "비만 2단계",
     "obese3": "비만 3단계",
     "obese4": "비만 4단계"
+  },
+  "exercise": {
+    "title": "운동 기록",
+    "subtitle": "운동을 기록하고 목표 달성을 향해 노력하세요",
+    "form": {
+      "title": "운동 기록",
+      "name": "운동 이름",
+      "namePlaceholder": "예: 달리기, 웨이트 트레이닝, 걷기",
+      "duration": "운동 시간（분）",
+      "durationPlaceholder": "예: 30",
+      "calories": "소모 칼로리（선택사항）",
+      "caloriesPlaceholder": "예: 200",
+      "submit": "기록",
+      "nameRequired": "운동 이름을 입력하세요",
+      "durationRequired": "운동 시간을 입력하세요",
+      "recorded": "운동이 기록되었습니다！",
+      "recordFailed": "운동 기록에 실패했습니다"
+    },
+    "list": {
+      "title": "오늘의 기록",
+      "empty": "아직 기록이 없습니다",
+      "total": "합계",
+      "minutes": "분",
+      "deleteConfirm": "이 기록을 삭제하시겠습니까？"
+    }
+  },
+  "goals": {
+    "title": "목표 관리",
+    "subtitle": "개의 활성 목표",
+    "newGoal": "새 목표",
+    "createGoal": "목표 만들기",
+    "active": "활성",
+    "completed": "완료",
+    "completionRate": "완료율",
+    "all": "전체",
+    "activeFilter": "활성",
+    "completedFilter": "완료됨",
+    "empty": {
+      "completed": "완료된 목표가 없습니다",
+      "active": "활성 목표가 없습니다",
+      "all": "목표가 없습니다",
+      "suggestion": "첫 번째 목표를 설정해보세요！"
+    },
+    "deleteFailed": "목표 삭제에 실패했습니다"
+  },
+  "summary": {
+    "todayCalories": "오늘의 칼로리",
+    "monthExpense": "이번 달 지출",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "식사 기록",
+    "exercise": "운동 기록",
+    "scan": "스캔",
+    "expense": "가계부",
+    "stock": "재고 관리",
+    "recipe": "AI 레시피",
+    "shopping": "쇼핑",
+    "report": "보고서",
+    "badges": "배지",
+    "goals": "목표",
+    "settings": "설정"
   }
 }
 

@@ -72,15 +72,18 @@ function App() {
     document.body.classList.toggle('dark-mode', settings.darkMode);
   }, [settings.darkMode]);
 
-  // 言語の初期化
+  // 言語の初期化と更新
   useEffect(() => {
-    if (settings.language) {
-      const language = settings.language;
-      import('./i18n/config').then(({ default: i18n }) => {
-        i18n.changeLanguage(language);
-        document.documentElement.lang = language;
-      });
-    }
+    import('./i18n/config').then(({ default: i18n }) => {
+      const language = settings.language || 'ja';
+      if (i18n.language !== language) {
+        i18n.changeLanguage(language).then(() => {
+          // 言語変更後に強制的に再レンダリングをトリガー
+          window.dispatchEvent(new Event('languagechange'));
+        });
+      }
+      document.documentElement.lang = language;
+    });
   }, [settings.language]);
 
   // スキンの適用

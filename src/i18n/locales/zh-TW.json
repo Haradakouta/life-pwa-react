@@ -123,6 +123,68 @@
     "obese2": "肥胖2級",
     "obese3": "肥胖3級",
     "obese4": "肥胖4級"
+  },
+  "exercise": {
+    "title": "運動記錄",
+    "subtitle": "記錄運動，實現目標",
+    "form": {
+      "title": "記錄運動",
+      "name": "運動名稱",
+      "namePlaceholder": "例如：跑步、舉重、步行",
+      "duration": "運動時間（分鐘）",
+      "durationPlaceholder": "例如：30",
+      "calories": "消耗卡路里（可選）",
+      "caloriesPlaceholder": "例如：200",
+      "submit": "記錄",
+      "nameRequired": "請輸入運動名稱",
+      "durationRequired": "請輸入運動時間",
+      "recorded": "運動已記錄！",
+      "recordFailed": "記錄運動失敗"
+    },
+    "list": {
+      "title": "今日記錄",
+      "empty": "暫無記錄",
+      "total": "總計",
+      "minutes": "分鐘",
+      "deleteConfirm": "刪除此記錄？"
+    }
+  },
+  "goals": {
+    "title": "目標管理",
+    "subtitle": "個活躍目標",
+    "newGoal": "新目標",
+    "createGoal": "創建目標",
+    "active": "活躍",
+    "completed": "已完成",
+    "completionRate": "完成率",
+    "all": "全部",
+    "activeFilter": "活躍",
+    "completedFilter": "已完成",
+    "empty": {
+      "completed": "沒有已完成的目標",
+      "active": "沒有活躍的目標",
+      "all": "沒有目標",
+      "suggestion": "讓我們設置第一個目標吧！"
+    },
+    "deleteFailed": "刪除目標失敗"
+  },
+  "summary": {
+    "todayCalories": "今日卡路里",
+    "monthExpense": "本月支出",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "用餐記錄",
+    "exercise": "運動記錄",
+    "scan": "掃描",
+    "expense": "賬本",
+    "stock": "庫存管理",
+    "recipe": "AI食譜",
+    "shopping": "購物",
+    "report": "報告",
+    "badges": "成就",
+    "goals": "目標",
+    "settings": "設置"
   }
 }
 

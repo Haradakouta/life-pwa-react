@@ -123,6 +123,68 @@
     "obese2": "Obesitas Tingkat 2",
     "obese3": "Obesitas Tingkat 3",
     "obese4": "Obesitas Tingkat 4"
+  },
+  "exercise": {
+    "title": "Catatan Olahraga",
+    "subtitle": "Catat latihan Anda dan raih tujuan",
+    "form": {
+      "title": "Catat Latihan",
+      "name": "Nama Latihan",
+      "namePlaceholder": "Contoh: Lari, Angkat Beban, Jalan Kaki",
+      "duration": "Durasi（menit）",
+      "durationPlaceholder": "Contoh: 30",
+      "calories": "Kalori Terbakar（opsional）",
+      "caloriesPlaceholder": "Contoh: 200",
+      "submit": "Catat",
+      "nameRequired": "Silakan masukkan nama latihan",
+      "durationRequired": "Silakan masukkan durasi",
+      "recorded": "Latihan telah dicatat！",
+      "recordFailed": "Gagal mencatat latihan"
+    },
+    "list": {
+      "title": "Catatan Hari Ini",
+      "empty": "Belum ada catatan",
+      "total": "Total",
+      "minutes": "menit",
+      "deleteConfirm": "Hapus catatan ini？"
+    }
+  },
+  "goals": {
+    "title": "Manajemen Tujuan",
+    "subtitle": "tujuan aktif",
+    "newGoal": "Tujuan Baru",
+    "createGoal": "Buat Tujuan",
+    "active": "Aktif",
+    "completed": "Selesai",
+    "completionRate": "Tingkat Penyelesaian",
+    "all": "Semua",
+    "activeFilter": "Aktif",
+    "completedFilter": "Selesai",
+    "empty": {
+      "completed": "Tidak ada tujuan yang selesai",
+      "active": "Tidak ada tujuan aktif",
+      "all": "Tidak ada tujuan",
+      "suggestion": "Mari kita tetapkan tujuan pertama Anda！"
+    },
+    "deleteFailed": "Gagal menghapus tujuan"
+  },
+  "summary": {
+    "todayCalories": "Kalori Hari Ini",
+    "monthExpense": "Pengeluaran Bulan Ini",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "Catatan Makanan",
+    "exercise": "Catatan Olahraga",
+    "scan": "Pindai",
+    "expense": "Buku Pengeluaran",
+    "stock": "Manajemen Stok",
+    "recipe": "Resep AI",
+    "shopping": "Belanja",
+    "report": "Laporan",
+    "badges": "Lencana",
+    "goals": "Tujuan",
+    "settings": "Pengaturan"
   }
 }
 

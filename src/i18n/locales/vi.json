@@ -123,6 +123,68 @@
     "obese2": "Béo phì cấp 2",
     "obese3": "Béo phì cấp 3",
     "obese4": "Béo phì cấp 4"
+  },
+  "exercise": {
+    "title": "Bản ghi tập thể dục",
+    "subtitle": "Ghi lại bài tập của bạn và hướng tới mục tiêu",
+    "form": {
+      "title": "Ghi lại bài tập",
+      "name": "Tên bài tập",
+      "namePlaceholder": "VD: Chạy bộ, Tập tạ, Đi bộ",
+      "duration": "Thời gian（phút）",
+      "durationPlaceholder": "VD: 30",
+      "calories": "Calo đốt cháy（tùy chọn）",
+      "caloriesPlaceholder": "VD: 200",
+      "submit": "Ghi lại",
+      "nameRequired": "Vui lòng nhập tên bài tập",
+      "durationRequired": "Vui lòng nhập thời gian",
+      "recorded": "Đã ghi lại bài tập！",
+      "recordFailed": "Ghi lại bài tập thất bại"
+    },
+    "list": {
+      "title": "Bản ghi hôm nay",
+      "empty": "Chưa có bản ghi",
+      "total": "Tổng",
+      "minutes": "phút",
+      "deleteConfirm": "Xóa bản ghi này？"
+    }
+  },
+  "goals": {
+    "title": "Quản lý mục tiêu",
+    "subtitle": "mục tiêu đang hoạt động",
+    "newGoal": "Mục tiêu mới",
+    "createGoal": "Tạo mục tiêu",
+    "active": "Đang hoạt động",
+    "completed": "Hoàn thành",
+    "completionRate": "Tỷ lệ hoàn thành",
+    "all": "Tất cả",
+    "activeFilter": "Đang hoạt động",
+    "completedFilter": "Đã hoàn thành",
+    "empty": {
+      "completed": "Không có mục tiêu đã hoàn thành",
+      "active": "Không có mục tiêu đang hoạt động",
+      "all": "Không có mục tiêu",
+      "suggestion": "Hãy đặt mục tiêu đầu tiên của bạn！"
+    },
+    "deleteFailed": "Xóa mục tiêu thất bại"
+  },
+  "summary": {
+    "todayCalories": "Calo hôm nay",
+    "monthExpense": "Chi tiêu tháng này",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "Bản ghi bữa ăn",
+    "exercise": "Bản ghi tập thể dục",
+    "scan": "Quét",
+    "expense": "Sổ chi tiêu",
+    "stock": "Quản lý kho",
+    "recipe": "Công thức AI",
+    "shopping": "Mua sắm",
+    "report": "Báo cáo",
+    "badges": "Huy hiệu",
+    "goals": "Mục tiêu",
+    "settings": "Cài đặt"
   }
 }
 

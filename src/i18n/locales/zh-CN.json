@@ -123,6 +123,68 @@
     "obese2": "肥胖2级",
     "obese3": "肥胖3级",
     "obese4": "肥胖4级"
+  },
+  "exercise": {
+    "title": "运动记录",
+    "subtitle": "记录运动，实现目标",
+    "form": {
+      "title": "记录运动",
+      "name": "运动名称",
+      "namePlaceholder": "例如：跑步、举重、步行",
+      "duration": "运动时间（分钟）",
+      "durationPlaceholder": "例如：30",
+      "calories": "消耗卡路里（可选）",
+      "caloriesPlaceholder": "例如：200",
+      "submit": "记录",
+      "nameRequired": "请输入运动名称",
+      "durationRequired": "请输入运动时间",
+      "recorded": "运动已记录！",
+      "recordFailed": "记录运动失败"
+    },
+    "list": {
+      "title": "今日记录",
+      "empty": "暂无记录",
+      "total": "总计",
+      "minutes": "分钟",
+      "deleteConfirm": "删除此记录？"
+    }
+  },
+  "goals": {
+    "title": "目标管理",
+    "subtitle": "个活跃目标",
+    "newGoal": "新目标",
+    "createGoal": "创建目标",
+    "active": "活跃",
+    "completed": "已完成",
+    "completionRate": "完成率",
+    "all": "全部",
+    "activeFilter": "活跃",
+    "completedFilter": "已完成",
+    "empty": {
+      "completed": "没有已完成的目标",
+      "active": "没有活跃的目标",
+      "all": "没有目标",
+      "suggestion": "让我们设置第一个目标吧！"
+    },
+    "deleteFailed": "删除目标失败"
+  },
+  "summary": {
+    "todayCalories": "今日卡路里",
+    "monthExpense": "本月支出",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "用餐记录",
+    "exercise": "运动记录",
+    "scan": "扫描",
+    "expense": "账本",
+    "stock": "库存管理",
+    "recipe": "AI食谱",
+    "shopping": "购物",
+    "report": "报告",
+    "badges": "成就",
+    "goals": "目标",
+    "settings": "设置"
   }
 }
 

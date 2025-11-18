@@ -3,6 +3,7 @@
  * MyFitnessPal/YNABレベルの美しいUI
  */
 import React, { useState, useEffect, useTransition, Suspense, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGoalStore } from '../../store/useGoalStore';
 import { GoalProgressCard } from './GoalProgressCard';
 import { GoalSettingScreen } from './GoalSettingScreen';
@@ -12,6 +13,7 @@ import type { GoalProgress } from '../../types';
 type GoalsView = 'list' | 'create' | 'edit';
 
 export const GoalsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { goals, getActiveGoals, getGoalProgress, updateGoalProgress, syncWithFirestore, subscribeToFirestore, initialized } = useGoalStore();
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [editingGoalId, setEditingGoalId] = useState<string | undefined>();
@@ -94,7 +96,7 @@ export const GoalsScreen: React.FC = () => {
       await useGoalStore.getState().deleteGoal(goalId);
     } catch (error) {
       console.error('目標の削除に失敗しました:', error);
-      alert('目標の削除に失敗しました');
+      alert(t('goals.deleteFailed'));
     }
   };
 
@@ -142,10 +144,10 @@ export const GoalsScreen: React.FC = () => {
               marginBottom: '4px',
             }}
           >
-            目標管理
+            {t('goals.title')}
           </h2>
           <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {stats.active}件のアクティブな目標
+            {stats.active}{t('goals.subtitle')}
           </div>
         </div>
         <button
@@ -180,7 +182,7 @@ export const GoalsScreen: React.FC = () => {
           }}
         >
           <MdAdd size={20} />
-          新規目標
+          {t('goals.newGoal')}
         </button>
       </div>
 
@@ -208,7 +210,7 @@ export const GoalsScreen: React.FC = () => {
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#3b82f6', marginBottom: '4px' }}>
               {stats.active}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>アクティブ</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('goals.active')}</div>
           </div>
           <div
             className="goal-stat-card-modern"
@@ -223,7 +225,7 @@ export const GoalsScreen: React.FC = () => {
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#10b981', marginBottom: '4px' }}>
               {stats.completed}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>達成</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('goals.completed')}</div>
           </div>
           <div
             className="goal-stat-card-modern"
@@ -238,7 +240,7 @@ export const GoalsScreen: React.FC = () => {
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b', marginBottom: '4px' }}>
               {Math.round(stats.completionRate)}%
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>達成率</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('goals.completionRate')}</div>
           </div>
         </div>
       )}
@@ -275,9 +277,9 @@ export const GoalsScreen: React.FC = () => {
                 }
               }}
             >
-              {status === 'all' && 'すべて'}
-              {status === 'active' && 'アクティブ'}
-              {status === 'completed' && '達成済み'}
+              {status === 'all' && t('goals.all')}
+              {status === 'active' && t('goals.activeFilter')}
+              {status === 'completed' && t('goals.completedFilter')}
             </button>
           ))}
         </div>
@@ -299,13 +301,13 @@ export const GoalsScreen: React.FC = () => {
             </div>
             <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px', color: 'var(--text)' }}>
               {filterStatus === 'completed'
-                ? '達成済みの目標がありません'
+                ? t('goals.empty.completed')
                 : filterStatus === 'active'
-                  ? 'アクティブな目標がありません'
-                  : '目標がありません'}
+                  ? t('goals.empty.active')
+                  : t('goals.empty.all')}
             </div>
             <div style={{ fontSize: '14px', marginBottom: '24px' }}>
-              {filterStatus === 'active' && '最初の目標を設定してみましょう！'}
+              {filterStatus === 'active' && t('goals.empty.suggestion')}
             </div>
             {filterStatus === 'active' && (
               <button
@@ -339,12 +341,12 @@ export const GoalsScreen: React.FC = () => {
                 }}
               >
                 <MdAdd size={20} />
-                目標を作成
+                {t('goals.createGoal')}
               </button>
             )}
           </div>
         ) : (
-          <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>読み込み中...</div>}>
+          <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>{t('common.loading')}</div>}>
             <div>
               {filteredGoals.map((goal, index) => {
                 const progress = progressMap[goal.id];

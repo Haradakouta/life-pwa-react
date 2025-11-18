@@ -2,9 +2,11 @@
  * 運動入力フォームコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExerciseStore } from '../../store';
 
 export const ExerciseForm: React.FC = () => {
+  const { t } = useTranslation();
   const { addExercise } = useExerciseStore();
   const [name, setName] = useState('');
   const [duration, setDuration] = useState('');
@@ -14,12 +16,12 @@ export const ExerciseForm: React.FC = () => {
     e.preventDefault();
     
     if (!name.trim()) {
-      alert('運動名を入力してください');
+      alert(t('exercise.form.nameRequired'));
       return;
     }
     
     if (!duration || Number(duration) <= 0) {
-      alert('運動時間を入力してください');
+      alert(t('exercise.form.durationRequired'));
       return;
     }
 
@@ -35,10 +37,10 @@ export const ExerciseForm: React.FC = () => {
       setDuration('');
       setCalories('');
 
-      alert('運動を記録しました！');
+      alert(t('exercise.form.recorded'));
     } catch (error) {
       console.error('運動記録エラー:', error);
-      alert('運動記録に失敗しました');
+      alert(t('exercise.form.recordFailed'));
     }
   };
 
@@ -51,17 +53,17 @@ export const ExerciseForm: React.FC = () => {
       margin: '16px',
       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
     }}>
-      <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>運動を記録</h3>
+      <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>{t('exercise.form.title')}</h3>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-            運動名
+            {t('exercise.form.name')}
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例: ランニング、筋トレ、ウォーキング"
+            placeholder={t('exercise.form.namePlaceholder')}
             style={{
               width: '100%',
               padding: '12px',
@@ -76,13 +78,13 @@ export const ExerciseForm: React.FC = () => {
         
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-            運動時間（分）
+            {t('exercise.form.duration')}
           </label>
           <input
             type="number"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            placeholder="例: 30"
+            placeholder={t('exercise.form.durationPlaceholder')}
             min="1"
             style={{
               width: '100%',
@@ -97,13 +99,13 @@ export const ExerciseForm: React.FC = () => {
 
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-            消費カロリー（オプション）
+            {t('exercise.form.calories')}
           </label>
           <input
             type="number"
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
-            placeholder="例: 200"
+            placeholder={t('exercise.form.caloriesPlaceholder')}
             min="0"
             style={{
               width: '100%',
@@ -140,7 +142,7 @@ export const ExerciseForm: React.FC = () => {
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
           }}
         >
-          記録する
+          {t('exercise.form.submit')}
         </button>
       </form>
     </div>

@@ -2,10 +2,12 @@
  * 運動一覧表示コンポーネント
  */
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExerciseStore } from '../../store';
 import { MdDelete } from 'react-icons/md';
 
 export const ExerciseList: React.FC = () => {
+  const { t } = useTranslation();
   const { exercises, deleteExercise, getTotalDurationByDate } = useExerciseStore();
 
   // 今日の運動記録
@@ -19,7 +21,7 @@ export const ExerciseList: React.FC = () => {
   const todayDuration = getTotalDurationByDate(today);
 
   const handleDelete = (id: string) => {
-    if (confirm('この記録を削除しますか？')) {
+    if (confirm(t('exercise.list.deleteConfirm'))) {
       deleteExercise(id);
     }
   };
@@ -33,10 +35,10 @@ export const ExerciseList: React.FC = () => {
       margin: '16px',
       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
     }}>
-      <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>今日の記録</h3>
+      <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>{t('exercise.list.title')}</h3>
       {todayExercises.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
-          まだ記録がありません
+          {t('exercise.list.empty')}
         </p>
       ) : (
         <>
@@ -55,7 +57,7 @@ export const ExerciseList: React.FC = () => {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 500, marginBottom: '4px' }}>{exercise.name}</div>
                   <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                    {exercise.duration}分
+                    {exercise.duration}{t('exercise.list.minutes')}
                     {exercise.calories && ` · ${exercise.calories} kcal`}
                   </div>
                 </div>
@@ -89,9 +91,9 @@ export const ExerciseList: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            <span style={{ fontWeight: 600, fontSize: '16px' }}>合計</span>
+            <span style={{ fontWeight: 600, fontSize: '16px' }}>{t('exercise.list.total')}</span>
             <span style={{ fontWeight: 700, fontSize: '18px', color: '#6366f1' }}>
-              {todayDuration}分
+              {todayDuration}{t('exercise.list.minutes')}
             </span>
           </div>
         </>

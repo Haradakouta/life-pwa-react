@@ -123,6 +123,68 @@
     "obese2": "Obesity Level 2",
     "obese3": "Obesity Level 3",
     "obese4": "Obesity Level 4"
+  },
+  "exercise": {
+    "title": "Exercise Records",
+    "subtitle": "Record your exercises and work towards your goals",
+    "form": {
+      "title": "Record Exercise",
+      "name": "Exercise Name",
+      "namePlaceholder": "e.g., Running, Weight Training, Walking",
+      "duration": "Duration (minutes)",
+      "durationPlaceholder": "e.g., 30",
+      "calories": "Calories Burned (optional)",
+      "caloriesPlaceholder": "e.g., 200",
+      "submit": "Record",
+      "nameRequired": "Please enter exercise name",
+      "durationRequired": "Please enter duration",
+      "recorded": "Exercise recorded!",
+      "recordFailed": "Failed to record exercise"
+    },
+    "list": {
+      "title": "Today's Records",
+      "empty": "No records yet",
+      "total": "Total",
+      "minutes": "min",
+      "deleteConfirm": "Delete this record?"
+    }
+  },
+  "goals": {
+    "title": "Goal Management",
+    "subtitle": "active goals",
+    "newGoal": "New Goal",
+    "createGoal": "Create Goal",
+    "active": "Active",
+    "completed": "Completed",
+    "completionRate": "Completion Rate",
+    "all": "All",
+    "activeFilter": "Active",
+    "completedFilter": "Completed",
+    "empty": {
+      "completed": "No completed goals",
+      "active": "No active goals",
+      "all": "No goals",
+      "suggestion": "Let's set your first goal!"
+    },
+    "deleteFailed": "Failed to delete goal"
+  },
+  "summary": {
+    "todayCalories": "Today's Calories",
+    "monthExpense": "Monthly Expense",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "Meal Records",
+    "exercise": "Exercise Records",
+    "scan": "Scan",
+    "expense": "Expense Book",
+    "stock": "Stock Management",
+    "recipe": "AI Recipe",
+    "shopping": "Shopping",
+    "report": "Report",
+    "badges": "Badges",
+    "goals": "Goals",
+    "settings": "Settings"
   }
 }
 

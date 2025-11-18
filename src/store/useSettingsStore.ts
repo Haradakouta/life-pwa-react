@@ -24,8 +24,21 @@ const defaultSettings: Settings = {
   firstTime: true,
 };
 
+// 初期設定を取得
+const initialSettings = { ...defaultSettings, ...getFromStorage(STORAGE_KEYS.SETTINGS, defaultSettings) };
+
+// 初期言語を適用
+if (initialSettings.language) {
+  i18n.changeLanguage(initialSettings.language);
+  document.documentElement.lang = initialSettings.language;
+} else {
+  // デフォルト言語を設定
+  i18n.changeLanguage('ja');
+  document.documentElement.lang = 'ja';
+}
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
-  settings: { ...defaultSettings, ...getFromStorage(STORAGE_KEYS.SETTINGS, defaultSettings) },
+  settings: initialSettings,
   loading: false,
   initialized: false,
 
@@ -42,11 +55,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         document.body.classList.toggle('dark-mode', updates.darkMode);
       }
 
-      // 言語の適用
-      if ('language' in updates && updates.language) {
-        i18n.changeLanguage(updates.language);
+      // 言語の適用（確実に適用する）
+      if ('language' in updates) {
+        const language = updates.language || 'ja';
+        if (i18n.language !== language) {
+          i18n.changeLanguage(language);
+        }
         // HTMLのlang属性も更新
-        document.documentElement.lang = updates.language;
+        document.documentElement.lang = language;
       }
 
       return { settings: newSettings };
@@ -125,16 +141,25 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         // ダークモードを適用
         document.body.classList.toggle('dark-mode', firestoreSettings.darkMode);
 
-        // 言語を適用
-        if (firestoreSettings.language) {
-          i18n.changeLanguage(firestoreSettings.language);
-          document.documentElement.lang = firestoreSettings.language;
+        // 言語を適用（確実に適用する）
+        const language = firestoreSettings.language || 'ja';
+        if (i18n.language !== language) {
+          i18n.changeLanguage(language);
         }
+        document.documentElement.lang = language;
       } else {
         // Firestoreにデータがない場合はデフォルト設定を保存
         console.log(`[SettingsStore] No settings found, using defaults`);
         const currentSettings = get().settings;
         await settingsOperations.set(user.uid, currentSettings);
+        
+        // 言語を適用（確実に適用する）
+        const language = currentSettings.language || 'ja';
+        if (i18n.language !== language) {
+          i18n.changeLanguage(language);
+        }
+        document.documentElement.lang = language;
+        
         set({ loading: false, initialized: true });
       }
     } catch (error) {

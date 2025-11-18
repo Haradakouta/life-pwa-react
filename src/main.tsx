@@ -2,11 +2,31 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/global.css';
-import './i18n/config';
+import i18n from './i18n/config';
 import { setupErrorHandlers } from './utils/errorLogger';
 
 // エラーハンドラーを設定
 setupErrorHandlers();
+
+// 初期言語を設定（localStorageから読み込み）
+const getStoredLanguage = (): string | undefined => {
+  try {
+    const storedSettings = localStorage.getItem('settings');
+    if (storedSettings) {
+      const settings = JSON.parse(storedSettings);
+      return settings.language;
+    }
+  } catch (error) {
+    console.error('Failed to get stored language:', error);
+  }
+  return undefined;
+};
+
+const initialLanguage = getStoredLanguage();
+if (initialLanguage) {
+  i18n.changeLanguage(initialLanguage);
+  document.documentElement.lang = initialLanguage;
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

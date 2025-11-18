@@ -10,7 +10,22 @@
     "success": "Success",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "year": "Year",
+    "month": "Month",
+    "days": "Days",
+    "selectDate": "Select Date",
+    "selectMonth": "Select Month",
+    "selectMonthYear": "Tap to select year and month",
+    "weekday": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -333,6 +348,23 @@
     "screen": {
       "title": "Expense Book",
       "history": "Expense History"
+    },
+    "summary": {
+      "title": "Category Summary",
+      "noData": "No expense data for this month",
+      "totalExpense": "Total Expense"
+    },
+    "budget": {
+      "title": "Monthly Budget",
+      "remaining": "Remaining ¥{{amount}}",
+      "exceeded": "Exceeded ¥{{amount}}",
+      "expense": "Expense",
+      "budget": "Budget",
+      "status": {
+        "exceeded": "Budget Exceeded",
+        "low": "Budget Running Low",
+        "onTrack": "On Track"
+      }
     }
   },
   "shopping": {
@@ -382,6 +414,13 @@
       "paceUp": "Pace Up",
       "needEffort": "Need Effort",
       "deleteConfirm": "Delete this goal?",
+      "current": "Current",
+      "target": "Target",
+      "exceeded": "Exceeded",
+      "remaining": "Remaining",
+      "daysRemaining": "Days Remaining",
+      "dailyAverage": "Daily Average",
+      "estimatedDate": "Estimated Completion Date",
       "period": {
         "day": "1 Day",
         "week": "1 Week",

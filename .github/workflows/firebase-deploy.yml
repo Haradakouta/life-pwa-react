@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: "firebase-hosting"
-  cancel-in-progress: false
+  group: "firebase-hosting-${{ github.ref }}"
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:

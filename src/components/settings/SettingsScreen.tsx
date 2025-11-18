@@ -392,7 +392,7 @@ export const SettingsScreen: React.FC = () => {
           <select
             value={settings.language || i18n.language || 'ja'}
             onChange={(e) => {
-              const newLanguage = e.target.value;
+              const newLanguage = e.target.value as string;
               updateSettings({ language: newLanguage });
             }}
             style={{

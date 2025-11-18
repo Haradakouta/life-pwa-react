@@ -3,6 +3,7 @@
  * React 19の機能を活用したモダンなUI
  */
 import React, { useTransition, Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SummaryCard } from './SummaryCard';
 import { QuickActions } from './QuickActions';
 import type { Screen } from '../layout/BottomNav';
@@ -30,6 +31,7 @@ const SummaryCardSkeleton: React.FC = () => (
 );
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
 
   const handleNavigate = React.useCallback((screen: Screen) => {
@@ -41,13 +43,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   return (
     <section className="screen active dashboard-screen">
       <div className="dashboard-header" style={{ padding: '12px 16px', marginBottom: '8px' }}>
-        <h2 className="dashboard-title" style={{ fontSize: '22px', marginBottom: '2px' }}>ホーム</h2>
-        <div className="dashboard-subtitle" style={{ fontSize: '13px' }}>健康と家計を管理</div>
+        <h2 className="dashboard-title" style={{ fontSize: '22px', marginBottom: '2px' }}>{t('dashboard.title')}</h2>
+        <div className="dashboard-subtitle" style={{ fontSize: '13px' }}>{t('dashboard.subtitle')}</div>
       </div>
       <Suspense fallback={<SummaryCardSkeleton />}>
         <SummaryCard />
       </Suspense>
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>読み込み中...</div>}>
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>{t('common.loading')}</div>}>
         <GoalsSummary onNavigate={handleNavigate} />
       </Suspense>
       <QuickActions onNavigate={handleNavigate} />

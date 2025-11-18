@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "back": "戻る",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "confirm": "確認",
+    "yes": "はい",
+    "no": "いいえ"
+  },
+  "settings": {
+    "title": "設定",
+    "profile": {
+      "title": "プロフィール",
+      "edit": "プロフィールを編集",
+      "description": "アイコン、名前、自己紹介などを編集"
+    },
+    "cosmetic": {
+      "title": "装飾",
+      "change": "装飾を変更",
+      "description": "装飾を変更・購入できます"
+    },
+    "mission": {
+      "title": "ミッション・報酬",
+      "daily": "デイリーミッション",
+      "description": "ミッションをクリアしてポイントを獲得"
+    },
+    "budget": {
+      "title": "月間予算",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "外観",
+      "darkMode": "ダークモード"
+    },
+    "notifications": {
+      "title": "通知",
+      "push": "プッシュ通知",
+      "enabled": "新しい通知を受け取ります",
+      "disabled": "プッシュ通知は無効です"
+    },
+    "export": {
+      "title": "データエクスポート",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "健康情報",
+      "set": "健康情報を設定",
+      "age": "年齢",
+      "height": "身長",
+      "weight": "体重",
+      "bmi": "BMI",
+      "savings": "貯金額",
+      "notSet": "個人情報が未設定です",
+      "years": "歳",
+      "cm": "cm",
+      "kg": "kg"
+    },
+    "ai": {
+      "title": "AI設定（Gemini API）",
+      "description": "AI機能（レシピ生成、レシートOCR、カロリー計測など）を使用するには、Google Gemini APIキーが必要です。",
+      "getKey": "APIキーを取得する",
+      "placeholder": "AIzaSy...",
+      "save": "APIキーを保存",
+      "saved": "✓ APIキーが設定されています"
+    },
+    "stats": {
+      "title": "データ統計",
+      "intakes": "食事記録",
+      "expenses": "支出記録",
+      "stocks": "在庫アイテム",
+      "items": "件"
+    },
+    "account": {
+      "title": "アカウント",
+      "login": "ログイン",
+      "logout": "ログアウト",
+      "logoutConfirm": "ログアウトしますか？",
+      "logoutError": "ログアウトに失敗しました"
+    },
+    "language": {
+      "title": "言語",
+      "description": "アプリの表示言語を選択",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "ホーム",
+    "subtitle": "健康と家計を管理"
+  },
+  "screens": {
+    "home": "健康家計アプリ",
+    "meals": "食事記録",
+    "barcode": "バーコードスキャン",
+    "report": "レポート",
+    "social": "ソーシャル",
+    "settings": "設定",
+    "stock": "在庫管理",
+    "shopping": "買い物リスト",
+    "recipe": "AIレシピ",
+    "expense": "家計簿",
+    "badges": "アチーブメント",
+    "admin": "管理者パネル",
+    "goals": "目標管理",
+    "exercise": "運動記録"
+  },
+  "bmi": {
+    "underweight": "低体重",
+    "normal": "普通体重",
+    "obese1": "肥満度1",
+    "obese2": "肥満度2",
+    "obese3": "肥満度3",
+    "obese4": "肥満度4"
+  }
+}
+

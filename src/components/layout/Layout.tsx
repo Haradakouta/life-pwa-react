@@ -2,6 +2,7 @@
  * レイアウトコンポーネント
  */
 import React, { useState, Suspense, lazy, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import type { Screen } from './BottomNav';
@@ -23,30 +24,34 @@ const GoalsScreen = lazy(() => import('../goals/GoalsScreen').then(m => ({ defau
 const ExerciseScreen = lazy(() => import('../exercise/ExerciseScreen').then(m => ({ default: m.ExerciseScreen })));
 
 // ローディングコンポーネント
-const ScreenLoader: React.FC = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '50vh',
-    color: 'var(--text-secondary)',
-  }}>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        margin: '0 auto 12px',
-        border: '3px solid var(--border)',
-        borderTopColor: 'var(--primary)',
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite',
-      }} />
-      <div>読み込み中...</div>
+const ScreenLoader: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '50vh',
+      color: 'var(--text-secondary)',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          margin: '0 auto 12px',
+          border: '3px solid var(--border)',
+          borderTopColor: 'var(--primary)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <div>{t('common.loading')}</div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const Layout: React.FC = () => {
+  const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -62,23 +67,7 @@ export const Layout: React.FC = () => {
   }, [currentScreen, prevScreen]);
 
   const getScreenTitle = (screen: Screen): string => {
-    const titles: Record<Screen, string> = {
-      home: '健康家計アプリ',
-      meals: '食事記録',
-      barcode: 'バーコードスキャン',
-      report: 'レポート',
-      social: 'ソーシャル',
-      settings: '設定',
-      stock: '在庫管理',
-      shopping: '買い物リスト',
-      recipe: 'AIレシピ',
-      expense: '家計簿',
-      badges: 'アチーブメント',
-      admin: '管理者パネル',
-      goals: '目標管理',
-      exercise: '運動記録',
-    };
-    return titles[screen];
+    return t(`screens.${screen}`);
   };
 
   const handleNavigate = (screen: Screen) => {

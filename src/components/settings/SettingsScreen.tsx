@@ -2,8 +2,9 @@
  * 設定画面コンポーネント
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff, MdNotifications, MdNotificationsOff } from 'react-icons/md';
+import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff, MdNotifications, MdNotificationsOff, MdLanguage } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
@@ -30,15 +31,16 @@ const calculateBMI = (height: number, weight: number): number => {
  * @returns BMIカテゴリの文字列
  */
 const getBMICategory = (bmi: number): string => {
-  if (bmi < 18.5) return '低体重';
-  if (bmi < 25) return '普通体重';
-  if (bmi < 30) return '肥満度1';
-  if (bmi < 35) return '肥満度2';
-  if (bmi < 40) return '肥満度3';
-  return '肥満度4';
+  if (bmi < 18.5) return 'underweight';
+  if (bmi < 25) return 'normal';
+  if (bmi < 30) return 'obese1';
+  if (bmi < 35) return 'obese2';
+  if (bmi < 40) return 'obese3';
+  return 'obese4';
 };
 
 export const SettingsScreen: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { settings, updateSettings, toggleDarkMode } = useSettingsStore();
   const { intakes } = useIntakeStore();
   const { expenses } = useExpenseStore();
@@ -64,14 +66,14 @@ export const SettingsScreen: React.FC = () => {
     updateSettings({
       monthlyBudget: Number(budget),
     });
-    alert('設定を保存しました！');
+    alert(t('common.success'));
   };
 
   const handleSaveApiKey = () => {
     updateSettings({
       geminiApiKey: apiKey.trim() || undefined,
     });
-    alert('APIキーを保存しました！');
+    alert(t('common.success'));
   };
 
   const handleExportCSV = () => {
@@ -109,10 +111,10 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    if (window.confirm('ログアウトしますか？')) {
+    if (window.confirm(t('settings.account.logoutConfirm'))) {
       const result = await logout();
       if (result.error) {
-        alert('ログアウトに失敗しました: ' + result.error);
+        alert(t('settings.account.logoutError') + ': ' + result.error);
       }
     }
   };
@@ -149,10 +151,10 @@ export const SettingsScreen: React.FC = () => {
 
   return (
     <section className="screen active">
-      <h2>設定</h2>
+      <h2>{t('settings.title')}</h2>
 
       <div className="card">
-        <h3>プロフィール</h3>
+        <h3>{t('settings.profile.title')}</h3>
         <button
           className="profile-edit-button"
           onClick={() => setShowProfileEdit(true)}
@@ -173,7 +175,7 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdPerson size={24} color="var(--primary)" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              プロフィールを編集
+              {t('settings.profile.edit')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
@@ -227,12 +229,12 @@ export const SettingsScreen: React.FC = () => {
           <MdChevronRight size={24} color="var(--text-secondary)" />
         </button>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
-          アイコン、名前、自己紹介などを編集
+          {t('settings.profile.description')}
         </p>
       </div>
 
       <div className="card">
-        <h3>装飾</h3>
+        <h3>{t('settings.cosmetic.title')}</h3>
         <button
           onClick={() => setShowCosmeticShop(true)}
           style={{
@@ -252,18 +254,18 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdShoppingBag size={24} color="#f59e0b" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              装飾を変更
+              {t('settings.cosmetic.change')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
         </button>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
-          装飾を変更・購入できます
+          {t('settings.cosmetic.description')}
         </p>
       </div>
 
       <div className="card">
-        <h3>ミッション・報酬</h3>
+        <h3>{t('settings.mission.title')}</h3>
         <button
           onClick={() => setShowDailyMission(true)}
           style={{
@@ -283,38 +285,38 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdAssignment size={24} color="#667eea" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              デイリーミッション
+              {t('settings.mission.daily')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
         </button>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0' }}>
-          ミッションをクリアしてポイントを獲得
+          {t('settings.mission.description')}
         </p>
       </div>
 
       <div className="card">
-        <h3>月間予算</h3>
+        <h3>{t('settings.budget.title')}</h3>
         <input
           type="number"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
-          placeholder="30000"
+          placeholder={t('settings.budget.placeholder')}
         />
         <button className="submit" onClick={handleSaveSettings}>
           <MdSave size={18} style={{ marginRight: '8px' }} />
-          保存
+          {t('common.save')}
         </button>
       </div>
 
       <div className="card">
-        <h3>外観</h3>
+        <h3>{t('settings.appearance.title')}</h3>
         <div className="setting-item">
           <div className="setting-item-left">
             <div className="setting-icon">
               <MdDarkMode size={24} />
             </div>
-            <span className="setting-label">ダークモード</span>
+            <span className="setting-label">{t('settings.appearance.darkMode')}</span>
           </div>
           <label className="toggle-switch">
             <input
@@ -328,7 +330,7 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
-        <h3>通知</h3>
+        <h3>{t('settings.notifications.title')}</h3>
         <div className="setting-item">
           <div className="setting-item-left">
             <div className="setting-icon">
@@ -339,11 +341,11 @@ export const SettingsScreen: React.FC = () => {
               )}
             </div>
             <div>
-              <span className="setting-label">プッシュ通知</span>
+              <span className="setting-label">{t('settings.notifications.push')}</span>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
                 {settings.pushNotificationsEnabled !== false
-                  ? '新しい通知を受け取ります'
-                  : 'プッシュ通知は無効です'}
+                  ? t('settings.notifications.enabled')
+                  : t('settings.notifications.disabled')}
               </p>
             </div>
           </div>
@@ -360,13 +362,13 @@ export const SettingsScreen: React.FC = () => {
                   try {
                     const { initializePushNotifications } = await import('../../utils/pushNotification');
                     await initializePushNotifications();
-                    alert('プッシュ通知を有効にしました');
+                    alert(t('common.success'));
                   } catch (error) {
                     console.error('Error enabling push notifications:', error);
-                    alert('プッシュ通知の有効化に失敗しました。ブラウザの通知許可を確認してください。');
+                    alert(t('common.error'));
                   }
                 } else {
-                  alert('プッシュ通知を無効にしました');
+                  alert(t('common.success'));
                 }
               }}
             />
@@ -376,15 +378,56 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
-        <h3>データエクスポート</h3>
+        <h3>{t('settings.language.title')}</h3>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          {t('settings.language.description')}
+        </p>
+        <div className="setting-item">
+          <div className="setting-item-left">
+            <div className="setting-icon">
+              <MdLanguage size={24} />
+            </div>
+            <span className="setting-label">{t('settings.language.title')}</span>
+          </div>
+          <select
+            value={settings.language || i18n.language || 'ja'}
+            onChange={(e) => {
+              const newLanguage = e.target.value;
+              updateSettings({ language: newLanguage });
+            }}
+            style={{
+              padding: '8px 12px',
+              fontSize: '14px',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              background: 'var(--background)',
+              color: 'var(--text)',
+              cursor: 'pointer',
+              minWidth: '150px',
+            }}
+          >
+            <option value="ja">{t('settings.language.japanese')}</option>
+            <option value="en">{t('settings.language.english')}</option>
+            <option value="zh-CN">{t('settings.language.chineseSimplified')}</option>
+            <option value="zh-TW">{t('settings.language.chineseTraditional')}</option>
+            <option value="ko">{t('settings.language.korean')}</option>
+            <option value="vi">{t('settings.language.vietnamese')}</option>
+            <option value="ru">{t('settings.language.russian')}</option>
+            <option value="id">{t('settings.language.indonesian')}</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>{t('settings.export.title')}</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="submit" onClick={handleExportCSV} style={{ flex: 1 }}>
             <MdDescription size={18} style={{ marginRight: '8px' }} />
-            CSV
+            {t('settings.export.csv')}
           </button>
           <button className="submit" onClick={handleExportJSON} style={{ flex: 1 }}>
             <MdCode size={18} style={{ marginRight: '8px' }} />
-            JSON
+            {t('settings.export.json')}
           </button>
         </div>
       </div>
@@ -392,7 +435,7 @@ export const SettingsScreen: React.FC = () => {
       <div className="card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MdHealthAndSafety size={24} color="var(--primary)" />
-          健康情報
+          {t('settings.health.title')}
         </h3>
         <button
           onClick={() => setShowHealthSetting(true)}
@@ -413,7 +456,7 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdHealthAndSafety size={24} color="var(--primary)" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              健康情報を設定
+              {t('settings.health.set')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
@@ -421,32 +464,32 @@ export const SettingsScreen: React.FC = () => {
         <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)' }}>
           {settings.age && (
             <p style={{ marginBottom: '8px' }}>
-              <strong>年齢:</strong> {settings.age}歳
+              <strong>{t('settings.health.age')}:</strong> {settings.age}{t('settings.health.years')}
             </p>
           )}
           {settings.height && (
             <p style={{ marginBottom: '8px' }}>
-              <strong>身長:</strong> {settings.height}cm
+              <strong>{t('settings.health.height')}:</strong> {settings.height}{t('settings.health.cm')}
             </p>
           )}
           {settings.weight && (
             <p style={{ marginBottom: '8px' }}>
-              <strong>体重:</strong> {settings.weight}kg
+              <strong>{t('settings.health.weight')}:</strong> {settings.weight}{t('settings.health.kg')}
             </p>
           )}
           {settings.height && settings.weight && (
             <p style={{ marginBottom: '8px', color: 'var(--primary)', fontWeight: '600' }}>
-              <strong>BMI:</strong> {calculateBMI(settings.height, settings.weight).toFixed(1)} ({getBMICategory(calculateBMI(settings.height, settings.weight))})
+              <strong>{t('settings.health.bmi')}:</strong> {calculateBMI(settings.height, settings.weight).toFixed(1)} ({t(`bmi.${getBMICategory(calculateBMI(settings.height, settings.weight))}`)})
             </p>
           )}
           {settings.savings !== undefined && settings.savings !== null && (
             <p style={{ marginBottom: '8px', marginTop: '12px' }}>
-              <strong>貯金額:</strong> ¥{settings.savings.toLocaleString()}
+              <strong>{t('settings.health.savings')}:</strong> ¥{settings.savings.toLocaleString()}
             </p>
           )}
           {(!settings.age && !settings.height && !settings.weight && settings.savings === undefined) && (
             <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-              個人情報が未設定です
+              {t('settings.health.notSet')}
             </p>
           )}
         </div>
@@ -455,10 +498,10 @@ export const SettingsScreen: React.FC = () => {
       <div className="card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MdKey size={24} color="var(--primary)" />
-          AI設定（Gemini API）
+          {t('settings.ai.title')}
         </h3>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-          AI機能（レシピ生成、レシートOCR、カロリー計測など）を使用するには、Google Gemini APIキーが必要です。
+          {t('settings.ai.description')}
           <br />
           <a
             href="https://aistudio.google.com/app/apikey"
@@ -466,7 +509,7 @@ export const SettingsScreen: React.FC = () => {
             rel="noopener noreferrer"
             style={{ color: 'var(--primary)', textDecoration: 'underline' }}
           >
-            APIキーを取得する
+            {t('settings.ai.getKey')}
           </a>
         </p>
         <div style={{ position: 'relative', marginBottom: '12px' }}>
@@ -474,7 +517,7 @@ export const SettingsScreen: React.FC = () => {
             type={showApiKey ? 'text' : 'password'}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIzaSy..."
+            placeholder={t('settings.ai.placeholder')}
             style={{
               width: '100%',
               padding: '12px 40px 12px 12px',
@@ -507,28 +550,28 @@ export const SettingsScreen: React.FC = () => {
         </div>
         <button className="submit" onClick={handleSaveApiKey}>
           <MdSave size={18} style={{ marginRight: '8px' }} />
-          APIキーを保存
+          {t('settings.ai.save')}
         </button>
         {settings.geminiApiKey && (
           <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginTop: '8px', marginBottom: '0' }}>
-            ✓ APIキーが設定されています
+            {t('settings.ai.saved')}
           </p>
         )}
       </div>
 
       <div className="card">
-        <h3>データ統計</h3>
+        <h3>{t('settings.stats.title')}</h3>
         <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)' }}>
-          <p>食事記録: {intakes.length}件</p>
-          <p>支出記録: {expenses.length}件</p>
-          <p>在庫アイテム: {stocks.length}件</p>
+          <p>{t('settings.stats.intakes')}: {intakes.length}{t('settings.stats.items')}</p>
+          <p>{t('settings.stats.expenses')}: {expenses.length}{t('settings.stats.items')}</p>
+          <p>{t('settings.stats.stocks')}: {stocks.length}{t('settings.stats.items')}</p>
         </div>
       </div>
 
       <div className="card">
-        <h3>アカウント</h3>
+        <h3>{t('settings.account.title')}</h3>
         <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)', marginBottom: '12px' }}>
-          <p>ログイン: {user?.email}</p>
+          <p>{t('settings.account.login')}: {user?.email}</p>
         </div>
         <button
           className="submit"
@@ -539,7 +582,7 @@ export const SettingsScreen: React.FC = () => {
           }}
         >
           <MdLogout size={18} style={{ marginRight: '8px' }} />
-          ログアウト
+          {t('settings.account.logout')}
         </button>
       </div>
     </section>

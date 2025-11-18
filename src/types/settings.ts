@@ -14,6 +14,7 @@ export interface Settings {
   lastWeightInputDate?: string; // 最後に体重を入力した日（ISO形式）
   geminiApiKey?: string; // Gemini APIキー（ユーザーが各自設定）
   pushNotificationsEnabled?: boolean; // プッシュ通知の有効/無効（デフォルト: true）
+  language?: string; // 言語設定（'ja', 'en', 'zh-CN', 'zh-TW', 'ko', 'vi', 'ru', 'id'）
 }
 
 export interface WeightRecord {

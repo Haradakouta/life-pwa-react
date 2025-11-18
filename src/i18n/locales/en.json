@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "edit": "Edit Profile",
+      "description": "Edit icon, name, bio, etc."
+    },
+    "cosmetic": {
+      "title": "Cosmetics",
+      "change": "Change Cosmetics",
+      "description": "Change and purchase cosmetics"
+    },
+    "mission": {
+      "title": "Missions & Rewards",
+      "daily": "Daily Missions",
+      "description": "Complete missions to earn points"
+    },
+    "budget": {
+      "title": "Monthly Budget",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "darkMode": "Dark Mode"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "push": "Push Notifications",
+      "enabled": "You will receive new notifications",
+      "disabled": "Push notifications are disabled"
+    },
+    "export": {
+      "title": "Data Export",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "Health Information",
+      "set": "Set Health Information",
+      "age": "Age",
+      "height": "Height",
+      "weight": "Weight",
+      "bmi": "BMI",
+      "savings": "Savings",
+      "notSet": "Personal information not set",
+      "years": "years",
+      "cm": "cm",
+      "kg": "kg"
+    },
+    "ai": {
+      "title": "AI Settings (Gemini API)",
+      "description": "To use AI features (recipe generation, receipt OCR, calorie measurement, etc.), you need a Google Gemini API key.",
+      "getKey": "Get API Key",
+      "placeholder": "AIzaSy...",
+      "save": "Save API Key",
+      "saved": "✓ API key is set"
+    },
+    "stats": {
+      "title": "Data Statistics",
+      "intakes": "Meal Records",
+      "expenses": "Expense Records",
+      "stocks": "Stock Items",
+      "items": "items"
+    },
+    "account": {
+      "title": "Account",
+      "login": "Login",
+      "logout": "Logout",
+      "logoutConfirm": "Do you want to logout?",
+      "logoutError": "Logout failed"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Select app display language",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "Home",
+    "subtitle": "Manage health and finances"
+  },
+  "screens": {
+    "home": "Health Finance App",
+    "meals": "Meal Records",
+    "barcode": "Barcode Scan",
+    "report": "Report",
+    "social": "Social",
+    "settings": "Settings",
+    "stock": "Stock Management",
+    "shopping": "Shopping List",
+    "recipe": "AI Recipe",
+    "expense": "Expense Book",
+    "badges": "Achievements",
+    "admin": "Admin Panel",
+    "goals": "Goal Management",
+    "exercise": "Exercise Records"
+  },
+  "bmi": {
+    "underweight": "Underweight",
+    "normal": "Normal",
+    "obese1": "Obesity Level 1",
+    "obese2": "Obesity Level 2",
+    "obese3": "Obesity Level 3",
+    "obese4": "Obesity Level 4"
+  }
+}
+

@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "back": "Kembali",
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "success": "Berhasil",
+    "confirm": "Konfirmasi",
+    "yes": "Ya",
+    "no": "Tidak"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "profile": {
+      "title": "Profil",
+      "edit": "Edit Profil",
+      "description": "Edit ikon, nama, bio, dll"
+    },
+    "cosmetic": {
+      "title": "Kosmetik",
+      "change": "Ubah Kosmetik",
+      "description": "Dapat mengubah dan membeli kosmetik"
+    },
+    "mission": {
+      "title": "Misi & Hadiah",
+      "daily": "Misi Harian",
+      "description": "Selesaikan misi untuk mendapatkan poin"
+    },
+    "budget": {
+      "title": "Anggaran Bulanan",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "Tampilan",
+      "darkMode": "Mode Gelap"
+    },
+    "notifications": {
+      "title": "Notifikasi",
+      "push": "Notifikasi Push",
+      "enabled": "Anda akan menerima notifikasi baru",
+      "disabled": "Notifikasi push dinonaktifkan"
+    },
+    "export": {
+      "title": "Ekspor Data",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "Informasi Kesehatan",
+      "set": "Atur Informasi Kesehatan",
+      "age": "Usia",
+      "height": "Tinggi",
+      "weight": "Berat",
+      "bmi": "BMI",
+      "savings": "Tabungan",
+      "notSet": "Informasi pribadi belum diatur",
+      "years": "tahun",
+      "cm": "cm",
+      "kg": "kg"
+    },
+    "ai": {
+      "title": "Pengaturan AI (Gemini API)",
+      "description": "Untuk menggunakan fitur AI (generasi resep, OCR struk, pengukuran kalori, dll.), Anda memerlukan kunci API Google Gemini.",
+      "getKey": "Dapatkan Kunci API",
+      "placeholder": "AIzaSy...",
+      "save": "Simpan Kunci API",
+      "saved": "✓ Kunci API telah diatur"
+    },
+    "stats": {
+      "title": "Statistik Data",
+      "intakes": "Catatan Makanan",
+      "expenses": "Catatan Pengeluaran",
+      "stocks": "Item Stok",
+      "items": "item"
+    },
+    "account": {
+      "title": "Akun",
+      "login": "Masuk",
+      "logout": "Keluar",
+      "logoutConfirm": "Apakah Anda ingin keluar?",
+      "logoutError": "Gagal keluar"
+    },
+    "language": {
+      "title": "Bahasa",
+      "description": "Pilih bahasa tampilan aplikasi",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "Beranda",
+    "subtitle": "Kelola kesehatan dan keuangan"
+  },
+  "screens": {
+    "home": "Aplikasi Kesehatan & Keuangan",
+    "meals": "Catatan Makanan",
+    "barcode": "Pindai Barcode",
+    "report": "Laporan",
+    "social": "Sosial",
+    "settings": "Pengaturan",
+    "stock": "Manajemen Stok",
+    "shopping": "Daftar Belanja",
+    "recipe": "Resep AI",
+    "expense": "Buku Pengeluaran",
+    "badges": "Pencapaian",
+    "admin": "Panel Admin",
+    "goals": "Manajemen Tujuan",
+    "exercise": "Catatan Olahraga"
+  },
+  "bmi": {
+    "underweight": "Kurang berat",
+    "normal": "Normal",
+    "obese1": "Obesitas Tingkat 1",
+    "obese2": "Obesitas Tingkat 2",
+    "obese3": "Obesitas Tingkat 3",
+    "obese4": "Obesitas Tingkat 4"
+  }
+}
+

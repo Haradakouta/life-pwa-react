@@ -6,6 +6,7 @@ import type { Settings } from '../types';
 import { getFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/localStorage';
 import { settingsOperations } from '../utils/firestore';
 import { auth } from '../config/firebase';
+import i18n from '../i18n/config';
 
 interface SettingsStore {
   settings: Settings;
@@ -39,6 +40,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       // ダークモードの適用
       if ('darkMode' in updates) {
         document.body.classList.toggle('dark-mode', updates.darkMode);
+      }
+
+      // 言語の適用
+      if ('language' in updates && updates.language) {
+        i18n.changeLanguage(updates.language);
+        // HTMLのlang属性も更新
+        document.documentElement.lang = updates.language;
       }
 
       return { settings: newSettings };
@@ -116,6 +124,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
         // ダークモードを適用
         document.body.classList.toggle('dark-mode', firestoreSettings.darkMode);
+
+        // 言語を適用
+        if (firestoreSettings.language) {
+          i18n.changeLanguage(firestoreSettings.language);
+          document.documentElement.lang = firestoreSettings.language;
+        }
       } else {
         // Firestoreにデータがない場合はデフォルト設定を保存
         console.log(`[SettingsStore] No settings found, using defaults`);

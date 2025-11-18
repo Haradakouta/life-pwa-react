@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "back": "뒤로",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "confirm": "확인",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "settings": {
+    "title": "설정",
+    "profile": {
+      "title": "프로필",
+      "edit": "프로필 편집",
+      "description": "아이콘, 이름, 소개 등을 편집"
+    },
+    "cosmetic": {
+      "title": "장식",
+      "change": "장식 변경",
+      "description": "장식을 변경하고 구매할 수 있습니다"
+    },
+    "mission": {
+      "title": "미션 및 보상",
+      "daily": "일일 미션",
+      "description": "미션을 완료하여 포인트 획득"
+    },
+    "budget": {
+      "title": "월간 예산",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "외관",
+      "darkMode": "다크 모드"
+    },
+    "notifications": {
+      "title": "알림",
+      "push": "푸시 알림",
+      "enabled": "새 알림을 받습니다",
+      "disabled": "푸시 알림이 비활성화되었습니다"
+    },
+    "export": {
+      "title": "데이터 내보내기",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "건강 정보",
+      "set": "건강 정보 설정",
+      "age": "나이",
+      "height": "키",
+      "weight": "체중",
+      "bmi": "BMI",
+      "savings": "저축",
+      "notSet": "개인 정보가 설정되지 않았습니다",
+      "years": "세",
+      "cm": "cm",
+      "kg": "kg"
+    },
+    "ai": {
+      "title": "AI 설정 (Gemini API)",
+      "description": "AI 기능(레시피 생성, 영수증 OCR, 칼로리 측정 등)을 사용하려면 Google Gemini API 키가 필요합니다.",
+      "getKey": "API 키 가져오기",
+      "placeholder": "AIzaSy...",
+      "save": "API 키 저장",
+      "saved": "✓ API 키가 설정되었습니다"
+    },
+    "stats": {
+      "title": "데이터 통계",
+      "intakes": "식사 기록",
+      "expenses": "지출 기록",
+      "stocks": "재고 항목",
+      "items": "개"
+    },
+    "account": {
+      "title": "계정",
+      "login": "로그인",
+      "logout": "로그아웃",
+      "logoutConfirm": "로그아웃하시겠습니까?",
+      "logoutError": "로그아웃 실패"
+    },
+    "language": {
+      "title": "언어",
+      "description": "앱 표시 언어 선택",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "홈",
+    "subtitle": "건강과 재정 관리"
+  },
+  "screens": {
+    "home": "건강 재정 앱",
+    "meals": "식사 기록",
+    "barcode": "바코드 스캔",
+    "report": "보고서",
+    "social": "소셜",
+    "settings": "설정",
+    "stock": "재고 관리",
+    "shopping": "쇼핑 목록",
+    "recipe": "AI 레시피",
+    "expense": "가계부",
+    "badges": "업적",
+    "admin": "관리자 패널",
+    "goals": "목표 관리",
+    "exercise": "운동 기록"
+  },
+  "bmi": {
+    "underweight": "저체중",
+    "normal": "정상",
+    "obese1": "비만 1단계",
+    "obese2": "비만 2단계",
+    "obese3": "비만 3단계",
+    "obese4": "비만 4단계"
+  }
+}
+

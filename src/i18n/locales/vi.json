@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "back": "Quay lại",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "yes": "Có",
+    "no": "Không"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "profile": {
+      "title": "Hồ sơ",
+      "edit": "Chỉnh sửa hồ sơ",
+      "description": "Chỉnh sửa biểu tượng, tên, giới thiệu, v.v."
+    },
+    "cosmetic": {
+      "title": "Trang trí",
+      "change": "Thay đổi trang trí",
+      "description": "Có thể thay đổi và mua trang trí"
+    },
+    "mission": {
+      "title": "Nhiệm vụ & Phần thưởng",
+      "daily": "Nhiệm vụ hàng ngày",
+      "description": "Hoàn thành nhiệm vụ để kiếm điểm"
+    },
+    "budget": {
+      "title": "Ngân sách hàng tháng",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "Giao diện",
+      "darkMode": "Chế độ tối"
+    },
+    "notifications": {
+      "title": "Thông báo",
+      "push": "Thông báo đẩy",
+      "enabled": "Bạn sẽ nhận được thông báo mới",
+      "disabled": "Thông báo đẩy đã bị tắt"
+    },
+    "export": {
+      "title": "Xuất dữ liệu",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "Thông tin sức khỏe",
+      "set": "Đặt thông tin sức khỏe",
+      "age": "Tuổi",
+      "height": "Chiều cao",
+      "weight": "Cân nặng",
+      "bmi": "BMI",
+      "savings": "Tiết kiệm",
+      "notSet": "Thông tin cá nhân chưa được đặt",
+      "years": "tuổi",
+      "cm": "cm",
+      "kg": "kg"
+    },
+    "ai": {
+      "title": "Cài đặt AI (Gemini API)",
+      "description": "Để sử dụng các tính năng AI (tạo công thức, OCR hóa đơn, đo calo, v.v.), bạn cần khóa API Google Gemini.",
+      "getKey": "Lấy khóa API",
+      "placeholder": "AIzaSy...",
+      "save": "Lưu khóa API",
+      "saved": "✓ Khóa API đã được đặt"
+    },
+    "stats": {
+      "title": "Thống kê dữ liệu",
+      "intakes": "Bản ghi bữa ăn",
+      "expenses": "Bản ghi chi tiêu",
+      "stocks": "Mục tồn kho",
+      "items": "mục"
+    },
+    "account": {
+      "title": "Tài khoản",
+      "login": "Đăng nhập",
+      "logout": "Đăng xuất",
+      "logoutConfirm": "Bạn có muốn đăng xuất không?",
+      "logoutError": "Đăng xuất thất bại"
+    },
+    "language": {
+      "title": "Ngôn ngữ",
+      "description": "Chọn ngôn ngữ hiển thị ứng dụng",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "Trang chủ",
+    "subtitle": "Quản lý sức khỏe và tài chính"
+  },
+  "screens": {
+    "home": "Ứng dụng Tài chính Sức khỏe",
+    "meals": "Bản ghi bữa ăn",
+    "barcode": "Quét mã vạch",
+    "report": "Báo cáo",
+    "social": "Xã hội",
+    "settings": "Cài đặt",
+    "stock": "Quản lý kho",
+    "shopping": "Danh sách mua sắm",
+    "recipe": "Công thức AI",
+    "expense": "Sổ chi tiêu",
+    "badges": "Thành tựu",
+    "admin": "Bảng quản trị",
+    "goals": "Quản lý mục tiêu",
+    "exercise": "Bản ghi tập thể dục"
+  },
+  "bmi": {
+    "underweight": "Thiếu cân",
+    "normal": "Bình thường",
+    "obese1": "Béo phì cấp 1",
+    "obese2": "Béo phì cấp 2",
+    "obese3": "Béo phì cấp 3",
+    "obese4": "Béo phì cấp 4"
+  }
+}
+

@@ -1,0 +1,128 @@
+{
+  "common": {
+    "save": "儲存",
+    "cancel": "取消",
+    "delete": "刪除",
+    "edit": "編輯",
+    "back": "返回",
+    "loading": "載入中...",
+    "error": "錯誤",
+    "success": "成功",
+    "confirm": "確認",
+    "yes": "是",
+    "no": "否"
+  },
+  "settings": {
+    "title": "設定",
+    "profile": {
+      "title": "個人資料",
+      "edit": "編輯個人資料",
+      "description": "編輯圖示、姓名、簡介等"
+    },
+    "cosmetic": {
+      "title": "裝飾",
+      "change": "更改裝飾",
+      "description": "可以更改和購買裝飾"
+    },
+    "mission": {
+      "title": "任務與獎勵",
+      "daily": "每日任務",
+      "description": "完成任務獲得積分"
+    },
+    "budget": {
+      "title": "月度預算",
+      "placeholder": "30000"
+    },
+    "appearance": {
+      "title": "外觀",
+      "darkMode": "深色模式"
+    },
+    "notifications": {
+      "title": "通知",
+      "push": "推播通知",
+      "enabled": "您將收到新通知",
+      "disabled": "推播通知已停用"
+    },
+    "export": {
+      "title": "資料匯出",
+      "csv": "CSV",
+      "json": "JSON"
+    },
+    "health": {
+      "title": "健康資訊",
+      "set": "設定健康資訊",
+      "age": "年齡",
+      "height": "身高",
+      "weight": "體重",
+      "bmi": "BMI",
+      "savings": "儲蓄",
+      "notSet": "個人資訊未設定",
+      "years": "歲",
+      "cm": "公分",
+      "kg": "公斤"
+    },
+    "ai": {
+      "title": "AI設定（Gemini API）",
+      "description": "要使用AI功能（食譜生成、收據OCR、卡路里測量等），您需要Google Gemini API金鑰。",
+      "getKey": "取得API金鑰",
+      "placeholder": "AIzaSy...",
+      "save": "儲存API金鑰",
+      "saved": "✓ API金鑰已設定"
+    },
+    "stats": {
+      "title": "資料統計",
+      "intakes": "用餐記錄",
+      "expenses": "支出記錄",
+      "stocks": "庫存項目",
+      "items": "項"
+    },
+    "account": {
+      "title": "帳戶",
+      "login": "登入",
+      "logout": "登出",
+      "logoutConfirm": "您要登出嗎？",
+      "logoutError": "登出失敗"
+    },
+    "language": {
+      "title": "語言",
+      "description": "選擇應用程式顯示語言",
+      "japanese": "日本語",
+      "english": "English",
+      "chineseSimplified": "简体中文",
+      "chineseTraditional": "繁體中文",
+      "korean": "한국어",
+      "vietnamese": "Tiếng Việt",
+      "russian": "Русский",
+      "indonesian": "Bahasa Indonesia"
+    }
+  },
+  "dashboard": {
+    "title": "首頁",
+    "subtitle": "管理健康和財務"
+  },
+  "screens": {
+    "home": "健康財務應用程式",
+    "meals": "用餐記錄",
+    "barcode": "條碼掃描",
+    "report": "報告",
+    "social": "社交",
+    "settings": "設定",
+    "stock": "庫存管理",
+    "shopping": "購物清單",
+    "recipe": "AI食譜",
+    "expense": "帳本",
+    "badges": "成就",
+    "admin": "管理面板",
+    "goals": "目標管理",
+    "exercise": "運動記錄"
+  },
+  "bmi": {
+    "underweight": "體重不足",
+    "normal": "正常",
+    "obese1": "肥胖1級",
+    "obese2": "肥胖2級",
+    "obese3": "肥胖3級",
+    "obese4": "肥胖4級"
+  }
+}
+

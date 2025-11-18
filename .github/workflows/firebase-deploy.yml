@@ -32,6 +32,12 @@ jobs:
           VITE_FCM_VAPID_KEY: ${{ secrets.VITE_FCM_VAPID_KEY }}
 
       - name: Deploy to Firebase Hosting
-        run: npx firebase-tools deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "Error: FIREBASE_TOKEN secret is not set in GitHub repository settings"
+            exit 1
+          fi
+          echo "Deploying to Firebase Hosting..."
+          npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

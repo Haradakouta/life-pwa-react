@@ -22,11 +22,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-             - name: Build
-         run: npm run build
-         env:
-           VITE_FCM_VAPID_KEY: ${{ secrets.VITE_FCM_VAPID_KEY }}
-           
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FCM_VAPID_KEY: ${{ secrets.VITE_FCM_VAPID_KEY }}
+
+      - name: Deploy to Firebase Hosting
         run: npx firebase-tools deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

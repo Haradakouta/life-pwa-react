@@ -75,9 +75,10 @@ function App() {
   // 言語の初期化
   useEffect(() => {
     if (settings.language) {
+      const language = settings.language;
       import('./i18n/config').then(({ default: i18n }) => {
-        i18n.changeLanguage(settings.language);
-        document.documentElement.lang = settings.language;
+        i18n.changeLanguage(language);
+        document.documentElement.lang = language;
       });
     }
   }, [settings.language]);

@@ -333,6 +333,23 @@
     "screen": {
       "title": "Buku Pengeluaran",
       "history": "Riwayat Pengeluaran"
+    },
+    "summary": {
+      "title": "Ringkasan Kategori",
+      "noData": "Tidak ada data pengeluaran untuk bulan ini",
+      "totalExpense": "Total Pengeluaran"
+    },
+    "budget": {
+      "title": "Anggaran Bulanan",
+      "remaining": "Tersisa ¥{{amount}}",
+      "exceeded": "Melebihi ¥{{amount}}",
+      "expense": "Pengeluaran",
+      "budget": "Anggaran",
+      "status": {
+        "exceeded": "Anggaran Melebihi",
+        "low": "Anggaran Hampir Habis",
+        "onTrack": "Di Jalur"
+      }
     }
   },
   "shopping": {
@@ -382,6 +399,13 @@
       "paceUp": "Tingkatkan Kecepatan",
       "needEffort": "Perlu Usaha",
       "deleteConfirm": "Hapus tujuan ini?",
+      "current": "Saat Ini",
+      "target": "Tujuan",
+      "exceeded": "Melebihi",
+      "remaining": "Tersisa",
+      "daysRemaining": "Hari Tersisa",
+      "dailyAverage": "Rata-rata Harian",
+      "estimatedDate": "Tanggal Penyelesaian Perkiraan",
       "period": {
         "day": "1 Hari",
         "week": "1 Minggu",
@@ -404,7 +428,20 @@
     "yes": "Ya",
     "no": "Tidak",
     "year": " tahun ",
-    "month": " bulan"
+    "month": " bulan",
+    "days": " hari",
+    "selectDate": "Pilih Tanggal",
+    "selectMonth": "Pilih Bulan",
+    "selectMonthYear": "Ketuk untuk memilih tahun dan bulan",
+    "weekday": {
+      "sun": "Min",
+      "mon": "Sen",
+      "tue": "Sel",
+      "wed": "Rab",
+      "thu": "Kam",
+      "fri": "Jum",
+      "sat": "Sab"
+    }
   },
   "bottomNav": {
     "home": "Beranda",

@@ -333,6 +333,23 @@
     "screen": {
       "title": "Книга расходов",
       "history": "История расходов"
+    },
+    "summary": {
+      "title": "Сводка по категориям",
+      "noData": "Нет данных о расходах за этот месяц",
+      "totalExpense": "Общие расходы"
+    },
+    "budget": {
+      "title": "Месячный бюджет",
+      "remaining": "Осталось ¥{{amount}}",
+      "exceeded": "Превышено ¥{{amount}}",
+      "expense": "Расходы",
+      "budget": "Бюджет",
+      "status": {
+        "exceeded": "Превышен бюджет",
+        "low": "Бюджет почти закончился",
+        "onTrack": "В порядке"
+      }
     }
   },
   "shopping": {
@@ -382,6 +399,13 @@
       "paceUp": "Ускорить темп",
       "needEffort": "Требуются усилия",
       "deleteConfirm": "Удалить эту цель?",
+      "current": "Текущее",
+      "target": "Цель",
+      "exceeded": "Превышено",
+      "remaining": "Осталось",
+      "daysRemaining": "Осталось дней",
+      "dailyAverage": "Среднее за день",
+      "estimatedDate": "Предполагаемая дата завершения",
       "period": {
         "day": "1 день",
         "week": "1 неделя",
@@ -404,7 +428,20 @@
     "yes": "Да",
     "no": "Нет",
     "year": " год ",
-    "month": " месяц"
+    "month": " месяц",
+    "days": " дней",
+    "selectDate": "Выбрать дату",
+    "selectMonth": "Выбрать месяц",
+    "selectMonthYear": "Нажмите, чтобы выбрать год и месяц",
+    "weekday": {
+      "sun": "Вс",
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб"
+    }
   },
   "bottomNav": {
     "home": "Главная",

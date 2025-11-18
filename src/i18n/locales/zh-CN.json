@@ -333,6 +333,23 @@
     "screen": {
       "title": "账本",
       "history": "支出历史"
+    },
+    "summary": {
+      "title": "分类汇总",
+      "noData": "本月没有支出数据",
+      "totalExpense": "总支出"
+    },
+    "budget": {
+      "title": "月度预算",
+      "remaining": "剩余 ¥{{amount}}",
+      "exceeded": "超出 ¥{{amount}}",
+      "expense": "支出",
+      "budget": "预算",
+      "status": {
+        "exceeded": "预算超支",
+        "low": "预算剩余不多",
+        "onTrack": "顺利"
+      }
     }
   },
   "shopping": {
@@ -382,6 +399,13 @@
       "paceUp": "加快步伐",
       "needEffort": "需要努力",
       "deleteConfirm": "删除此目标？",
+      "current": "当前",
+      "target": "目标",
+      "exceeded": "超出",
+      "remaining": "剩余",
+      "daysRemaining": "剩余天数",
+      "dailyAverage": "日均",
+      "estimatedDate": "预计完成日期",
       "period": {
         "day": "1天",
         "week": "1周",
@@ -404,7 +428,20 @@
     "yes": "是",
     "no": "否",
     "year": "年",
-    "month": "月"
+    "month": "月",
+    "days": "天",
+    "selectDate": "选择日期",
+    "selectMonth": "选择月份",
+    "selectMonthYear": "点击选择年月",
+    "weekday": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    }
   },
   "bottomNav": {
     "home": "首页",

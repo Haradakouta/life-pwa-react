@@ -333,6 +333,23 @@
     "screen": {
       "title": "賬本",
       "history": "支出歷史"
+    },
+    "summary": {
+      "title": "分類匯總",
+      "noData": "本月沒有支出數據",
+      "totalExpense": "總支出"
+    },
+    "budget": {
+      "title": "月度預算",
+      "remaining": "剩餘 ¥{{amount}}",
+      "exceeded": "超出 ¥{{amount}}",
+      "expense": "支出",
+      "budget": "預算",
+      "status": {
+        "exceeded": "預算超支",
+        "low": "預算剩餘不多",
+        "onTrack": "順利"
+      }
     }
   },
   "shopping": {
@@ -382,6 +399,13 @@
       "paceUp": "加快步伐",
       "needEffort": "需要努力",
       "deleteConfirm": "刪除此目標？",
+      "current": "當前",
+      "target": "目標",
+      "exceeded": "超出",
+      "remaining": "剩餘",
+      "daysRemaining": "剩餘天數",
+      "dailyAverage": "日均",
+      "estimatedDate": "預計完成日期",
       "period": {
         "day": "1天",
         "week": "1週",
@@ -404,7 +428,20 @@
     "yes": "是",
     "no": "否",
     "year": "年",
-    "month": "月"
+    "month": "月",
+    "days": "天",
+    "selectDate": "選擇日期",
+    "selectMonth": "選擇月份",
+    "selectMonthYear": "點擊選擇年月",
+    "weekday": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    }
   },
   "bottomNav": {
     "home": "首頁",

@@ -333,6 +333,23 @@
     "screen": {
       "title": "Sổ chi tiêu",
       "history": "Lịch sử chi tiêu"
+    },
+    "summary": {
+      "title": "Tổng hợp theo danh mục",
+      "noData": "Không có dữ liệu chi tiêu cho tháng này",
+      "totalExpense": "Tổng chi tiêu"
+    },
+    "budget": {
+      "title": "Ngân sách hàng tháng",
+      "remaining": "Còn lại ¥{{amount}}",
+      "exceeded": "Vượt quá ¥{{amount}}",
+      "expense": "Chi tiêu",
+      "budget": "Ngân sách",
+      "status": {
+        "exceeded": "Vượt quá ngân sách",
+        "low": "Ngân sách còn lại ít",
+        "onTrack": "Đúng hướng"
+      }
     }
   },
   "shopping": {
@@ -382,6 +399,13 @@
       "paceUp": "Tăng tốc",
       "needEffort": "Cần nỗ lực",
       "deleteConfirm": "Xóa mục tiêu này?",
+      "current": "Hiện tại",
+      "target": "Mục tiêu",
+      "exceeded": "Vượt quá",
+      "remaining": "Còn lại",
+      "daysRemaining": "Số ngày còn lại",
+      "dailyAverage": "Trung bình hàng ngày",
+      "estimatedDate": "Ngày hoàn thành dự kiến",
       "period": {
         "day": "1 ngày",
         "week": "1 tuần",
@@ -404,7 +428,20 @@
     "yes": "Có",
     "no": "Không",
     "year": " năm ",
-    "month": " tháng"
+    "month": " tháng",
+    "days": " ngày",
+    "selectDate": "Chọn ngày",
+    "selectMonth": "Chọn tháng",
+    "selectMonthYear": "Nhấn để chọn năm và tháng",
+    "weekday": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    }
   },
   "bottomNav": {
     "home": "Trang chủ",

@@ -42,7 +42,7 @@ jobs:
           echo "Checking build output..."
           ls -la dist/ || (echo "Error: dist directory not found. Build may have failed." && exit 1)
           echo "Deploying to Firebase Hosting..."
-          npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN" --project oshi-para
+          npx firebase-tools deploy --only hosting:default --token "$FIREBASE_TOKEN" --project oshi-para
           echo "Deployment completed successfully!"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }} }}

@@ -2,18 +2,20 @@
  * 買い物リスト表示コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShoppingStore, useStockStore } from '../../store';
 import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdDelete, MdInventory, MdCheckCircle } from 'react-icons/md';
 
 export const ShoppingList: React.FC = () => {
+  const { t } = useTranslation();
   const { items, toggleItem, deleteItem, clearCompleted } = useShoppingStore();
   const { addStock } = useStockStore();
   const [showSuccess, setShowSuccess] = useState(false);
 
 
   const handleClear = () => {
-    if (confirm('チェック済みのアイテムをすべて削除しますか？')) {
+    if (confirm(t('shopping.list.clearConfirm'))) {
       clearCompleted();
     }
   };
@@ -21,13 +23,13 @@ export const ShoppingList: React.FC = () => {
   const handleMoveToStock = () => {
     const checkedItems = items.filter((item) => item.checked);
     if (checkedItems.length === 0) {
-      alert('チェック済みのアイテムがありません');
+      alert(t('shopping.list.noCheckedItems'));
       return;
     }
 
     if (
       !confirm(
-        `チェック済みのアイテム ${checkedItems.length}個を在庫に追加しますか？\n（賞味期限は7日後に設定されます）`
+        t('shopping.list.moveToStockConfirm', { count: checkedItems.length })
       )
     ) {
       return;
@@ -55,10 +57,10 @@ export const ShoppingList: React.FC = () => {
 
   return (
     <div className="card">
-      <h3>買い物リスト</h3>
+      <h3>{t('shopping.list.title')}</h3>
       {items.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-          リストが空です
+          {t('shopping.list.empty')}
         </p>
       ) : (
         <>
@@ -152,7 +154,7 @@ export const ShoppingList: React.FC = () => {
                   }}
                 >
                   <MdInventory size={20} />
-                  <span>買い物完了後はこちら！</span>
+                  <span>{t('shopping.list.afterShopping')}</span>
                 </div>
                 <p
                   style={{
@@ -162,9 +164,7 @@ export const ShoppingList: React.FC = () => {
                     lineHeight: '1.5',
                   }}
                 >
-                  チェックした商品を在庫に一括追加できます。
-                  <br />
-                  賞味期限は自動で7日後に設定されます。
+                  {t('shopping.list.moveToStockDescription')}
                 </p>
                 <button
                   className="submit"
@@ -185,7 +185,7 @@ export const ShoppingList: React.FC = () => {
                   }}
                 >
                   <MdInventory size={22} />
-                  在庫に追加（{items.filter((item) => item.checked).length}個）
+                  {t('shopping.list.addToStock', { count: items.filter((item) => item.checked).length })}
                 </button>
               </div>
 
@@ -201,7 +201,7 @@ export const ShoppingList: React.FC = () => {
                   width: '100%',
                 }}
               >
-                チェック済みをクリア
+                {t('shopping.list.clearChecked')}
               </button>
             </>
           )}
@@ -229,7 +229,7 @@ export const ShoppingList: React.FC = () => {
               }}
             >
               <MdCheckCircle size={28} />
-              <span>在庫に追加しました！</span>
+              <span>{t('shopping.list.movedToStock')}</span>
             </div>
           )}
         </>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdEmail, MdLock, MdVerified, MdArrowBack } from 'react-icons/md';
 import {
   generateVerificationCode,
@@ -16,6 +17,7 @@ interface PasswordResetFlowProps {
 type Step = 'email' | 'code' | 'password';
 
 export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, onSuccess }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [inputCode, setInputCode] = useState('');
@@ -46,7 +48,7 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       setStep('code');
     } catch (err: any) {
       console.error('Email send error:', err);
-      setError(err.message || '確認コードの送信に失敗しました');
+      setError(err.message || t('auth.passwordResetFlow.step1.sendFailed'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
     try {
       const result = await verifyCode(email, inputCode);
       if (!result.valid) {
-        setError(result.error || '確認コードが正しくありません');
+        setError(result.error || t('auth.passwordResetFlow.step2.invalidCode'));
         setLoading(false);
         return;
       }
@@ -71,7 +73,7 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       // ステップ3へ
       setStep('password');
     } catch (err: any) {
-      setError(err.message || '確認に失敗しました');
+      setError(err.message || t('auth.passwordResetFlow.step2.verifyFailed'));
     } finally {
       setLoading(false);
     }
@@ -83,12 +85,12 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
     setError('');
 
     if (newPassword !== confirmPassword) {
-      setError('パスワードが一致しません');
+      setError(t('auth.passwordResetFlow.step3.passwordMismatch'));
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('パスワードは6文字以上で入力してください');
+      setError(t('auth.passwordResetFlow.step3.passwordTooShort'));
       return;
     }
 
@@ -99,19 +101,19 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       const result = await resetPasswordWithCode(email, newPassword);
 
       if (!result.success) {
-        setError(result.error || 'パスワードの更新に失敗しました');
+        setError(result.error || t('auth.passwordResetFlow.step3.updateFailed'));
         setLoading(false);
         return;
       }
 
       console.log('✅ パスワードのリセットが完了しました');
-      alert('パスワードのリセットが完了しました！新しいパスワードでログインしてください。');
+      alert(t('auth.passwordResetFlow.step3.updateSuccess'));
 
       // ログイン画面に戻る
       onSuccess();
     } catch (err: any) {
       console.error('Password reset error:', err);
-      setError(err.message || 'パスワードの更新に失敗しました');
+      setError(err.message || t('auth.passwordResetFlow.step3.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -126,9 +128,9 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       const code = generateVerificationCode();
       await saveVerificationCode(email, code);
       await sendPasswordResetEmail(email, code);
-      alert('確認コードを再送信しました！');
+      alert(t('auth.passwordResetFlow.step2.resendSuccess'));
     } catch (err: any) {
-      setError('再送信に失敗しました');
+      setError(t('auth.passwordResetFlow.step2.resendFailed'));
     } finally {
       setLoading(false);
     }
@@ -148,12 +150,12 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       {step === 'email' && (
         <form onSubmit={handleEmailSubmit} className="step-form">
           <button type="button" onClick={onBack} className="back-button-small">
-            <MdArrowBack /> 戻る
+            <MdArrowBack /> {t('auth.passwordResetFlow.back')}
           </button>
           <h2>
-            <MdEmail /> メールアドレスを入力
+            <MdEmail /> {t('auth.passwordResetFlow.step1.title')}
           </h2>
-          <p className="step-description">パスワードリセット用の確認コードを送信します</p>
+          <p className="step-description">{t('auth.passwordResetFlow.step1.description')}</p>
 
           <div className="form-group">
             <input
@@ -169,7 +171,7 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? '送信中...' : '確認コードを送信'}
+            {loading ? t('auth.passwordResetFlow.step1.sending') : t('auth.passwordResetFlow.step1.sendCode')}
           </button>
         </form>
       )}
@@ -178,10 +180,10 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       {step === 'code' && (
         <form onSubmit={handleCodeSubmit} className="step-form">
           <h2>
-            <MdVerified /> 確認コードを入力
+            <MdVerified /> {t('auth.passwordResetFlow.step2.title')}
           </h2>
           <p className="step-description">
-            <strong>{email}</strong> 宛に送信された6桁のコードを入力してください
+            {t('auth.passwordResetFlow.step2.description', { email })}
           </p>
 
           <div className="form-group">
@@ -200,11 +202,11 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading || inputCode.length !== 6}>
-            {loading ? '確認中...' : '確認'}
+            {loading ? t('auth.passwordResetFlow.step2.verifying') : t('auth.passwordResetFlow.step2.verify')}
           </button>
 
           <button type="button" onClick={handleResendCode} className="link-button" disabled={loading}>
-            コードを再送信
+            {t('auth.passwordResetFlow.step2.resend')}
           </button>
         </form>
       )}
@@ -213,19 +215,19 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
       {step === 'password' && (
         <form onSubmit={handlePasswordSubmit} className="step-form">
           <h2>
-            <MdLock /> 新しいパスワードを設定
+            <MdLock /> {t('auth.passwordResetFlow.step3.title')}
           </h2>
-          <p className="step-description">新しいパスワードを入力してください</p>
+          <p className="step-description">{t('auth.passwordResetFlow.step3.description')}</p>
 
           <div className="form-group">
             <label>
-              <MdLock /> 新しいパスワード
+              <MdLock /> {t('auth.passwordResetFlow.step3.newPassword')}
             </label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="6文字以上"
+              placeholder={t('auth.passwordPlaceholder')}
               minLength={6}
               required
               autoFocus
@@ -234,13 +236,13 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
 
           <div className="form-group">
             <label>
-              <MdLock /> パスワード（確認）
+              <MdLock /> {t('auth.passwordResetFlow.step3.confirmPassword')}
             </label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="もう一度入力"
+              placeholder={t('auth.passwordPlaceholder')}
               minLength={6}
               required
             />
@@ -249,7 +251,7 @@ export const PasswordResetFlow: React.FC<PasswordResetFlowProps> = ({ onBack, on
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? '更新中...' : 'パスワードを更新'}
+            {loading ? t('auth.passwordResetFlow.step3.updating') : t('auth.passwordResetFlow.step3.update')}
           </button>
         </form>
       )}

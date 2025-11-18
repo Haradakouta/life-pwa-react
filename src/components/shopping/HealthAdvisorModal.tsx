@@ -2,6 +2,7 @@
  * 健康アドバイスモーダルコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { HealthWarning } from '../../utils/healthAdvisor';
 import { getAIHealthAnalysis } from '../../utils/healthAdvisor';
 import { MdWarning, MdClose, MdLightbulbOutline, MdAutoAwesome } from 'react-icons/md';
@@ -21,6 +22,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
   onAddAlternative,
   onContinueAnyway,
 }) => {
+  const { t } = useTranslation();
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [aiWarning, setAiWarning] = useState<HealthWarning | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -97,7 +99,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
             }}
           >
             <MdWarning size={32} color="#f59e0b" />
-            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>健康アドバイス</h3>
+            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{t('shopping.healthAdvisor.title')}</h3>
           </div>
           <p
             style={{
@@ -106,7 +108,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
               color: 'var(--text-secondary)',
             }}
           >
-            「<strong>{productName}</strong>」について
+            {t('shopping.healthAdvisor.about', { productName })}
           </p>
         </div>
 
@@ -127,7 +129,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
               color: '#92400e',
             }}
           >
-            📊 カテゴリ: {currentWarning.category}
+            {t('shopping.healthAdvisor.category', { category: currentWarning.category })}
           </h4>
           <p
             style={{
@@ -153,7 +155,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
             }}
           >
             <MdLightbulbOutline size={20} color="#10b981" />
-            より健康的な代替案
+            {t('shopping.healthAdvisor.alternatives')}
           </h4>
           <div style={{ display: 'grid', gap: '8px' }}>
             {currentWarning.alternatives.map((alt, index) => (
@@ -211,7 +213,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
             }}
           >
             <MdAutoAwesome size={20} />
-            {isLoadingAI ? 'AI分析中...' : 'AIで詳しく分析する'}
+            {isLoadingAI ? t('shopping.healthAdvisor.aiAnalyzing') : t('shopping.healthAdvisor.aiAnalysis')}
           </button>
         )}
 
@@ -230,7 +232,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
               fontWeight: 600,
             }}
           >
-            このまま追加する
+            {t('shopping.healthAdvisor.continueAnyway')}
           </button>
           <button
             onClick={onClose}
@@ -244,7 +246,7 @@ export const HealthAdvisorModal: React.FC<HealthAdvisorModalProps> = ({
               fontSize: '0.9rem',
             }}
           >
-            キャンセル
+            {t('shopping.healthAdvisor.cancel')}
           </button>
         </div>
       </div>

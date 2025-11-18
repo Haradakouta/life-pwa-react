@@ -2,6 +2,7 @@
  * レシートOCR結果の確認・編集コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExpenseStore, useShoppingStore, useStockStore, useIntakeStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
 import { detectStockCategory } from '../../utils/stockCategoryDetector';
@@ -13,6 +14,7 @@ interface ReceiptResultProps {
 }
 
 export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose }) => {
+  const { t } = useTranslation();
   const { addExpense } = useExpenseStore();
   const { addItem } = useShoppingStore();
   const { addStock } = useStockStore();
@@ -38,7 +40,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
 
     const price = parseInt(editPrice, 10);
     if (isNaN(price) || price <= 0) {
-      alert('正しい金額を入力してください');
+      alert(t('receipt.invalidPrice'));
       return;
     }
 
@@ -62,22 +64,22 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
   };
 
   const handleDelete = (index: number) => {
-    if (window.confirm('この商品を削除しますか？')) {
+    if (window.confirm(t('receipt.deleteConfirm'))) {
       const newItems = items.filter((_, i) => i !== index);
       setItems(newItems);
     }
   };
 
   const handleAddNew = () => {
-    const name = window.prompt('商品名を入力してください');
+    const name = window.prompt(t('receipt.productNamePrompt'));
     if (!name || !name.trim()) return;
 
-    const priceStr = window.prompt('金額を入力してください');
+    const priceStr = window.prompt(t('receipt.pricePrompt'));
     if (!priceStr) return;
 
     const price = parseInt(priceStr, 10);
     if (isNaN(price) || price <= 0) {
-      alert('正しい金額を入力してください');
+      alert(t('receipt.invalidPrice'));
       return;
     }
 
@@ -86,11 +88,11 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
 
   const handleSaveToExpenses = () => {
     if (items.length === 0) {
-      alert('商品が1つもありません');
+      alert(t('receipt.noItemsError'));
       return;
     }
 
-    if (!window.confirm(`${items.length}個の商品を家計簿に登録しますか？\n合計金額: ¥${totalAmount.toLocaleString()}`)) {
+    if (!window.confirm(t('receipt.addToExpensesConfirm', { count: items.length, total: totalAmount.toLocaleString() }))) {
       return;
     }
 
@@ -117,17 +119,17 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       }
     });
 
-    alert('家計簿に登録しました！');
+    alert(t('receipt.addToExpensesSuccess'));
     onClose();
   };
 
   const handleSaveToShoppingList = () => {
     if (items.length === 0) {
-      alert('商品が1つもありません');
+      alert(t('receipt.noItemsError'));
       return;
     }
 
-    if (!window.confirm(`${items.length}個の商品を買い物リストに追加しますか？`)) {
+    if (!window.confirm(t('receipt.addToShoppingListConfirm', { count: items.length }))) {
       return;
     }
 
@@ -140,7 +142,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       });
     });
 
-    alert('買い物リストに追加しました！');
+    alert(t('receipt.addToShoppingListSuccess'));
     onClose();
   };
 
@@ -166,11 +168,11 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
 
   const handleSaveToStock = () => {
     if (selectedCount === 0) {
-      alert('商品を選択してください');
+      alert(t('receipt.selectItemsRequired'));
       return;
     }
 
-    if (!window.confirm(`選択した${selectedCount}個の商品を在庫に追加しますか？`)) {
+    if (!window.confirm(t('receipt.addToStockConfirm', { count: selectedCount }))) {
       return;
     }
 
@@ -198,7 +200,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       }
     });
 
-    alert(`${addedCount}個の商品を在庫に追加しました！\n賞味期限は${expiryDateStr}（${daysRemaining}日後）に設定されています。`);
+    alert(t('receipt.addToStockSuccess', { count: addedCount, date: expiryDateStr, days: daysRemaining }));
     onClose();
   };
 
@@ -211,7 +213,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
           <MdReceipt size={20} />
-          レシート内容
+          {t('receipt.title')}
         </h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
@@ -230,7 +232,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             }}
           >
             {selectedCount === items.length ? <MdCheckBox size={18} /> : <MdCheckBoxOutlineBlank size={18} />}
-            {selectedCount === items.length ? '全解除' : '全選択'}
+            {selectedCount === items.length ? t('receipt.deselectAll') : t('receipt.selectAll')}
           </button>
           <button
             onClick={handleAddNew}
@@ -248,7 +250,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             }}
           >
             <MdAdd size={18} />
-            追加
+            {t('receipt.add')}
           </button>
         </div>
       </div>
@@ -265,12 +267,12 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       >
         {result.storeName && (
           <div style={{ marginBottom: '4px' }}>
-            <strong>店舗:</strong> {result.storeName}
+            <strong>{t('receipt.store')}</strong> {result.storeName}
           </div>
         )}
         {result.date && (
           <div>
-            <strong>日付:</strong> {result.date}
+            <strong>{t('receipt.date')}</strong> {result.date}
           </div>
         )}
       </div>
@@ -278,7 +280,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       {/* 商品リスト */}
       {items.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
-          商品が検出されませんでした。「追加」ボタンから手動で追加してください。
+          {t('receipt.noItems')}
         </p>
       ) : (
         <div style={{ marginBottom: '16px' }}>
@@ -298,7 +300,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    placeholder="商品名"
+                    placeholder={t('receipt.productName')}
                     style={{
                       flex: 1,
                       padding: '6px 8px',
@@ -311,7 +313,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value)}
                     type="number"
-                    placeholder="金額"
+                    placeholder={t('receipt.price')}
                     style={{
                       width: '80px',
                       padding: '6px 8px',
@@ -370,7 +372,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
                     <div style={{ fontWeight: 500, marginBottom: '4px' }}>{item.name}</div>
                     {item.quantity && item.quantity > 1 && (
                       <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                        数量: {item.quantity}個
+                        {t('receipt.quantity', { count: item.quantity })}
                       </div>
                     )}
                   </div>
@@ -422,7 +424,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>合計</span>
+        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{t('receipt.total')}</span>
         <span style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--danger)' }}>
           ¥{formatAmount(totalAmount)}
         </span>
@@ -446,7 +448,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           }}
         >
           <MdInventory size={20} />
-          選択した商品を在庫へ追加 ({selectedCount}個)
+          {t('receipt.addToStock', { count: selectedCount })}
         </button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button
@@ -463,7 +465,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             }}
           >
             <MdShoppingCart size={18} />
-            買い物リストに追加
+            {t('receipt.addToShoppingList')}
           </button>
           <button
             onClick={handleSaveToExpenses}
@@ -473,7 +475,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
               opacity: items.length === 0 ? 0.5 : 1,
             }}
           >
-            家計簿に登録
+            {t('receipt.addToExpenses')}
           </button>
         </div>
         <button
@@ -488,14 +490,14 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             fontWeight: 500,
           }}
         >
-          キャンセル
+          {t('receipt.cancel')}
         </button>
       </div>
 
       {/* デバッグ用: 生テキスト表示 */}
       <details style={{ marginTop: '16px' }}>
         <summary style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)' }}>
-          OCR生テキストを表示
+          {t('receipt.showRawText')}
         </summary>
         <pre
           style={{

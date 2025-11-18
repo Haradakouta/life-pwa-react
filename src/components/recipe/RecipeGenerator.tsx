@@ -2,6 +2,7 @@
  * レシピ生成フォームコンポーネント
  */
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStockStore, useRecipeStore } from '../../store';
 import { generateRecipe, generateRecipeFromStock } from '../../api/gemini';
 import type { RecipeDifficulty, DietaryRestriction, Recipe, StockCategory } from '../../types';
@@ -21,6 +22,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
   isLoading,
   setIsLoading,
 }) => {
+  const { t } = useTranslation();
   const { stocks } = useStockStore();
   const { addToHistory } = useRecipeStore();
   const [ingredients, setIngredients] = useState('');
@@ -46,17 +48,17 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
   }, [stocks]);
 
   const difficultyOptions: Array<{ value: RecipeDifficulty; label: string; icon: React.ReactNode }> = [
-    { value: 'none', label: '指定なし', icon: <MdAutoAwesome size={16} /> },
-    { value: 'super_easy', label: '超簡単', icon: <FiSmile size={16} /> },
-    { value: 'under_5min', label: '5分以内', icon: <FiZap size={16} /> },
-    { value: 'under_10min', label: '10分以内', icon: <FiClock size={16} /> },
-    { value: 'no_fire', label: '火を使わない', icon: <BsSnow size={16} /> },
+    { value: 'none', label: t('recipe.generator.difficultyOptions.none'), icon: <MdAutoAwesome size={16} /> },
+    { value: 'super_easy', label: t('recipe.generator.difficultyOptions.super_easy'), icon: <FiSmile size={16} /> },
+    { value: 'under_5min', label: t('recipe.generator.difficultyOptions.under_5min'), icon: <FiZap size={16} /> },
+    { value: 'under_10min', label: t('recipe.generator.difficultyOptions.under_10min'), icon: <FiClock size={16} /> },
+    { value: 'no_fire', label: t('recipe.generator.difficultyOptions.no_fire'), icon: <BsSnow size={16} /> },
   ];
 
   const dietaryOptions: Array<{ value: DietaryRestriction; label: string; icon: React.ReactNode }> = [
-    { value: 'none', label: '指定なし', icon: <MdRestaurantMenu size={16} /> },
-    { value: 'vegetarian', label: 'ベジタリアン', icon: <span>🥗</span> },
-    { value: 'vegan', label: 'ヴィーガン', icon: <span>🌱</span> },
+    { value: 'none', label: t('recipe.generator.dietaryOptions.none'), icon: <MdRestaurantMenu size={16} /> },
+    { value: 'vegetarian', label: t('recipe.generator.dietaryOptions.vegetarian'), icon: <span>🥗</span> },
+    { value: 'vegan', label: t('recipe.generator.dietaryOptions.vegan'), icon: <span>🌱</span> },
   ];
 
   const handleOpenStockModal = () => {
@@ -89,7 +91,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
     const stockNames = selectedStocks.map((stock) => stock.name);
 
     if (stockNames.length === 0) {
-      alert('材料を選択してください');
+      alert(t('recipe.generator.selectIngredientsRequired'));
       return;
     }
 
@@ -108,7 +110,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
   const handleGenerateFromStock = async () => {
     if (ingredientStocks.length === 0) {
-      alert('食材として使える在庫がありません');
+      alert(t('recipe.generator.noStock'));
       return;
     }
 
@@ -131,7 +133,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
       // レシピから料理名を抽出
       const titleMatch = recipeContent.match(/【料理名】\s*([^\n]+)/);
-      const recipeTitle = titleMatch ? titleMatch[1].trim() : '在庫から作れるレシピ';
+      const recipeTitle = titleMatch ? titleMatch[1].trim() : t('recipe.generator.defaultTitle');
 
       // レシピから材料を抽出（AIが提案した材料を使用）
       const ingredientMatch = recipeContent.match(/【材料】\s*([\s\S]*?)(?=【作り方】|【ポイント】|$)/);
@@ -168,7 +170,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         ingredients: finalIngredients,
         difficulty,
         dietaryRestriction,
-        customRequest: customRequest || '在庫から自動提案',
+        customRequest: customRequest || t('recipe.generator.defaultCustomRequest'),
         isFavorite: false,
         createdAt: new Date().toISOString(),
       };
@@ -192,18 +194,18 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         errorData: error instanceof Error && 'errorData' in error ? (error as ErrorWithStatus).errorData : undefined,
       });
 
-      let errorMessage = '在庫からレシピの生成に失敗しました。';
+      let errorMessage = t('recipe.generator.error.generateFromStockFailed');
       if (error instanceof Error) {
         errorMessage += `\n\n${error.message}`;
         
         if (error.message.includes('403') || error.message.includes('無効') || error.message.includes('権限')) {
-          errorMessage += '\n\n【対処法】\n1. 設定画面でAPIキーを確認してください\n2. APIキーが正しく入力されているか確認してください\n3. Google AI StudioでAPIキーが有効か確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.apiKey.title')}\n${t('recipe.generator.error.apiKey.step1')}\n${t('recipe.generator.error.apiKey.step2')}\n${t('recipe.generator.error.apiKey.step3')}`;
         } else if (error.message.includes('429') || error.message.includes('制限')) {
-          errorMessage += '\n\n【対処法】\n1. しばらく待ってから再度お試しください\n2. API使用量を確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.rateLimit.title')}\n${t('recipe.generator.error.rateLimit.step1')}\n${t('recipe.generator.error.rateLimit.step2')}`;
         } else if (error.message.includes('ネットワーク') || error.message.includes('Failed to fetch')) {
-          errorMessage += '\n\n【対処法】\n1. インターネット接続を確認してください\n2. ファイアウォールやプロキシの設定を確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.network.title')}\n${t('recipe.generator.error.network.step1')}\n${t('recipe.generator.error.network.step2')}`;
         } else if (error.message.includes('400') || error.message.includes('リクエスト形式')) {
-          errorMessage += '\n\n【対処法】\n1. 在庫データを確認してください\n2. しばらく待ってから再度お試しください';
+          errorMessage += `\n\n${t('recipe.generator.error.request.title')}\n${t('recipe.generator.error.request.step1')}\n${t('recipe.generator.error.request.step2')}`;
         }
       }
       alert(errorMessage);
@@ -214,7 +216,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
   const handleGenerate = async () => {
     if (!ingredients.trim()) {
-      alert('材料を入力してください');
+      alert(t('recipe.generator.ingredientsRequired'));
       return;
     }
 
@@ -230,7 +232,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
       const newRecipe: Recipe = {
         id: generateUUID(),
-        title: `${ingredientArray.slice(0, 3).join('、')}を使ったレシピ`,
+        title: t('recipe.generator.recipeTitle', { ingredients: ingredientArray.slice(0, 3).join('、') }),
         content: recipeContent,
         ingredients: ingredientArray,
         difficulty,
@@ -259,19 +261,19 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         errorData: error instanceof Error && 'errorData' in error ? (error as ErrorWithStatus).errorData : undefined,
       });
 
-      let errorMessage = 'レシピの生成に失敗しました。';
+      let errorMessage = t('recipe.generator.error.generateFailed');
       if (error instanceof Error) {
         errorMessage += `\n\n${error.message}`;
 
         // エラーの種類に応じた追加情報
         if (error.message.includes('403') || error.message.includes('無効') || error.message.includes('権限')) {
-          errorMessage += '\n\n【対処法】\n1. 設定画面でAPIキーを確認してください\n2. APIキーが正しく入力されているか確認してください\n3. Google AI StudioでAPIキーが有効か確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.apiKey.title')}\n${t('recipe.generator.error.apiKey.step1')}\n${t('recipe.generator.error.apiKey.step2')}\n${t('recipe.generator.error.apiKey.step3')}`;
         } else if (error.message.includes('429') || error.message.includes('制限')) {
-          errorMessage += '\n\n【対処法】\n1. しばらく待ってから再度お試しください\n2. API使用量を確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.rateLimit.title')}\n${t('recipe.generator.error.rateLimit.step1')}\n${t('recipe.generator.error.rateLimit.step2')}`;
         } else if (error.message.includes('ネットワーク') || error.message.includes('Failed to fetch')) {
-          errorMessage += '\n\n【対処法】\n1. インターネット接続を確認してください\n2. ファイアウォールやプロキシの設定を確認してください';
+          errorMessage += `\n\n${t('recipe.generator.error.network.title')}\n${t('recipe.generator.error.network.step1')}\n${t('recipe.generator.error.network.step2')}`;
         } else if (error.message.includes('400') || error.message.includes('リクエスト形式')) {
-          errorMessage += '\n\n【対処法】\n1. 材料を正しく入力してください\n2. しばらく待ってから再度お試しください';
+          errorMessage += `\n\n${t('recipe.generator.error.request.title')}\n${t('recipe.generator.error.request.step1')}\n${t('recipe.generator.error.request.step2')}`;
         }
       }
       alert(errorMessage);
@@ -284,14 +286,14 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
     <div className="card">
       <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <MdRestaurantMenu size={20} />
-        レシピを生成
+        {t('recipe.generator.title')}
       </h3>
 
-      <label>材料（カンマ区切り）</label>
+      <label>{t('recipe.generator.ingredients')}</label>
       <input
         value={ingredients}
         onChange={(e) => setIngredients(e.target.value)}
-        placeholder="例: 鶏肉, じゃがいも, 玉ねぎ"
+        placeholder={t('recipe.generator.ingredientsPlaceholder')}
         disabled={isLoading}
       />
 
@@ -315,7 +317,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
           disabled={isLoading || ingredientStocks.length === 0}
         >
           <MdInventory size={18} />
-          在庫から材料を選択 ({ingredientStocks.length}件)
+          {t('recipe.generator.selectIngredients')} ({ingredientStocks.length}件)
         </button>
 
         <button
@@ -339,7 +341,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
           disabled={isLoading || ingredientStocks.length === 0}
         >
           <MdSmartToy size={18} />
-          AIが在庫から自動提案
+          {t('recipe.generator.generateFromStock')}
         </button>
       </div>
 
@@ -355,11 +357,11 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         >
           <div className="modal-content" style={{ maxWidth: '500px', maxHeight: '80vh' }}>
             <div className="modal-header">
-              <h3 className="modal-title">在庫から材料を選択</h3>
+              <h3 className="modal-title">{t('recipe.generator.selectIngredients')}</h3>
               <button
                 className="modal-close"
                 onClick={() => setShowStockModal(false)}
-                aria-label="閉じる"
+                aria-label={t('common.cancel')}
               >
                 <MdClose size={24} />
               </button>
@@ -378,10 +380,10 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
                   fontSize: '0.9rem',
                 }}
               >
-                {selectedStockIds.size === ingredientStocks.length ? 'すべて解除' : 'すべて選択'}
+                {selectedStockIds.size === ingredientStocks.length ? t('receipt.deselectAll') : t('recipe.generator.selectAll')}
               </button>
               <span style={{ marginLeft: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                {selectedStockIds.size}件選択中
+                {t('recipe.generator.selectedCount', { count: selectedStockIds.size })}
               </span>
             </div>
 
@@ -396,7 +398,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
             >
               {ingredientStocks.length === 0 ? (
                 <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  食材として使える在庫がありません
+                  {t('recipe.generator.noStockInModal')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -436,10 +438,10 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, color: 'var(--text)' }}>{stock.name}</div>
                           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                            数量: {stock.quantity}個
+                            {t('recipe.generator.quantity', { count: stock.quantity })}
                             {stock.daysRemaining !== undefined && (
                               <>
-                                {' '}・ 期限まで: {stock.daysRemaining}日
+                                {' '}・ {t('recipe.generator.expiryDays', { days: stock.daysRemaining })}
                                 {stock.daysRemaining <= 3 && (
                                   <span style={{ color: '#ef4444', marginLeft: '4px' }}>⚠️</span>
                                 )}
@@ -447,12 +449,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
                             )}
                             {stock.category && (
                               <span style={{ marginLeft: '8px', fontSize: '0.75rem', opacity: 0.7 }}>
-                                ({stock.category === 'staple' ? '主食' : 
-                                  stock.category === 'protein' ? 'たんぱく質' :
-                                  stock.category === 'vegetable' ? '野菜' :
-                                  stock.category === 'fruit' ? '果物' :
-                                  stock.category === 'dairy' ? '乳製品' :
-                                  stock.category === 'seasoning' ? '調味料' : 'その他'})
+                                ({t(`stock.categories.${stock.category}`)})
                               </span>
                             )}
                           </div>
@@ -476,7 +473,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                キャンセル
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddSelectedStocks}
@@ -491,14 +488,14 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
                   fontWeight: 600,
                 }}
               >
-                選択した材料を追加 ({selectedStockIds.size}件)
+                {t('recipe.generator.addSelected')} ({selectedStockIds.size}件)
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <label>難易度</label>
+      <label>{t('recipe.generator.difficulty')}</label>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
         {difficultyOptions.map((option) => (
           <button
@@ -521,7 +518,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         ))}
       </div>
 
-      <label>食事制限</label>
+      <label>{t('recipe.generator.dietaryRestriction')}</label>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
         {dietaryOptions.map((option) => (
           <button
@@ -544,11 +541,11 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
         ))}
       </div>
 
-      <label>カスタムリクエスト（任意）</label>
+      <label>{t('recipe.generator.customRequest')}</label>
       <textarea
         value={customRequest}
         onChange={(e) => setCustomRequest(e.target.value)}
-        placeholder="例: 辛めに作りたい、子供向けに優しい味で"
+        placeholder={t('recipe.generator.customRequestPlaceholder')}
         rows={3}
         style={{
           width: '100%',
@@ -566,7 +563,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
       <button className="submit" onClick={handleGenerate} disabled={isLoading}>
         <MdAutoAwesome size={18} style={{ marginRight: '8px' }} />
-        レシピを生成する
+        {t('recipe.generator.generate')}
       </button>
     </div>
   );

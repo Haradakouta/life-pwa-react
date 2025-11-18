@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdEmail, MdLock, MdPerson, MdVerified, MdArrowBack, MdHealthAndSafety, MdLocationOn } from 'react-icons/md';
 import { prefectures } from '../../types/prefecture';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -14,6 +15,7 @@ interface RegisterFlowProps {
 type Step = 'email' | 'code' | 'profile' | 'health' | 'prefecture';
 
 export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const { updateSettings, settings } = useSettingsStore();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -51,7 +53,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       setStep('code');
     } catch (err: unknown) {
       console.error('Email send error:', err);
-      const errorMessage = err instanceof Error ? err.message : '確認コードの送信に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : t('auth.registerFlow.step1.sendFailed');
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -67,7 +69,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
     try {
       const result = await verifyCode(email, inputCode);
       if (!result.valid) {
-        setError(result.error || '確認コードが正しくありません');
+        setError(result.error || t('auth.registerFlow.step2.invalidCode'));
         setLoading(false);
         return;
       }
@@ -77,7 +79,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       // ステップ3へ
       setStep('profile');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '確認に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : t('auth.registerFlow.step2.verifyFailed');
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -90,17 +92,17 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
     setError('');
 
     if (password !== passwordConfirm) {
-      setError('パスワードが一致しません');
+      setError(t('auth.registerFlow.step3.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('パスワードは6文字以上で入力してください');
+      setError(t('auth.registerFlow.step3.passwordTooShort'));
       return;
     }
 
     if (!username.trim()) {
-      setError('ユーザー名を入力してください');
+      setError(t('auth.registerFlow.step3.usernameRequired'));
       return;
     }
 
@@ -114,7 +116,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
     setError('');
 
     if (!prefecture) {
-      setError('都道府県を選択してください');
+      setError(t('auth.registerFlow.step5.prefectureRequired'));
       return;
     }
 
@@ -153,8 +155,8 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           console.error(`❌ プロフィール作成失敗 (試行 ${retryCount}/${maxRetries}):`, profileError);
 
           if (retryCount >= maxRetries) {
-            const errorMessage = profileError instanceof Error ? profileError.message : '不明なエラー';
-            throw new Error(`プロフィール作成に失敗しました: ${errorMessage}`);
+            const errorMessage = profileError instanceof Error ? profileError.message : t('common.error');
+            throw new Error(t('auth.registerFlow.step5.profileCreateFailed', { error: errorMessage }));
           }
 
           // リトライ前に少し待機
@@ -192,7 +194,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       onBack();
     } catch (err: unknown) {
       console.error('Account creation error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'アカウント作成に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : t('auth.registerFlow.step5.createFailed');
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -217,10 +219,10 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       const code = generateVerificationCode();
       await saveVerificationCode(email, code);
       await sendVerificationEmail(email, code);
-      alert('確認コードを再送信しました！');
+      alert(t('auth.registerFlow.step2.resendSuccess'));
     } catch (err: unknown) {
       console.error('Code resend error:', err);
-      setError('再送信に失敗しました');
+      setError(t('auth.registerFlow.step2.resendFailed'));
     } finally {
       setLoading(false);
     }
@@ -244,12 +246,12 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       {step === 'email' && (
         <form onSubmit={handleEmailSubmit} className="step-form">
           <button type="button" onClick={onBack} className="back-button-small">
-            <MdArrowBack /> 戻る
+            <MdArrowBack /> {t('auth.registerFlow.back')}
           </button>
           <h2>
-            <MdEmail /> メールアドレスを入力
+            <MdEmail /> {t('auth.registerFlow.step1.title')}
           </h2>
-          <p className="step-description">確認コードを送信します</p>
+          <p className="step-description">{t('auth.registerFlow.step1.description')}</p>
 
           <div className="form-group">
             <input
@@ -265,7 +267,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? '送信中...' : '確認コードを送信'}
+            {loading ? t('auth.registerFlow.step1.sending') : t('auth.registerFlow.step1.sendCode')}
           </button>
         </form>
       )}
@@ -274,10 +276,10 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       {step === 'code' && (
         <form onSubmit={handleCodeSubmit} className="step-form">
           <h2>
-            <MdVerified /> 確認コードを入力
+            <MdVerified /> {t('auth.registerFlow.step2.title')}
           </h2>
           <p className="step-description">
-            <strong>{email}</strong> 宛に送信された6桁のコードを入力してください
+            {t('auth.registerFlow.step2.description', { email })}
           </p>
 
           <div className="form-group">
@@ -296,11 +298,11 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading || inputCode.length !== 6}>
-            {loading ? '確認中...' : '確認'}
+            {loading ? t('auth.registerFlow.step2.verifying') : t('auth.registerFlow.step2.verify')}
           </button>
 
           <button type="button" onClick={handleResendCode} className="link-button" disabled={loading}>
-            コードを再送信
+            {t('auth.registerFlow.step2.resend')}
           </button>
         </form>
       )}
@@ -309,13 +311,13 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       {step === 'profile' && (
         <form onSubmit={handleProfileSubmit} className="step-form">
           <h2>
-            <MdPerson /> アカウント情報を設定
+            <MdPerson /> {t('auth.registerFlow.step3.title')}
           </h2>
-          <p className="step-description">ユーザー名とパスワードを設定してください</p>
+          <p className="step-description">{t('auth.registerFlow.step3.title')}</p>
 
           <div className="form-group">
             <label>
-              <MdPerson /> ユーザー名
+              <MdPerson /> {t('auth.registerFlow.step3.username')}
             </label>
             <input
               type="text"
@@ -329,13 +331,13 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
           <div className="form-group">
             <label>
-              <MdLock /> パスワード
+              <MdLock /> {t('auth.registerFlow.step3.password')}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="6文字以上"
+              placeholder={t('auth.passwordPlaceholder')}
               minLength={6}
               required
             />
@@ -343,7 +345,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
           <div className="form-group">
             <label>
-              <MdLock /> パスワード（確認）
+              <MdLock /> {t('auth.registerFlow.step3.passwordConfirm')}
             </label>
             <input
               type="password"

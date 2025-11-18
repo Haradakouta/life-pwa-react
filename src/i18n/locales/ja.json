@@ -237,7 +237,88 @@
     "passwordReset": "パスワードリセット",
     "authError": "認証エラーが発生しました",
     "securityNote": "※ Firebase Authenticationを使用した安全な認証です",
-    "dataNote": "データはFirestoreに安全に保存されます"
+    "dataNote": "データはFirestoreに安全に保存されます",
+    "registerFlow": {
+      "step1": {
+        "title": "メールアドレスを入力",
+        "description": "確認コードを送信します",
+        "sendCode": "確認コードを送信",
+        "sending": "送信中...",
+        "sendFailed": "確認コードの送信に失敗しました"
+      },
+      "step2": {
+        "title": "確認コードを入力",
+        "description": "{{email}} 宛に送信された6桁のコードを入力してください",
+        "verify": "確認",
+        "verifying": "確認中...",
+        "resend": "コードを再送信",
+        "resendSuccess": "確認コードを再送信しました！",
+        "resendFailed": "再送信に失敗しました",
+        "invalidCode": "確認コードが正しくありません",
+        "verifyFailed": "確認に失敗しました"
+      },
+      "step3": {
+        "title": "ユーザー情報を入力",
+        "username": "ユーザー名",
+        "password": "パスワード",
+        "passwordConfirm": "パスワード（確認）",
+        "passwordMismatch": "パスワードが一致しません",
+        "passwordTooShort": "パスワードは6文字以上で入力してください",
+        "usernameRequired": "ユーザー名を入力してください"
+      },
+      "step4": {
+        "title": "健康情報を入力",
+        "age": "年齢",
+        "height": "身長 (cm)",
+        "weight": "体重 (kg)",
+        "savings": "貯金額 (円)",
+        "optional": "（任意）",
+        "next": "次へ"
+      },
+      "step5": {
+        "title": "都道府県を選択",
+        "description": "お住まいの都道府県を選択してください",
+        "prefectureRequired": "都道府県を選択してください",
+        "createAccount": "アカウントを作成",
+        "creating": "作成中...",
+        "createFailed": "アカウント作成に失敗しました",
+        "profileCreateFailed": "プロフィール作成に失敗しました: {{error}}"
+      },
+      "back": "戻る"
+    },
+    "passwordResetFlow": {
+      "step1": {
+        "title": "メールアドレスを入力",
+        "description": "パスワードリセット用の確認コードを送信します",
+        "sendCode": "確認コードを送信",
+        "sending": "送信中...",
+        "sendFailed": "確認コードの送信に失敗しました"
+      },
+      "step2": {
+        "title": "確認コードを入力",
+        "description": "{{email}} 宛に送信された6桁のコードを入力してください",
+        "verify": "確認",
+        "verifying": "確認中...",
+        "resend": "コードを再送信",
+        "resendSuccess": "確認コードを再送信しました！",
+        "resendFailed": "再送信に失敗しました",
+        "invalidCode": "確認コードが正しくありません",
+        "verifyFailed": "確認に失敗しました"
+      },
+      "step3": {
+        "title": "新しいパスワードを設定",
+        "description": "新しいパスワードを入力してください",
+        "newPassword": "新しいパスワード",
+        "confirmPassword": "パスワード（確認）",
+        "passwordMismatch": "パスワードが一致しません",
+        "passwordTooShort": "パスワードは6文字以上で入力してください",
+        "update": "パスワードを更新",
+        "updating": "更新中...",
+        "updateFailed": "パスワードの更新に失敗しました",
+        "updateSuccess": "パスワードのリセットが完了しました！新しいパスワードでログインしてください。"
+      },
+      "back": "戻る"
+    }
   },
   "product": {
     "productInfo": "商品情報を取得しました",
@@ -274,6 +355,36 @@
     },
     "cancel": "キャンセル"
   },
+  "receipt": {
+    "title": "レシート内容",
+    "selectAll": "全選択",
+    "deselectAll": "全解除",
+    "add": "追加",
+    "store": "店舗:",
+    "date": "日付:",
+    "noItems": "商品が検出されませんでした。「追加」ボタンから手動で追加してください。",
+    "productName": "商品名",
+    "price": "金額",
+    "quantity": "数量: {{count}}個",
+    "total": "合計",
+    "addToStock": "選択した商品を在庫へ追加 ({{count}}個)",
+    "addToShoppingList": "買い物リストに追加",
+    "addToExpenses": "家計簿に登録",
+    "cancel": "キャンセル",
+    "showRawText": "OCR生テキストを表示",
+    "deleteConfirm": "この商品を削除しますか？",
+    "productNamePrompt": "商品名を入力してください",
+    "pricePrompt": "金額を入力してください",
+    "invalidPrice": "正しい金額を入力してください",
+    "noItemsError": "商品が1つもありません",
+    "addToExpensesConfirm": "{{count}}個の商品を家計簿に登録しますか？\n合計金額: ¥{{total}}",
+    "addToExpensesSuccess": "家計簿に登録しました！",
+    "addToShoppingListConfirm": "{{count}}個の商品を買い物リストに追加しますか？",
+    "addToShoppingListSuccess": "買い物リストに追加しました！",
+    "selectItemsRequired": "商品を選択してください",
+    "addToStockConfirm": "選択した{{count}}個の商品を在庫に追加しますか？",
+    "addToStockSuccess": "{{count}}個の商品を在庫に追加しました！\n賞味期限は{{date}}（{{days}}日後）に設定されています。"
+  },
   "expense": {
     "categories": {
       "food": "食費",
@@ -305,6 +416,9 @@
     "dateFormat": "年{{month}}月{{day}}日"
   },
   "shopping": {
+    "screen": {
+      "title": "買い物リスト"
+    },
     "form": {
       "title": "手動で追加",
       "productName": "商品名",
@@ -312,6 +426,28 @@
       "quantity": "数量",
       "submit": "リストに追加",
       "productNameRequired": "商品名を入力してください"
+    },
+    "list": {
+      "title": "買い物リスト",
+      "empty": "リストが空です",
+      "clearConfirm": "チェック済みのアイテムをすべて削除しますか？",
+      "noCheckedItems": "チェック済みのアイテムがありません",
+      "moveToStockConfirm": "チェック済みのアイテム {{count}}個を在庫に追加しますか？\n（賞味期限は7日後に設定されます）",
+      "afterShopping": "買い物完了後はこちら！",
+      "moveToStockDescription": "チェックした商品を在庫に一括追加できます。\n賞味期限は自動で7日後に設定されます。",
+      "addToStock": "在庫に追加（{{count}}個）",
+      "clearChecked": "チェック済みをクリア",
+      "movedToStock": "在庫に追加しました！"
+    },
+    "healthAdvisor": {
+      "title": "健康アドバイス",
+      "about": "「{{productName}}」について",
+      "category": "📊 カテゴリ: {{category}}",
+      "alternatives": "より健康的な代替案",
+      "aiAnalysis": "AIで詳しく分析する",
+      "aiAnalyzing": "AI分析中...",
+      "continueAnyway": "このまま追加する",
+      "cancel": "キャンセル"
     }
   },
   "goalsSummary": {
@@ -373,6 +509,70 @@
   "shopping": {
     "screen": {
       "title": "買い物リスト"
+    }
+  },
+  "recipe": {
+    "generator": {
+      "title": "レシピ生成",
+      "ingredients": "材料",
+      "ingredientsPlaceholder": "例: 鶏肉、玉ねぎ、にんじん",
+      "difficulty": "難易度",
+      "dietaryRestriction": "食事制限",
+      "customRequest": "カスタムリクエスト（オプション）",
+      "customRequestPlaceholder": "例: ヘルシーに、時短で",
+      "generate": "レシピを生成",
+      "generateFromStock": "在庫からレシピを生成",
+      "selectIngredients": "材料を選択",
+      "selectAll": "全選択",
+      "addSelected": "選択した材料を追加",
+      "noStock": "食材として使える在庫がありません",
+      "ingredientsRequired": "材料を入力してください",
+      "selectIngredientsRequired": "材料を選択してください",
+      "difficultyOptions": {
+        "none": "指定なし",
+        "super_easy": "超簡単",
+        "under_5min": "5分以内",
+        "under_10min": "10分以内",
+        "no_fire": "火を使わない"
+      },
+      "dietaryOptions": {
+        "none": "指定なし",
+        "vegetarian": "ベジタリアン",
+        "vegan": "ヴィーガン"
+      },
+      "defaultTitle": "在庫から作れるレシピ",
+      "defaultCustomRequest": "在庫から自動提案",
+      "error": {
+        "generateFromStockFailed": "在庫からレシピの生成に失敗しました。",
+        "generateFailed": "レシピの生成に失敗しました。",
+        "apiKey": {
+          "title": "【対処法】",
+          "step1": "1. 設定画面でAPIキーを確認してください",
+          "step2": "2. APIキーが正しく入力されているか確認してください",
+          "step3": "3. Google AI StudioでAPIキーが有効か確認してください"
+        },
+        "rateLimit": {
+          "title": "【対処法】",
+          "step1": "1. しばらく待ってから再度お試しください",
+          "step2": "2. API使用量を確認してください"
+        },
+        "network": {
+          "title": "【対処法】",
+          "step1": "1. インターネット接続を確認してください",
+          "step2": "2. ファイアウォールやプロキシの設定を確認してください"
+        },
+        "request": {
+          "title": "【対処法】",
+          "step1": "1. 在庫データを確認してください",
+          "step2": "2. しばらく待ってから再度お試しください"
+        }
+      },
+      "recipeTitle": "{{ingredients}}を使ったレシピ",
+      "selectedCount": "{{count}}件選択中",
+      "noStockInModal": "食材として使える在庫がありません",
+      "quantity": "数量: {{count}}個",
+      "expiryDays": "期限まで: {{days}}日",
+      "addSelected": "選択した材料を追加"
     }
   },
   "goals": {

@@ -2,12 +2,14 @@
  * 支出入力フォームコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import type { ExpenseCategory } from '../../types';
 import { MdAdd, MdCalendarToday } from 'react-icons/md';
 import { DatePickerModal } from '../common/DatePickerModal';
 
 export const ExpenseForm: React.FC = () => {
+  const { t } = useTranslation();
   const { addExpense } = useExpenseStore();
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [category, setCategory] = useState<ExpenseCategory>('food');
@@ -18,30 +20,30 @@ export const ExpenseForm: React.FC = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const expenseCategories: Array<{ value: ExpenseCategory; label: string }> = [
-    { value: 'food', label: '食費' },
-    { value: 'transport', label: '交通費' },
-    { value: 'utilities', label: '光熱費' },
-    { value: 'entertainment', label: '娯楽' },
-    { value: 'health', label: '医療' },
-    { value: 'other', label: 'その他' },
+    { value: 'food', label: t('expense.categories.food') },
+    { value: 'transport', label: t('expense.categories.transport') },
+    { value: 'utilities', label: t('expense.categories.utilities') },
+    { value: 'entertainment', label: t('expense.categories.entertainment') },
+    { value: 'health', label: t('expense.categories.health') },
+    { value: 'other', label: t('expense.categories.other') },
   ];
 
   const incomeCategories: Array<{ value: ExpenseCategory; label: string }> = [
-    { value: 'other', label: '給与' },
-    { value: 'other', label: '賞与' },
-    { value: 'other', label: 'その他' },
+    { value: 'other', label: t('expense.categories.salary') },
+    { value: 'other', label: t('expense.categories.bonus') },
+    { value: 'other', label: t('expense.categories.other') },
   ];
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
 
   const handleSubmit = () => {
     if (!amount || Number(amount) <= 0) {
-      alert('正しい金額を入力してください');
+      alert(t('expense.form.amountRequired'));
       return;
     }
 
     if (category === 'other' && !customCategory.trim()) {
-      alert('カスタムカテゴリ名を入力してください');
+      alert(t('expense.form.customCategoryRequired'));
       return;
     }
 
@@ -59,16 +61,16 @@ export const ExpenseForm: React.FC = () => {
     setMemo('');
     setCustomCategory('');
 
-    alert(`${type === 'expense' ? '支出' : '収入'}を記録しました！`);
+    alert(type === 'expense' ? t('expense.form.expenseRecorded') : t('expense.form.incomeRecorded'));
   };
 
   const formatDate = (date: Date) => {
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    return t('expense.dateFormat', { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() });
   };
 
   return (
     <div className="card">
-      <label>種別</label>
+      <label>{t('expense.form.type')}</label>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
         <button
           onClick={() => {
@@ -87,7 +89,7 @@ export const ExpenseForm: React.FC = () => {
             fontWeight: type === 'expense' ? 600 : 400,
           }}
         >
-          支出
+          {t('expense.form.expense')}
         </button>
         <button
           onClick={() => {
@@ -107,11 +109,11 @@ export const ExpenseForm: React.FC = () => {
             fontWeight: type === 'income' ? 600 : 400,
           }}
         >
-          収入
+          {t('expense.form.income')}
         </button>
       </div>
 
-      <label>日付</label>
+      <label>{t('expense.form.date')}</label>
       <button
         onClick={() => setIsDatePickerOpen(true)}
         style={{
@@ -133,7 +135,7 @@ export const ExpenseForm: React.FC = () => {
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
 
-      <label>カテゴリ</label>
+      <label>{t('expense.form.category')}</label>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
@@ -147,16 +149,16 @@ export const ExpenseForm: React.FC = () => {
 
       {category === 'other' && (
         <>
-          <label>カスタムカテゴリ名</label>
+          <label>{t('expense.form.customCategory')}</label>
           <input
             value={customCategory}
             onChange={(e) => setCustomCategory(e.target.value)}
-            placeholder="例: 趣味、ペット、書籍"
+            placeholder={t('expense.form.customCategoryPlaceholder')}
           />
         </>
       )}
 
-      <label>金額(円)</label>
+      <label>{t('expense.form.amount')}</label>
       <input
         type="number"
         value={amount}
@@ -165,16 +167,16 @@ export const ExpenseForm: React.FC = () => {
         min="0"
       />
 
-      <label>メモ（任意）</label>
+      <label>{t('expense.form.memo')}</label>
       <input
         value={memo}
         onChange={(e) => setMemo(e.target.value)}
-        placeholder="例: 昼食"
+        placeholder={t('expense.form.memoPlaceholder')}
       />
 
       <button className="submit" onClick={handleSubmit}>
         <MdAdd size={20} />
-        記録する
+        {t('expense.form.submit')}
       </button>
 
       <DatePickerModal

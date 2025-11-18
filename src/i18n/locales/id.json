@@ -185,6 +185,246 @@
     "badges": "Lencana",
     "goals": "Tujuan",
     "settings": "Pengaturan"
+  },
+  "auth": {
+    "appName": "Aplikasi Keuangan Kesehatan",
+    "appDescription": "Aplikasi manajemen kehidupan yang didukung AI untuk kesehatan",
+    "email": "Alamat Email",
+    "password": "Kata Sandi",
+    "passwordPlaceholder": "6 karakter atau lebih",
+    "login": "Masuk",
+    "processing": "Memproses...",
+    "forgotPassword": "Lupa kata sandi?",
+    "noAccount": "Tidak punya akun? Klik di sini",
+    "or": "atau",
+    "googleLogin": "Masuk dengan Google",
+    "register": "Daftar",
+    "passwordReset": "Reset Kata Sandi",
+    "authError": "Terjadi kesalahan autentikasi",
+    "securityNote": "※ Autentikasi aman menggunakan Firebase Authentication",
+    "dataNote": "Data disimpan dengan aman di Firestore"
+  },
+  "product": {
+    "productInfo": "Informasi produk diambil",
+    "productName": "Nama Produk",
+    "manufacturer": "Pabrikan",
+    "barcode": "Barcode",
+    "price": "Harga (referensi)",
+    "source": {
+      "rakutenIchiba": "Rakuten Ichiba",
+      "rakutenProduct": "Pencarian Produk Rakuten",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "Data Mock"
+    },
+    "addToMeals": {
+      "title": "Tambahkan ke Catatan Makanan",
+      "calories": "Kalori (kcal)",
+      "caloriesPlaceholder": "contoh: 200",
+      "price": "Harga (yen)",
+      "pricePlaceholder": "contoh: 150",
+      "button": "Tambahkan ke Catatan Makanan",
+      "caloriesRequired": "Silakan masukkan kalori",
+      "priceRequired": "Silakan masukkan harga",
+      "success": "Ditambahkan ke catatan makanan！"
+    },
+    "addToStock": {
+      "title": "Tambahkan ke Manajemen Stok",
+      "expiryDays": "Hari hingga kedaluwarsa",
+      "expiryDaysPlaceholder": "contoh: 7",
+      "button": "Tambahkan ke Manajemen Stok",
+      "buttonWithNavigate": "Tambahkan ke Stok dan Navigasi",
+      "expiryDaysRequired": "Silakan masukkan hari hingga kedaluwarsa",
+      "success": "Ditambahkan ke manajemen stok！"
+    },
+    "cancel": "Batal"
+  },
+  "expense": {
+    "categories": {
+      "food": "Makanan",
+      "transport": "Transportasi",
+      "utilities": "Utilitas",
+      "entertainment": "Hiburan",
+      "health": "Kesehatan",
+      "other": "Lainnya",
+      "salary": "Gaji",
+      "bonus": "Bonus"
+    },
+    "form": {
+      "type": "Jenis",
+      "expense": "Pengeluaran",
+      "income": "Pendapatan",
+      "date": "Tanggal",
+      "category": "Kategori",
+      "customCategory": "Nama Kategori Kustom",
+      "customCategoryPlaceholder": "contoh: Hobi, Hewan Peliharaan, Buku",
+      "amount": "Jumlah (yen)",
+      "memo": "Memo (opsional)",
+      "memoPlaceholder": "contoh: Makan Siang",
+      "submit": "Rekam",
+      "amountRequired": "Silakan masukkan jumlah yang valid",
+      "customCategoryRequired": "Silakan masukkan nama kategori kustom",
+      "expenseRecorded": "Pengeluaran dicatat！",
+      "incomeRecorded": "Pendapatan dicatat！"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "Tambahkan Secara Manual",
+      "productName": "Nama Produk",
+      "productNamePlaceholder": "contoh: Susu",
+      "quantity": "Jumlah",
+      "submit": "Tambahkan ke Daftar",
+      "productNameRequired": "Silakan masukkan nama produk"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "Tidak ada tujuan yang ditetapkan",
+    "suggestion": "Tetapkan tujuan untuk memulai gaya hidup sehat",
+    "createGoal": "Buat Tujuan",
+    "progress": "Kemajuan Tujuan",
+    "activeGoals": "tujuan aktif",
+    "viewAll": "Lihat Semua"
+  },
+  "meals": {
+    "form": {
+      "title": "Catat Makanan",
+      "dishName": "Nama Hidangan",
+      "dishNamePlaceholder": "contoh: Nasi Kari",
+      "dishNameHint": "Masukkan nama hidangan untuk menampilkan layar pengukuran kalori",
+      "recorded": "Makanan dicatat！",
+      "recordFailed": "Gagal mencatat makanan"
+    },
+    "screen": {
+      "title": "Catatan Makanan"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "Tambahkan Secara Manual",
+      "item": "Item",
+      "itemPlaceholder": "contoh: Susu",
+      "category": "Kategori",
+      "expiryDate": "Tanggal Kedaluwarsa",
+      "quantity": "Jumlah",
+      "submit": "Daftarkan ke Stok",
+      "itemRequired": "Silakan masukkan nama item",
+      "success": "Ditambahkan ke stok！"
+    },
+    "categories": {
+      "staple": "Makanan Pokok",
+      "protein": "Protein",
+      "vegetable": "Sayuran",
+      "fruit": "Buah",
+      "dairy": "Produk Susu",
+      "seasoning": "Bumbu",
+      "other": "Lainnya"
+    },
+    "screen": {
+      "title": "Manajemen Stok"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "Hapus pengeluaran ini?",
+      "noData": "Belum ada data pendapatan/pengeluaran untuk bulan ini"
+    },
+    "screen": {
+      "title": "Buku Pengeluaran",
+      "history": "Riwayat Pengeluaran"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "Daftar Belanja"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "Pengaturan Tujuan",
+      "editTitle": "Edit Tujuan",
+      "newTitle": "Tujuan Baru",
+      "type": "Jenis Tujuan",
+      "calorie": {
+        "label": "Tujuan Kalori",
+        "unit": "kcal",
+        "description": "Tetapkan tujuan kalori harian"
+      },
+      "budget": {
+        "label": "Tujuan Anggaran",
+        "unit": "yen",
+        "description": "Tetapkan anggaran bulanan atau mingguan"
+      },
+      "weight": {
+        "label": "Tujuan Berat Badan",
+        "unit": "kg",
+        "description": "Tetapkan berat badan target"
+      },
+      "exercise": {
+        "label": "Tujuan Olahraga",
+        "unit": "menit",
+        "description": "Tetapkan waktu olahraga harian"
+      },
+      "titleLabel": "Judul",
+      "descriptionLabel": "Deskripsi（opsional）",
+      "targetValueLabel": "Nilai Target",
+      "periodLabel": "Periode",
+      "required": "Silakan masukkan judul dan nilai target",
+      "saveFailed": "Gagal menyimpan tujuan"
+    },
+    "progress": {
+      "achieved": "Dicapai！",
+      "budgetExceeded": "Anggaran Melebihi",
+      "budgetLow": "Anggaran Hampir Habis",
+      "onTrack": "Di Jalur",
+      "inProgress": "Sedang Berlangsung",
+      "paceUp": "Tingkatkan Kecepatan",
+      "needEffort": "Perlu Usaha",
+      "deleteConfirm": "Hapus tujuan ini?",
+      "period": {
+        "day": "1 Hari",
+        "week": "1 Minggu",
+        "month": "1 Bulan",
+        "daysRemaining": " hari",
+        "custom": "Kustom"
+      }
+    }
+  },
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "back": "Kembali",
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "success": "Berhasil",
+    "confirm": "Konfirmasi",
+    "yes": "Ya",
+    "no": "Tidak",
+    "year": " tahun ",
+    "month": " bulan"
+  },
+  "bottomNav": {
+    "home": "Beranda",
+    "meals": "Makanan",
+    "scan": "Pindai",
+    "report": "Laporan",
+    "social": "Sosial",
+    "settings": "Pengaturan",
+    "mainNavigation": "Navigasi Utama"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "Prefektur"
+    },
+    "export": {
+      "csvHeader": "Jenis,Nama,Kalori,Jumlah,Tanggal",
+      "csvFilename": "AplikasiKeuanganKesehatan_",
+      "jsonFilename": "AplikasiKeuanganKesehatan_",
+      "mealRecord": "Catatan Makanan"
+    }
   }
 }
 

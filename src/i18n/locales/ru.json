@@ -185,6 +185,246 @@
     "badges": "Значки",
     "goals": "Цели",
     "settings": "Настройки"
+  },
+  "auth": {
+    "appName": "Приложение Здоровье и Финансы",
+    "appDescription": "Приложение для управления жизнью с поддержкой здоровья от AI",
+    "email": "Адрес электронной почты",
+    "password": "Пароль",
+    "passwordPlaceholder": "6 символов или более",
+    "login": "Войти",
+    "processing": "Обработка...",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "Нет аккаунта? Нажмите здесь",
+    "or": "или",
+    "googleLogin": "Войти через Google",
+    "register": "Регистрация",
+    "passwordReset": "Сброс пароля",
+    "authError": "Произошла ошибка аутентификации",
+    "securityNote": "※ Безопасная аутентификация с использованием Firebase Authentication",
+    "dataNote": "Данные безопасно хранятся в Firestore"
+  },
+  "product": {
+    "productInfo": "Информация о продукте получена",
+    "productName": "Название продукта",
+    "manufacturer": "Производитель",
+    "barcode": "Штрих-код",
+    "price": "Цена (справочная)",
+    "source": {
+      "rakutenIchiba": "Rakuten Ichiba",
+      "rakutenProduct": "Поиск продуктов Rakuten",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "Тестовые данные"
+    },
+    "addToMeals": {
+      "title": "Добавить в записи о еде",
+      "calories": "Калории (ккал)",
+      "caloriesPlaceholder": "например: 200",
+      "price": "Цена (иен)",
+      "pricePlaceholder": "например: 150",
+      "button": "Добавить в записи о еде",
+      "caloriesRequired": "Пожалуйста, введите калории",
+      "priceRequired": "Пожалуйста, введите цену",
+      "success": "Добавлено в записи о еде！"
+    },
+    "addToStock": {
+      "title": "Добавить в управление запасами",
+      "expiryDays": "Дней до истечения срока",
+      "expiryDaysPlaceholder": "например: 7",
+      "button": "Добавить в управление запасами",
+      "buttonWithNavigate": "Добавить в запасы и перейти",
+      "expiryDaysRequired": "Пожалуйста, введите дни до истечения срока",
+      "success": "Добавлено в управление запасами！"
+    },
+    "cancel": "Отмена"
+  },
+  "expense": {
+    "categories": {
+      "food": "Еда",
+      "transport": "Транспорт",
+      "utilities": "Коммунальные услуги",
+      "entertainment": "Развлечения",
+      "health": "Здравоохранение",
+      "other": "Другое",
+      "salary": "Зарплата",
+      "bonus": "Бонус"
+    },
+    "form": {
+      "type": "Тип",
+      "expense": "Расход",
+      "income": "Доход",
+      "date": "Дата",
+      "category": "Категория",
+      "customCategory": "Имя пользовательской категории",
+      "customCategoryPlaceholder": "например: Хобби, Питомец, Книги",
+      "amount": "Сумма (иен)",
+      "memo": "Заметка (необязательно)",
+      "memoPlaceholder": "например: Обед",
+      "submit": "Записать",
+      "amountRequired": "Пожалуйста, введите действительную сумму",
+      "customCategoryRequired": "Пожалуйста, введите имя пользовательской категории",
+      "expenseRecorded": "Расход записан！",
+      "incomeRecorded": "Доход записан！"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "Добавить вручную",
+      "productName": "Название продукта",
+      "productNamePlaceholder": "например: Молоко",
+      "quantity": "Количество",
+      "submit": "Добавить в список",
+      "productNameRequired": "Пожалуйста, введите название продукта"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "Цели не установлены",
+    "suggestion": "Установите цели, чтобы начать здоровый образ жизни",
+    "createGoal": "Создать цель",
+    "progress": "Прогресс цели",
+    "activeGoals": "активных целей",
+    "viewAll": "Просмотреть все"
+  },
+  "meals": {
+    "form": {
+      "title": "Записать еду",
+      "dishName": "Название блюда",
+      "dishNamePlaceholder": "например: Карри с рисом",
+      "dishNameHint": "Введите название блюда для отображения экрана измерения калорий",
+      "recorded": "Еда записана！",
+      "recordFailed": "Не удалось записать еду"
+    },
+    "screen": {
+      "title": "Записи о еде"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "Добавить вручную",
+      "item": "Предмет",
+      "itemPlaceholder": "например: Молоко",
+      "category": "Категория",
+      "expiryDate": "Срок годности",
+      "quantity": "Количество",
+      "submit": "Зарегистрировать в запасах",
+      "itemRequired": "Пожалуйста, введите название предмета",
+      "success": "Добавлено в запасы！"
+    },
+    "categories": {
+      "staple": "Основной продукт",
+      "protein": "Белок",
+      "vegetable": "Овощи",
+      "fruit": "Фрукты",
+      "dairy": "Молочные продукты",
+      "seasoning": "Приправы",
+      "other": "Другое"
+    },
+    "screen": {
+      "title": "Управление запасами"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "Удалить этот расход?",
+      "noData": "Пока нет данных о доходах/расходах за этот месяц"
+    },
+    "screen": {
+      "title": "Книга расходов",
+      "history": "История расходов"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "Список покупок"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "Настройка цели",
+      "editTitle": "Редактировать цель",
+      "newTitle": "Новая цель",
+      "type": "Тип цели",
+      "calorie": {
+        "label": "Цель по калориям",
+        "unit": "ккал",
+        "description": "Установить дневную цель по калориям"
+      },
+      "budget": {
+        "label": "Цель по бюджету",
+        "unit": "иен",
+        "description": "Установить месячный или недельный бюджет"
+      },
+      "weight": {
+        "label": "Цель по весу",
+        "unit": "кг",
+        "description": "Установить целевой вес"
+      },
+      "exercise": {
+        "label": "Цель по упражнениям",
+        "unit": "мин",
+        "description": "Установить ежедневное время упражнений"
+      },
+      "titleLabel": "Заголовок",
+      "descriptionLabel": "Описание（необязательно）",
+      "targetValueLabel": "Целевое значение",
+      "periodLabel": "Период",
+      "required": "Пожалуйста, введите заголовок и целевое значение",
+      "saveFailed": "Не удалось сохранить цель"
+    },
+    "progress": {
+      "achieved": "Достигнуто！",
+      "budgetExceeded": "Превышен бюджет",
+      "budgetLow": "Бюджет почти закончился",
+      "onTrack": "В порядке",
+      "inProgress": "В процессе",
+      "paceUp": "Ускорить темп",
+      "needEffort": "Требуются усилия",
+      "deleteConfirm": "Удалить эту цель?",
+      "period": {
+        "day": "1 день",
+        "week": "1 неделя",
+        "month": "1 месяц",
+        "daysRemaining": " дней",
+        "custom": "Пользовательский"
+      }
+    }
+  },
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "back": "Назад",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успех",
+    "confirm": "Подтвердить",
+    "yes": "Да",
+    "no": "Нет",
+    "year": " год ",
+    "month": " месяц"
+  },
+  "bottomNav": {
+    "home": "Главная",
+    "meals": "Еда",
+    "scan": "Сканировать",
+    "report": "Отчет",
+    "social": "Социальная",
+    "settings": "Настройки",
+    "mainNavigation": "Главная навигация"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "Префектура"
+    },
+    "export": {
+      "csvHeader": "Тип,Название,Калории,Сумма,Дата",
+      "csvFilename": "ПриложениеЗдоровьеФинансы_",
+      "jsonFilename": "ПриложениеЗдоровьеФинансы_",
+      "mealRecord": "Запись приема пищи"
+    }
   }
 }
 

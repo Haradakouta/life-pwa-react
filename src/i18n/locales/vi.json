@@ -185,6 +185,246 @@
     "badges": "Huy hiệu",
     "goals": "Mục tiêu",
     "settings": "Cài đặt"
+  },
+  "auth": {
+    "appName": "Ứng dụng Tài chính Sức khỏe",
+    "appDescription": "Ứng dụng quản lý cuộc sống hỗ trợ sức khỏe bằng AI",
+    "email": "Địa chỉ email",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "6 ký tự trở lên",
+    "login": "Đăng nhập",
+    "processing": "Đang xử lý...",
+    "forgotPassword": "Quên mật khẩu?",
+    "noAccount": "Chưa có tài khoản? Nhấp vào đây",
+    "or": "hoặc",
+    "googleLogin": "Đăng nhập bằng Google",
+    "register": "Đăng ký",
+    "passwordReset": "Đặt lại mật khẩu",
+    "authError": "Đã xảy ra lỗi xác thực",
+    "securityNote": "※ Xác thực an toàn sử dụng Firebase Authentication",
+    "dataNote": "Dữ liệu được lưu trữ an toàn trong Firestore"
+  },
+  "product": {
+    "productInfo": "Đã lấy thông tin sản phẩm",
+    "productName": "Tên sản phẩm",
+    "manufacturer": "Nhà sản xuất",
+    "barcode": "Mã vạch",
+    "price": "Giá (tham khảo)",
+    "source": {
+      "rakutenIchiba": "Rakuten Ichiba",
+      "rakutenProduct": "Tìm kiếm sản phẩm Rakuten",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "Dữ liệu mô phỏng"
+    },
+    "addToMeals": {
+      "title": "Thêm vào bản ghi bữa ăn",
+      "calories": "Calo (kcal)",
+      "caloriesPlaceholder": "vd: 200",
+      "price": "Giá (yên)",
+      "pricePlaceholder": "vd: 150",
+      "button": "Thêm vào bản ghi bữa ăn",
+      "caloriesRequired": "Vui lòng nhập calo",
+      "priceRequired": "Vui lòng nhập giá",
+      "success": "Đã thêm vào bản ghi bữa ăn！"
+    },
+    "addToStock": {
+      "title": "Thêm vào quản lý kho",
+      "expiryDays": "Số ngày đến khi hết hạn",
+      "expiryDaysPlaceholder": "vd: 7",
+      "button": "Thêm vào quản lý kho",
+      "buttonWithNavigate": "Thêm vào kho và điều hướng",
+      "expiryDaysRequired": "Vui lòng nhập số ngày đến khi hết hạn",
+      "success": "Đã thêm vào quản lý kho！"
+    },
+    "cancel": "Hủy"
+  },
+  "expense": {
+    "categories": {
+      "food": "Thực phẩm",
+      "transport": "Giao thông",
+      "utilities": "Tiện ích",
+      "entertainment": "Giải trí",
+      "health": "Chăm sóc sức khỏe",
+      "other": "Khác",
+      "salary": "Lương",
+      "bonus": "Thưởng"
+    },
+    "form": {
+      "type": "Loại",
+      "expense": "Chi tiêu",
+      "income": "Thu nhập",
+      "date": "Ngày",
+      "category": "Danh mục",
+      "customCategory": "Tên danh mục tùy chỉnh",
+      "customCategoryPlaceholder": "vd: Sở thích, Thú cưng, Sách",
+      "amount": "Số tiền (yên)",
+      "memo": "Ghi chú (tùy chọn)",
+      "memoPlaceholder": "vd: Bữa trưa",
+      "submit": "Ghi lại",
+      "amountRequired": "Vui lòng nhập số tiền hợp lệ",
+      "customCategoryRequired": "Vui lòng nhập tên danh mục tùy chỉnh",
+      "expenseRecorded": "Chi tiêu đã được ghi lại！",
+      "incomeRecorded": "Thu nhập đã được ghi lại！"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "Thêm thủ công",
+      "productName": "Tên sản phẩm",
+      "productNamePlaceholder": "vd: Sữa",
+      "quantity": "Số lượng",
+      "submit": "Thêm vào danh sách",
+      "productNameRequired": "Vui lòng nhập tên sản phẩm"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "Chưa đặt mục tiêu",
+    "suggestion": "Đặt mục tiêu để bắt đầu lối sống lành mạnh",
+    "createGoal": "Tạo mục tiêu",
+    "progress": "Tiến độ mục tiêu",
+    "activeGoals": "mục tiêu đang hoạt động",
+    "viewAll": "Xem tất cả"
+  },
+  "meals": {
+    "form": {
+      "title": "Ghi lại bữa ăn",
+      "dishName": "Tên món ăn",
+      "dishNamePlaceholder": "vd: Cơm cà ri",
+      "dishNameHint": "Nhập tên món ăn để hiển thị màn hình đo calo",
+      "recorded": "Đã ghi lại bữa ăn！",
+      "recordFailed": "Ghi lại bữa ăn thất bại"
+    },
+    "screen": {
+      "title": "Bản ghi bữa ăn"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "Thêm thủ công",
+      "item": "Mục",
+      "itemPlaceholder": "vd: Sữa",
+      "category": "Danh mục",
+      "expiryDate": "Ngày hết hạn",
+      "quantity": "Số lượng",
+      "submit": "Đăng ký vào kho",
+      "itemRequired": "Vui lòng nhập tên mục",
+      "success": "Đã thêm vào kho！"
+    },
+    "categories": {
+      "staple": "Lương thực chính",
+      "protein": "Protein",
+      "vegetable": "Rau",
+      "fruit": "Trái cây",
+      "dairy": "Sữa",
+      "seasoning": "Gia vị",
+      "other": "Khác"
+    },
+    "screen": {
+      "title": "Quản lý kho"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "Xóa chi tiêu này?",
+      "noData": "Chưa có dữ liệu thu chi cho tháng này"
+    },
+    "screen": {
+      "title": "Sổ chi tiêu",
+      "history": "Lịch sử chi tiêu"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "Danh sách mua sắm"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "Thiết lập mục tiêu",
+      "editTitle": "Chỉnh sửa mục tiêu",
+      "newTitle": "Mục tiêu mới",
+      "type": "Loại mục tiêu",
+      "calorie": {
+        "label": "Mục tiêu calo",
+        "unit": "kcal",
+        "description": "Đặt mục tiêu calo hàng ngày"
+      },
+      "budget": {
+        "label": "Mục tiêu ngân sách",
+        "unit": "yên",
+        "description": "Đặt ngân sách hàng tháng hoặc hàng tuần"
+      },
+      "weight": {
+        "label": "Mục tiêu cân nặng",
+        "unit": "kg",
+        "description": "Đặt cân nặng mục tiêu"
+      },
+      "exercise": {
+        "label": "Mục tiêu tập thể dục",
+        "unit": "phút",
+        "description": "Đặt thời gian tập thể dục hàng ngày"
+      },
+      "titleLabel": "Tiêu đề",
+      "descriptionLabel": "Mô tả（tùy chọn）",
+      "targetValueLabel": "Giá trị mục tiêu",
+      "periodLabel": "Thời kỳ",
+      "required": "Vui lòng nhập tiêu đề và giá trị mục tiêu",
+      "saveFailed": "Lưu mục tiêu thất bại"
+    },
+    "progress": {
+      "achieved": "Đạt được！",
+      "budgetExceeded": "Vượt quá ngân sách",
+      "budgetLow": "Ngân sách còn lại ít",
+      "onTrack": "Đúng hướng",
+      "inProgress": "Đang tiến hành",
+      "paceUp": "Tăng tốc",
+      "needEffort": "Cần nỗ lực",
+      "deleteConfirm": "Xóa mục tiêu này?",
+      "period": {
+        "day": "1 ngày",
+        "week": "1 tuần",
+        "month": "1 tháng",
+        "daysRemaining": " ngày",
+        "custom": "Tùy chỉnh"
+      }
+    }
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "back": "Quay lại",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "yes": "Có",
+    "no": "Không",
+    "year": " năm ",
+    "month": " tháng"
+  },
+  "bottomNav": {
+    "home": "Trang chủ",
+    "meals": "Bữa ăn",
+    "scan": "Quét",
+    "report": "Báo cáo",
+    "social": "Xã hội",
+    "settings": "Cài đặt",
+    "mainNavigation": "Điều hướng chính"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "Tỉnh"
+    },
+    "export": {
+      "csvHeader": "Loại,Tên,Calo,Số tiền,Ngày",
+      "csvFilename": "UngDungTaiChinhSucKhoe_",
+      "jsonFilename": "UngDungTaiChinhSucKhoe_",
+      "mealRecord": "Bản ghi bữa ăn"
+    }
   }
 }
 

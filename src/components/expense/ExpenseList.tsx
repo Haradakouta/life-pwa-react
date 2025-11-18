@@ -2,12 +2,14 @@
  * 支出一覧表示コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import { MdDelete, MdCalendarToday } from 'react-icons/md';
 import { MonthPickerModal } from '../common/MonthPickerModal';
 import { getPredefinedCategoryColor, getColorForCustomCategory } from '../../utils/categoryColors';
 
 export const ExpenseList: React.FC = () => {
+  const { t } = useTranslation();
   const { deleteExpense, getExpensesByMonth } = useExpenseStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -16,12 +18,12 @@ export const ExpenseList: React.FC = () => {
   const monthlyExpenses = getExpensesByMonth(selectedYear, selectedMonth);
 
   const categoryLabels: Record<string, string> = {
-    food: '食費',
-    transport: '交通費',
-    utilities: '光熱費',
-    entertainment: '娯楽',
-    health: '医療',
-    other: 'その他',
+    food: t('expense.categories.food'),
+    transport: t('expense.categories.transport'),
+    utilities: t('expense.categories.utilities'),
+    entertainment: t('expense.categories.entertainment'),
+    health: t('expense.categories.health'),
+    other: t('expense.categories.other'),
   };
 
   const getCategoryDisplay = (expense: any) => {
@@ -39,7 +41,7 @@ export const ExpenseList: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('この支出を削除しますか？')) {
+    if (window.confirm(t('expense.list.deleteConfirm'))) {
       deleteExpense(id);
     }
   };
@@ -77,13 +79,13 @@ export const ExpenseList: React.FC = () => {
           marginBottom: '15px',
         }}
       >
-        <span>{selectedYear}年 {selectedMonth}月</span>
+        <span>{selectedYear}{t('common.year')} {selectedMonth}{t('common.month')}</span>
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
 
       {monthlyExpenses.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
-          この月の収支はまだありません
+          {t('expense.list.noData')}
         </p>
       ) : (
         <div className="list">

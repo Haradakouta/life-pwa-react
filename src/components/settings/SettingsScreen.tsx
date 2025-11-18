@@ -78,17 +78,17 @@ export const SettingsScreen: React.FC = () => {
 
   const handleExportCSV = () => {
     const csvData = [
-      '種類,名前,カロリー,金額,日付',
+      t('settings.export.csvHeader'),
       ...intakes.map(
         (intake) =>
-          `食事記録,${intake.name},${intake.calories},${intake.price},${intake.date}`
+          `${t('settings.export.mealRecord')},${intake.name},${intake.calories},${intake.price},${intake.date}`
       ),
     ].join('\n');
 
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `健康家計アプリ_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `${t('settings.export.csvFilename')}${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
@@ -106,7 +106,7 @@ export const SettingsScreen: React.FC = () => {
     });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `健康家計アプリ_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `${t('settings.export.jsonFilename')}${new Date().toISOString().split('T')[0]}.json`;
     link.click();
   };
 
@@ -199,7 +199,7 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdEmojiEvents size={24} color="#f59e0b" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              称号
+              {t('settings.title.title')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />
@@ -223,7 +223,7 @@ export const SettingsScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <MdLocationOn size={24} color="#3b82f6" />
             <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
-              都道府県
+              {t('settings.prefecture.title')}
             </span>
           </div>
           <MdChevronRight size={24} color="var(--text-secondary)" />

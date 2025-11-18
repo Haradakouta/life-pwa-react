@@ -2,12 +2,14 @@
  * 在庫入力フォームコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStockStore } from '../../store';
 import type { StockCategory } from '../../types';
 import { DatePickerModal } from '../common/DatePickerModal';
 import { MdCalendarToday } from 'react-icons/md';
 
 export const StockForm: React.FC = () => {
+  const { t } = useTranslation();
   const { addStock } = useStockStore();
   const [name, setName] = useState('');
   const [expiryDate, setExpiryDate] = useState<Date>(() => {
@@ -21,7 +23,7 @@ export const StockForm: React.FC = () => {
 
   const handleSubmit = () => {
     if (!name) {
-      alert('品目名を入力してください');
+      alert(t('stock.form.itemRequired'));
       return;
     }
 
@@ -48,33 +50,33 @@ export const StockForm: React.FC = () => {
     setQuantity('1');
     setCategory('other');
 
-    alert('在庫を追加しました！');
+    alert(t('stock.form.success'));
   };
 
   const formatDate = (date: Date) => {
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    return t('expense.dateFormat', { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() });
   };
 
   const categoryOptions = [
-    { value: 'staple', label: '🍚 主食' },
-    { value: 'protein', label: '🍖 たんぱく質' },
-    { value: 'vegetable', label: '🥬 野菜' },
-    { value: 'fruit', label: '🍎 果物' },
-    { value: 'dairy', label: '🥛 乳製品' },
-    { value: 'seasoning', label: '🧂 調味料' },
-    { value: 'other', label: '📦 その他' },
+    { value: 'staple', label: `🍚 ${t('stock.categories.staple')}` },
+    { value: 'protein', label: `🍖 ${t('stock.categories.protein')}` },
+    { value: 'vegetable', label: `🥬 ${t('stock.categories.vegetable')}` },
+    { value: 'fruit', label: `🍎 ${t('stock.categories.fruit')}` },
+    { value: 'dairy', label: `🥛 ${t('stock.categories.dairy')}` },
+    { value: 'seasoning', label: `🧂 ${t('stock.categories.seasoning')}` },
+    { value: 'other', label: `📦 ${t('stock.categories.other')}` },
   ];
 
   return (
     <div className="card">
-      <h3>手動で追加</h3>
-      <label>品目</label>
+      <h3>{t('stock.form.title')}</h3>
+      <label>{t('stock.form.item')}</label>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="例: 牛乳"
+        placeholder={t('stock.form.itemPlaceholder')}
       />
-      <label>カテゴリ</label>
+      <label>{t('stock.form.category')}</label>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as StockCategory)}
@@ -93,7 +95,7 @@ export const StockForm: React.FC = () => {
           </option>
         ))}
       </select>
-      <label>賞味期限</label>
+      <label>{t('stock.form.expiryDate')}</label>
       <button
         onClick={() => setIsDatePickerOpen(true)}
         style={{
@@ -114,7 +116,7 @@ export const StockForm: React.FC = () => {
         <span>{formatDate(expiryDate)}</span>
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
-      <label>数量</label>
+      <label>{t('stock.form.quantity')}</label>
       <input
         type="number"
         value={quantity}
@@ -122,7 +124,7 @@ export const StockForm: React.FC = () => {
         placeholder="1"
       />
       <button className="submit" onClick={handleSubmit}>
-        在庫に登録
+        {t('stock.form.submit')}
       </button>
 
       <DatePickerModal

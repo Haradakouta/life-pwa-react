@@ -3,6 +3,7 @@
  * MyFitnessPal/YNABレベルの直感的なUI
  */
 import React, { useState, useEffect, useTransition } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGoalStore } from '../../store/useGoalStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import type { GoalType, GoalPeriod, GoalFormData } from '../../types';
@@ -15,6 +16,7 @@ interface GoalSettingScreenProps {
 }
 
 export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, editingGoalId }) => {
+  const { t } = useTranslation();
   const { goals, addGoal, updateGoal } = useGoalStore();
   const { settings } = useSettingsStore();
   const [isPending, startTransition] = useTransition();
@@ -35,34 +37,34 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
   const goalTypeConfig = {
     calorie: {
       icon: '🔥',
-      label: 'カロリー目標',
-      unit: 'kcal',
+      label: t('goals.setting.calorie.label'),
+      unit: t('goals.setting.calorie.unit'),
       defaultTarget: '2000',
-      description: '1日の目標カロリーを設定',
+      description: t('goals.setting.calorie.description'),
       suggestions: ['1500', '1800', '2000', '2200', '2500'],
     },
     budget: {
       icon: '💰',
-      label: '予算目標',
-      unit: '円',
+      label: t('goals.setting.budget.label'),
+      unit: t('goals.setting.budget.unit'),
       defaultTarget: '30000',
-      description: '月次または週次の予算を設定',
+      description: t('goals.setting.budget.description'),
       suggestions: ['20000', '30000', '40000', '50000'],
     },
     weight: {
       icon: '⚖️',
-      label: '体重目標',
-      unit: 'kg',
+      label: t('goals.setting.weight.label'),
+      unit: t('goals.setting.weight.unit'),
       defaultTarget: settings.weight ? (settings.weight - 5).toString() : '60',
-      description: '目標体重を設定',
+      description: t('goals.setting.weight.description'),
       suggestions: [],
     },
     exercise: {
       icon: '🏃',
-      label: '運動目標',
-      unit: '分',
+      label: t('goals.setting.exercise.label'),
+      unit: t('goals.setting.exercise.unit'),
       defaultTarget: '30',
-      description: '1日の運動時間を設定',
+      description: t('goals.setting.exercise.description'),
       suggestions: ['15', '30', '45', '60'],
     },
   };
@@ -84,7 +86,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
     e.preventDefault();
     
     if (!title.trim() || !targetValue) {
-      alert('タイトルと目標値を入力してください');
+      alert(t('goals.setting.required'));
       return;
     }
 
@@ -110,7 +112,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
       });
     } catch (error) {
       console.error('目標の保存に失敗しました:', error);
-      alert('目標の保存に失敗しました');
+      alert(t('goals.setting.saveFailed'));
     }
   };
 
@@ -170,7 +172,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
             margin: 0,
           }}
         >
-          {editingGoal ? '目標を編集' : '新しい目標'}
+          {editingGoal ? t('goals.setting.editTitle') : t('goals.setting.newTitle')}
         </h2>
         <div style={{ width: '40px' }} />
       </div>
@@ -179,7 +181,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         {/* 目標タイプ選択 */}
         <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '12px' }}>
-            目標タイプ
+            {t('goals.setting.type')}
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             {(['calorie', 'budget', 'weight', 'exercise'] as GoalType[]).map((type) => {
@@ -232,7 +234,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         {/* タイトル */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
-            タイトル
+            {t('goals.setting.titleLabel')}
           </label>
           <input
             type="text"
@@ -264,7 +266,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         {/* 説明（オプション） */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
-            説明（オプション）
+            {t('goals.setting.descriptionLabel')}
           </label>
           <textarea
             value={description}
@@ -297,7 +299,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         {/* 目標値 */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
-            目標値 ({config.unit})
+            {t('goals.setting.targetValueLabel')} ({config.unit})
           </label>
           <input
             type="number"
@@ -365,15 +367,15 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         {/* 期間 */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
-            期間
+            {t('goals.setting.periodLabel')}
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {(['daily', 'weekly', 'monthly', 'custom'] as GoalPeriod[]).map((p) => {
               const labels = {
-                daily: '1日',
-                weekly: '1週間',
-                monthly: '1ヶ月',
-                custom: 'カスタム',
+                daily: t('goals.progress.period.day'),
+                weekly: t('goals.progress.period.week'),
+                monthly: t('goals.progress.period.month'),
+                custom: t('goals.progress.period.custom'),
               };
               const isSelected = period === p;
               return (

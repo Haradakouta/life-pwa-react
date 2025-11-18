@@ -2,12 +2,14 @@
  * 買い物リスト入力フォームコンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShoppingStore } from '../../store';
 import { checkHealthWarning } from '../../utils/healthAdvisor';
 import { HealthAdvisorModal } from './HealthAdvisorModal';
 import type { HealthWarning } from '../../utils/healthAdvisor';
 
 export const ShoppingForm: React.FC = () => {
+  const { t } = useTranslation();
   const { addItem } = useShoppingStore();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -16,7 +18,7 @@ export const ShoppingForm: React.FC = () => {
 
   const handleSubmit = () => {
     if (!name) {
-      alert('商品名を入力してください');
+      alert(t('shopping.form.productNameRequired'));
       return;
     }
 
@@ -66,15 +68,15 @@ export const ShoppingForm: React.FC = () => {
   return (
     <>
       <div className="card">
-        <h3>手動で追加</h3>
-        <label>商品名</label>
+        <h3>{t('shopping.form.title')}</h3>
+        <label>{t('shopping.form.productName')}</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="例: 牛乳"
+          placeholder={t('shopping.form.productNamePlaceholder')}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
         />
-        <label>数量</label>
+        <label>{t('shopping.form.quantity')}</label>
         <input
           type="number"
           value={quantity}
@@ -82,7 +84,7 @@ export const ShoppingForm: React.FC = () => {
           placeholder="1"
         />
         <button className="submit" onClick={handleSubmit}>
-          リストに追加
+          {t('shopping.form.submit')}
         </button>
       </div>
 

@@ -10,7 +10,9 @@
     "success": "成功",
     "confirm": "確認",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "year": "年",
+    "month": "月"
   },
   "settings": {
     "title": "設定",
@@ -46,7 +48,17 @@
     "export": {
       "title": "データエクスポート",
       "csv": "CSV",
-      "json": "JSON"
+      "json": "JSON",
+      "csvHeader": "種類,名前,カロリー,金額,日付",
+      "csvFilename": "健康家計アプリ_",
+      "jsonFilename": "健康家計アプリ_",
+      "mealRecord": "食事記録"
+    },
+    "prefecture": {
+      "title": "都道府県",
+      "selectRequired": "都道府県を選択してください",
+      "changeLimit": "都道府県は30日に1回のみ変更可能です。あと{{days}}日お待ちください。",
+      "saveFailed": "都道府県の設定に失敗しました"
     },
     "health": {
       "title": "健康情報",
@@ -59,7 +71,12 @@
       "notSet": "個人情報が未設定です",
       "years": "歳",
       "cm": "cm",
-      "kg": "kg"
+      "kg": "kg",
+      "saved": "健康情報を保存しました！",
+      "saveFailed": "健康情報の保存に失敗しました",
+      "weightRequired": "体重を入力してください",
+      "weightRecorded": "体重を記録しました！",
+      "weightSaveFailed": "体重の保存に失敗しました"
     },
     "ai": {
       "title": "AI設定（Gemini API）",
@@ -94,6 +111,15 @@
       "vietnamese": "Tiếng Việt",
       "russian": "Русский",
       "indonesian": "Bahasa Indonesia"
+    },
+    "title": {
+      "title": "称号",
+      "change": "称号を変更",
+      "description": "称号を変更・購入できます",
+      "newTitlesGranted": "🎉 {{count}}個の新しい称号を獲得しました！",
+      "noNewTitles": "新しい称号はありません",
+      "checkFailed": "称号チェックに失敗しました",
+      "equipFailed": "称号の装備に失敗しました"
     }
   },
   "dashboard": {
@@ -115,6 +141,15 @@
     "admin": "管理者パネル",
     "goals": "目標管理",
     "exercise": "運動記録"
+  },
+  "bottomNav": {
+    "home": "ホーム",
+    "meals": "食事",
+    "scan": "スキャン",
+    "report": "レポート",
+    "social": "ソーシャル",
+    "settings": "設定",
+    "mainNavigation": "メインナビゲーション"
   },
   "bmi": {
     "underweight": "低体重",
@@ -185,6 +220,211 @@
     "badges": "バッジ",
     "goals": "目標",
     "settings": "設定"
+  },
+  "auth": {
+    "appName": "健康家計アプリ",
+    "appDescription": "AIが健康をサポートする生活管理アプリ",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "passwordPlaceholder": "6文字以上",
+    "login": "ログイン",
+    "processing": "処理中...",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "noAccount": "アカウントをお持ちでない方はこちら",
+    "or": "または",
+    "googleLogin": "Googleでログイン",
+    "register": "新規登録",
+    "passwordReset": "パスワードリセット",
+    "authError": "認証エラーが発生しました",
+    "securityNote": "※ Firebase Authenticationを使用した安全な認証です",
+    "dataNote": "データはFirestoreに安全に保存されます"
+  },
+  "product": {
+    "productInfo": "商品情報を取得しました",
+    "productName": "商品名",
+    "manufacturer": "メーカー",
+    "barcode": "バーコード",
+    "price": "価格（参考）",
+    "source": {
+      "rakutenIchiba": "楽天市場",
+      "rakutenProduct": "楽天商品検索",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "モックデータ"
+    },
+    "addToMeals": {
+      "title": "食事記録に追加",
+      "calories": "カロリー (kcal)",
+      "caloriesPlaceholder": "例: 200",
+      "price": "金額 (円)",
+      "pricePlaceholder": "例: 150",
+      "button": "食事記録に追加",
+      "caloriesRequired": "カロリーを入力してください",
+      "priceRequired": "金額を入力してください",
+      "success": "食事記録に追加しました！"
+    },
+    "addToStock": {
+      "title": "在庫管理に追加",
+      "expiryDays": "賞味期限までの日数",
+      "expiryDaysPlaceholder": "例: 7",
+      "button": "在庫管理に追加",
+      "buttonWithNavigate": "在庫管理に追加して画面移動",
+      "expiryDaysRequired": "賞味期限までの日数を入力してください",
+      "success": "在庫管理に追加しました！"
+    },
+    "cancel": "キャンセル"
+  },
+  "expense": {
+    "categories": {
+      "food": "食費",
+      "transport": "交通費",
+      "utilities": "光熱費",
+      "entertainment": "娯楽",
+      "health": "医療",
+      "other": "その他",
+      "salary": "給与",
+      "bonus": "賞与"
+    },
+    "form": {
+      "type": "種別",
+      "expense": "支出",
+      "income": "収入",
+      "date": "日付",
+      "category": "カテゴリ",
+      "customCategory": "カスタムカテゴリ名",
+      "customCategoryPlaceholder": "例: 趣味、ペット、書籍",
+      "amount": "金額(円)",
+      "memo": "メモ（任意）",
+      "memoPlaceholder": "例: 昼食",
+      "submit": "記録する",
+      "amountRequired": "正しい金額を入力してください",
+      "customCategoryRequired": "カスタムカテゴリ名を入力してください",
+      "expenseRecorded": "支出を記録しました！",
+      "incomeRecorded": "収入を記録しました！"
+    },
+    "dateFormat": "年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "手動で追加",
+      "productName": "商品名",
+      "productNamePlaceholder": "例: 牛乳",
+      "quantity": "数量",
+      "submit": "リストに追加",
+      "productNameRequired": "商品名を入力してください"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "目標が設定されていません",
+    "suggestion": "目標を設定して、健康的な生活を始めましょう",
+    "createGoal": "目標を作成",
+    "progress": "目標進捗",
+    "activeGoals": "件のアクティブな目標",
+    "viewAll": "すべて見る"
+  },
+  "meals": {
+    "form": {
+      "title": "食事を記録",
+      "dishName": "料理名",
+      "dishNamePlaceholder": "例: カレーライス",
+      "dishNameHint": "料理名を入力すると、カロリー計測画面が表示されます",
+      "recorded": "食事を記録しました！",
+      "recordFailed": "食事記録に失敗しました"
+    },
+    "screen": {
+      "title": "食事記録"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "手動で追加",
+      "item": "品目",
+      "itemPlaceholder": "例: 牛乳",
+      "category": "カテゴリ",
+      "expiryDate": "賞味期限",
+      "quantity": "数量",
+      "submit": "在庫に登録",
+      "itemRequired": "品目名を入力してください",
+      "success": "在庫を追加しました！"
+    },
+    "categories": {
+      "staple": "主食",
+      "protein": "たんぱく質",
+      "vegetable": "野菜",
+      "fruit": "果物",
+      "dairy": "乳製品",
+      "seasoning": "調味料",
+      "other": "その他"
+    },
+    "screen": {
+      "title": "在庫管理"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "この支出を削除しますか？",
+      "noData": "この月の収支はまだありません"
+    },
+    "screen": {
+      "title": "家計簿",
+      "history": "支出履歴"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "買い物リスト"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "目標設定",
+      "editTitle": "目標を編集",
+      "newTitle": "新しい目標",
+      "type": "目標タイプ",
+      "calorie": {
+        "label": "カロリー目標",
+        "unit": "kcal",
+        "description": "1日の目標カロリーを設定"
+      },
+      "budget": {
+        "label": "予算目標",
+        "unit": "円",
+        "description": "月次または週次の予算を設定"
+      },
+      "weight": {
+        "label": "体重目標",
+        "unit": "kg",
+        "description": "目標体重を設定"
+      },
+      "exercise": {
+        "label": "運動目標",
+        "unit": "分",
+        "description": "1日の運動時間を設定"
+      },
+      "titleLabel": "タイトル",
+      "descriptionLabel": "説明（オプション）",
+      "targetValueLabel": "目標値",
+      "periodLabel": "期間",
+      "required": "タイトルと目標値を入力してください",
+      "saveFailed": "目標の保存に失敗しました"
+    },
+    "progress": {
+      "achieved": "達成！",
+      "budgetExceeded": "予算超過",
+      "budgetLow": "予算残りわずか",
+      "onTrack": "順調",
+      "inProgress": "進行中",
+      "paceUp": "ペースアップ",
+      "needEffort": "要努力",
+      "deleteConfirm": "この目標を削除しますか？",
+      "period": {
+        "day": "1日",
+        "week": "1週間",
+        "month": "1ヶ月",
+        "daysRemaining": "日間",
+        "custom": "カスタム"
+      }
+    }
   }
 }
 

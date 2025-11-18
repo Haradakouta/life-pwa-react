@@ -11,13 +11,14 @@ interface WeightInputModalProps {
 }
 
 export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
   const { settings, updateSettings } = useSettingsStore();
   const [weight, setWeight] = useState(settings.weight?.toString() || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     if (!weight || Number(weight) <= 0) {
-      alert('体重を入力してください');
+      alert(t('settings.health.weightRequired'));
       return;
     }
 
@@ -55,11 +56,11 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
         lastWeightInputDate: today,
       });
 
-      alert('体重を記録しました！');
+      alert(t('settings.health.weightRecorded'));
       onClose();
     } catch (error) {
       console.error('体重の保存エラー:', error);
-      alert('体重の保存に失敗しました');
+      alert(t('settings.health.weightSaveFailed'));
     } finally {
       setSaving(false);
     }

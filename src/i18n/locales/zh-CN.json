@@ -185,6 +185,246 @@
     "badges": "成就",
     "goals": "目标",
     "settings": "设置"
+  },
+  "auth": {
+    "appName": "健康家计应用",
+    "appDescription": "AI支持健康的生活管理应用",
+    "email": "电子邮件地址",
+    "password": "密码",
+    "passwordPlaceholder": "6个字符或更多",
+    "login": "登录",
+    "processing": "处理中...",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "没有账户？点击这里",
+    "or": "或",
+    "googleLogin": "使用Google登录",
+    "register": "注册",
+    "passwordReset": "密码重置",
+    "authError": "发生认证错误",
+    "securityNote": "※ 使用Firebase Authentication的安全认证",
+    "dataNote": "数据安全存储在Firestore中"
+  },
+  "product": {
+    "productInfo": "已获取产品信息",
+    "productName": "产品名称",
+    "manufacturer": "制造商",
+    "barcode": "条形码",
+    "price": "价格（参考）",
+    "source": {
+      "rakutenIchiba": "乐天市场",
+      "rakutenProduct": "乐天产品搜索",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "模拟数据"
+    },
+    "addToMeals": {
+      "title": "添加到用餐记录",
+      "calories": "卡路里（kcal）",
+      "caloriesPlaceholder": "例如：200",
+      "price": "价格（日元）",
+      "pricePlaceholder": "例如：150",
+      "button": "添加到用餐记录",
+      "caloriesRequired": "请输入卡路里",
+      "priceRequired": "请输入价格",
+      "success": "已添加到用餐记录！"
+    },
+    "addToStock": {
+      "title": "添加到库存管理",
+      "expiryDays": "到期天数",
+      "expiryDaysPlaceholder": "例如：7",
+      "button": "添加到库存管理",
+      "buttonWithNavigate": "添加到库存并导航",
+      "expiryDaysRequired": "请输入到期天数",
+      "success": "已添加到库存管理！"
+    },
+    "cancel": "取消"
+  },
+  "expense": {
+    "categories": {
+      "food": "食品",
+      "transport": "交通",
+      "utilities": "公用事业",
+      "entertainment": "娱乐",
+      "health": "医疗保健",
+      "other": "其他",
+      "salary": "工资",
+      "bonus": "奖金"
+    },
+    "form": {
+      "type": "类型",
+      "expense": "支出",
+      "income": "收入",
+      "date": "日期",
+      "category": "类别",
+      "customCategory": "自定义类别名称",
+      "customCategoryPlaceholder": "例如：爱好、宠物、书籍",
+      "amount": "金额（日元）",
+      "memo": "备注（可选）",
+      "memoPlaceholder": "例如：午餐",
+      "submit": "记录",
+      "amountRequired": "请输入有效金额",
+      "customCategoryRequired": "请输入自定义类别名称",
+      "expenseRecorded": "支出已记录！",
+      "incomeRecorded": "收入已记录！"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "手动添加",
+      "productName": "产品名称",
+      "productNamePlaceholder": "例如：牛奶",
+      "quantity": "数量",
+      "submit": "添加到列表",
+      "productNameRequired": "请输入产品名称"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "未设置目标",
+    "suggestion": "设置目标以开始健康的生活方式",
+    "createGoal": "创建目标",
+    "progress": "目标进度",
+    "activeGoals": "个活跃目标",
+    "viewAll": "查看全部"
+  },
+  "meals": {
+    "form": {
+      "title": "记录用餐",
+      "dishName": "料理名",
+      "dishNamePlaceholder": "例如：咖喱饭",
+      "dishNameHint": "输入料理名将显示卡路里测量画面",
+      "recorded": "用餐已记录！",
+      "recordFailed": "用餐记录失败"
+    },
+    "screen": {
+      "title": "用餐记录"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "手动添加",
+      "item": "品目",
+      "itemPlaceholder": "例如：牛奶",
+      "category": "类别",
+      "expiryDate": "保质期",
+      "quantity": "数量",
+      "submit": "注册到库存",
+      "itemRequired": "请输入品目名",
+      "success": "已添加到库存！"
+    },
+    "categories": {
+      "staple": "主食",
+      "protein": "蛋白质",
+      "vegetable": "蔬菜",
+      "fruit": "水果",
+      "dairy": "乳制品",
+      "seasoning": "调味料",
+      "other": "其他"
+    },
+    "screen": {
+      "title": "库存管理"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "删除此支出？",
+      "noData": "本月还没有收支数据"
+    },
+    "screen": {
+      "title": "账本",
+      "history": "支出历史"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "购物清单"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "目标设置",
+      "editTitle": "编辑目标",
+      "newTitle": "新目标",
+      "type": "目标类型",
+      "calorie": {
+        "label": "卡路里目标",
+        "unit": "kcal",
+        "description": "设置每日卡路里目标"
+      },
+      "budget": {
+        "label": "预算目标",
+        "unit": "日元",
+        "description": "设置月度或周度预算"
+      },
+      "weight": {
+        "label": "体重目标",
+        "unit": "kg",
+        "description": "设置目标体重"
+      },
+      "exercise": {
+        "label": "运动目标",
+        "unit": "分钟",
+        "description": "设置每日运动时间"
+      },
+      "titleLabel": "标题",
+      "descriptionLabel": "说明（可选）",
+      "targetValueLabel": "目标值",
+      "periodLabel": "期间",
+      "required": "请输入标题和目标值",
+      "saveFailed": "目标保存失败"
+    },
+    "progress": {
+      "achieved": "达成！",
+      "budgetExceeded": "预算超支",
+      "budgetLow": "预算剩余不多",
+      "onTrack": "顺利",
+      "inProgress": "进行中",
+      "paceUp": "加快步伐",
+      "needEffort": "需要努力",
+      "deleteConfirm": "删除此目标？",
+      "period": {
+        "day": "1天",
+        "week": "1周",
+        "month": "1个月",
+        "daysRemaining": "天",
+        "custom": "自定义"
+      }
+    }
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "back": "返回",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否",
+    "year": "年",
+    "month": "月"
+  },
+  "bottomNav": {
+    "home": "首页",
+    "meals": "用餐",
+    "scan": "扫描",
+    "report": "报告",
+    "social": "社交",
+    "settings": "设置",
+    "mainNavigation": "主导航"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "都道府县"
+    },
+    "export": {
+      "csvHeader": "类型,名称,卡路里,金额,日期",
+      "csvFilename": "健康家计应用_",
+      "jsonFilename": "健康家计应用_",
+      "mealRecord": "用餐记录"
+    }
   }
 }
 

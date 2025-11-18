@@ -185,6 +185,246 @@
     "badges": "배지",
     "goals": "목표",
     "settings": "설정"
+  },
+  "auth": {
+    "appName": "건강 가계부 앱",
+    "appDescription": "AI 지원 건강 생활 관리 앱",
+    "email": "이메일 주소",
+    "password": "비밀번호",
+    "passwordPlaceholder": "6자 이상",
+    "login": "로그인",
+    "processing": "처리 중...",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "noAccount": "계정이 없으신가요? 여기를 클릭하세요",
+    "or": "또는",
+    "googleLogin": "Google로 로그인",
+    "register": "등록",
+    "passwordReset": "비밀번호 재설정",
+    "authError": "인증 오류가 발생했습니다",
+    "securityNote": "※ Firebase Authentication을 사용한 안전한 인증",
+    "dataNote": "데이터는 Firestore에 안전하게 저장됩니다"
+  },
+  "product": {
+    "productInfo": "제품 정보를 가져왔습니다",
+    "productName": "제품명",
+    "manufacturer": "제조사",
+    "barcode": "바코드",
+    "price": "가격（참고）",
+    "source": {
+      "rakutenIchiba": "라쿠텐 이치바",
+      "rakutenProduct": "라쿠텐 제품 검색",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "모의 데이터"
+    },
+    "addToMeals": {
+      "title": "식사 기록에 추가",
+      "calories": "칼로리（kcal）",
+      "caloriesPlaceholder": "예: 200",
+      "price": "가격（원）",
+      "pricePlaceholder": "예: 150",
+      "button": "식사 기록에 추가",
+      "caloriesRequired": "칼로리를 입력하세요",
+      "priceRequired": "가격을 입력하세요",
+      "success": "식사 기록에 추가되었습니다！"
+    },
+    "addToStock": {
+      "title": "재고 관리에 추가",
+      "expiryDays": "만료일까지 남은 일수",
+      "expiryDaysPlaceholder": "예: 7",
+      "button": "재고 관리에 추가",
+      "buttonWithNavigate": "재고에 추가하고 이동",
+      "expiryDaysRequired": "만료일까지 남은 일수를 입력하세요",
+      "success": "재고 관리에 추가되었습니다！"
+    },
+    "cancel": "취소"
+  },
+  "expense": {
+    "categories": {
+      "food": "식비",
+      "transport": "교통비",
+      "utilities": "공공요금",
+      "entertainment": "오락",
+      "health": "의료",
+      "other": "기타",
+      "salary": "급여",
+      "bonus": "보너스"
+    },
+    "form": {
+      "type": "유형",
+      "expense": "지출",
+      "income": "소득",
+      "date": "날짜",
+      "category": "카테고리",
+      "customCategory": "사용자 정의 카테고리 이름",
+      "customCategoryPlaceholder": "예: 취미, 애완동물, 도서",
+      "amount": "금액（원）",
+      "memo": "메모（선택 사항）",
+      "memoPlaceholder": "예: 점심",
+      "submit": "기록",
+      "amountRequired": "올바른 금액을 입력하세요",
+      "customCategoryRequired": "사용자 정의 카테고리 이름을 입력하세요",
+      "expenseRecorded": "지출이 기록되었습니다！",
+      "incomeRecorded": "소득이 기록되었습니다！"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "수동으로 추가",
+      "productName": "제품명",
+      "productNamePlaceholder": "예: 우유",
+      "quantity": "수량",
+      "submit": "목록에 추가",
+      "productNameRequired": "제품명을 입력하세요"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "목표가 설정되지 않았습니다",
+    "suggestion": "목표를 설정하여 건강한 생활을 시작하세요",
+    "createGoal": "목표 만들기",
+    "progress": "목표 진행 상황",
+    "activeGoals": "개의 활성 목표",
+    "viewAll": "모두 보기"
+  },
+  "meals": {
+    "form": {
+      "title": "식사 기록",
+      "dishName": "요리명",
+      "dishNamePlaceholder": "예: 카레라이스",
+      "dishNameHint": "요리명을 입력하면 칼로리 측정 화면이 표시됩니다",
+      "recorded": "식사를 기록했습니다！",
+      "recordFailed": "식사 기록에 실패했습니다"
+    },
+    "screen": {
+      "title": "식사 기록"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "수동으로 추가",
+      "item": "품목",
+      "itemPlaceholder": "예: 우유",
+      "category": "카테고리",
+      "expiryDate": "유통기한",
+      "quantity": "수량",
+      "submit": "재고에 등록",
+      "itemRequired": "품목명을 입력하세요",
+      "success": "재고에 추가되었습니다！"
+    },
+    "categories": {
+      "staple": "주식",
+      "protein": "단백질",
+      "vegetable": "채소",
+      "fruit": "과일",
+      "dairy": "유제품",
+      "seasoning": "조미료",
+      "other": "기타"
+    },
+    "screen": {
+      "title": "재고 관리"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "이 지출을 삭제하시겠습니까?",
+      "noData": "이번 달의 수입/지출 데이터가 아직 없습니다"
+    },
+    "screen": {
+      "title": "가계부",
+      "history": "지출 내역"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "쇼핑 목록"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "목표 설정",
+      "editTitle": "목표 편집",
+      "newTitle": "새 목표",
+      "type": "목표 유형",
+      "calorie": {
+        "label": "칼로리 목표",
+        "unit": "kcal",
+        "description": "일일 칼로리 목표 설정"
+      },
+      "budget": {
+        "label": "예산 목표",
+        "unit": "원",
+        "description": "월간 또는 주간 예산 설정"
+      },
+      "weight": {
+        "label": "체중 목표",
+        "unit": "kg",
+        "description": "목표 체중 설정"
+      },
+      "exercise": {
+        "label": "운동 목표",
+        "unit": "분",
+        "description": "일일 운동 시간 설정"
+      },
+      "titleLabel": "제목",
+      "descriptionLabel": "설명（선택 사항）",
+      "targetValueLabel": "목표값",
+      "periodLabel": "기간",
+      "required": "제목과 목표값을 입력하세요",
+      "saveFailed": "목표 저장에 실패했습니다"
+    },
+    "progress": {
+      "achieved": "달성！",
+      "budgetExceeded": "예산 초과",
+      "budgetLow": "예산이 거의 남지 않음",
+      "onTrack": "순조",
+      "inProgress": "진행 중",
+      "paceUp": "속도 향상",
+      "needEffort": "노력 필요",
+      "deleteConfirm": "이 목표를 삭제하시겠습니까?",
+      "period": {
+        "day": "1일",
+        "week": "1주",
+        "month": "1개월",
+        "daysRemaining": "일",
+        "custom": "사용자 정의"
+      }
+    }
+  },
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "back": "뒤로",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "confirm": "확인",
+    "yes": "예",
+    "no": "아니오",
+    "year": "년",
+    "month": "월"
+  },
+  "bottomNav": {
+    "home": "홈",
+    "meals": "식사",
+    "scan": "스캔",
+    "report": "보고서",
+    "social": "소셜",
+    "settings": "설정",
+    "mainNavigation": "메인 내비게이션"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "도도부현"
+    },
+    "export": {
+      "csvHeader": "유형,이름,칼로리,금액,날짜",
+      "csvFilename": "건강가계부앱_",
+      "jsonFilename": "건강가계부앱_",
+      "mealRecord": "식사 기록"
+    }
   }
 }
 

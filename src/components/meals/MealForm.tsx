@@ -2,10 +2,12 @@
  * 食事入力フォームコンポーネント
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useIntakeStore } from '../../store';
 import { CalorieScanner } from './CalorieScanner';
 
 export const MealForm: React.FC = () => {
+  const { t } = useTranslation();
   const { addIntake } = useIntakeStore();
   const [name, setName] = useState('');
   const [showCalorieScanner, setShowCalorieScanner] = useState(false);
@@ -35,10 +37,10 @@ export const MealForm: React.FC = () => {
       setName('');
       setShowCalorieScanner(false);
 
-      alert(`食事を記録しました！\n\n${name}\n${scannedCalories} kcal\n\n${reasoning}`);
+      alert(`${t('meals.form.recorded')}\n\n${name}\n${scannedCalories} kcal\n\n${reasoning}`);
     } catch (error) {
       console.error('食事記録エラー:', error);
-      alert('食事記録に失敗しました');
+      alert(t('meals.form.recordFailed'));
     }
   };
 
@@ -51,15 +53,15 @@ export const MealForm: React.FC = () => {
     <>
       {!showCalorieScanner ? (
         <div className="card">
-          <label>料理名</label>
+          <label>{t('meals.form.dishName')}</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例: カレーライス"
+            placeholder={t('meals.form.dishNamePlaceholder')}
             autoFocus
           />
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
-            料理名を入力すると、カロリー計測画面が表示されます
+            {t('meals.form.dishNameHint')}
           </p>
         </div>
       ) : (

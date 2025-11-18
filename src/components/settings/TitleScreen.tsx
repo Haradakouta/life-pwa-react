@@ -2,6 +2,7 @@
  * 称号一覧・装備画面
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserTitles, equipTitle, getTitleById, checkAndGrantTitles } from '../../utils/title';
 import { getUserProfile } from '../../utils/profile';
@@ -15,6 +16,7 @@ interface TitleScreenProps {
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [userTitles, setUserTitles] = useState<UserTitle[]>([]);
   const [loading, setLoading] = useState(true);

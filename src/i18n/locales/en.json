@@ -185,6 +185,246 @@
     "badges": "Badges",
     "goals": "Goals",
     "settings": "Settings"
+  },
+  "auth": {
+    "appName": "Health Finance App",
+    "appDescription": "AI-powered life management app for health",
+    "email": "Email Address",
+    "password": "Password",
+    "passwordPlaceholder": "6 characters or more",
+    "login": "Login",
+    "processing": "Processing...",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account? Click here",
+    "or": "or",
+    "googleLogin": "Login with Google",
+    "register": "Register",
+    "passwordReset": "Password Reset",
+    "authError": "Authentication error occurred",
+    "securityNote": "※ Secure authentication using Firebase Authentication",
+    "dataNote": "Data is securely stored in Firestore"
+  },
+  "product": {
+    "productInfo": "Product information retrieved",
+    "productName": "Product Name",
+    "manufacturer": "Manufacturer",
+    "barcode": "Barcode",
+    "price": "Price (reference)",
+    "source": {
+      "rakutenIchiba": "Rakuten Ichiba",
+      "rakutenProduct": "Rakuten Product Search",
+      "jancodeLookup": "JAN Code Lookup",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "Mock Data"
+    },
+    "addToMeals": {
+      "title": "Add to Meal Records",
+      "calories": "Calories (kcal)",
+      "caloriesPlaceholder": "e.g., 200",
+      "price": "Price (yen)",
+      "pricePlaceholder": "e.g., 150",
+      "button": "Add to Meal Records",
+      "caloriesRequired": "Please enter calories",
+      "priceRequired": "Please enter price",
+      "success": "Added to meal records!"
+    },
+    "addToStock": {
+      "title": "Add to Stock Management",
+      "expiryDays": "Days until expiration",
+      "expiryDaysPlaceholder": "e.g., 7",
+      "button": "Add to Stock Management",
+      "buttonWithNavigate": "Add to Stock and Navigate",
+      "expiryDaysRequired": "Please enter days until expiration",
+      "success": "Added to stock management!"
+    },
+    "cancel": "Cancel"
+  },
+  "expense": {
+    "categories": {
+      "food": "Food",
+      "transport": "Transportation",
+      "utilities": "Utilities",
+      "entertainment": "Entertainment",
+      "health": "Healthcare",
+      "other": "Other",
+      "salary": "Salary",
+      "bonus": "Bonus"
+    },
+    "form": {
+      "type": "Type",
+      "expense": "Expense",
+      "income": "Income",
+      "date": "Date",
+      "category": "Category",
+      "customCategory": "Custom Category Name",
+      "customCategoryPlaceholder": "e.g., Hobby, Pet, Books",
+      "amount": "Amount (yen)",
+      "memo": "Memo (optional)",
+      "memoPlaceholder": "e.g., Lunch",
+      "submit": "Record",
+      "amountRequired": "Please enter a valid amount",
+      "customCategoryRequired": "Please enter custom category name",
+      "expenseRecorded": "Expense recorded!",
+      "incomeRecorded": "Income recorded!"
+    },
+    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+  },
+  "shopping": {
+    "form": {
+      "title": "Add Manually",
+      "productName": "Product Name",
+      "productNamePlaceholder": "e.g., Milk",
+      "quantity": "Quantity",
+      "submit": "Add to List",
+      "productNameRequired": "Please enter product name"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "No goals set",
+    "suggestion": "Set goals to start a healthy lifestyle",
+    "createGoal": "Create Goal",
+    "progress": "Goal Progress",
+    "activeGoals": "active goals",
+    "viewAll": "View All"
+  },
+  "meals": {
+    "form": {
+      "title": "Record Meal",
+      "dishName": "Dish Name",
+      "dishNamePlaceholder": "e.g., Curry Rice",
+      "dishNameHint": "Enter dish name to display calorie measurement screen",
+      "recorded": "Meal recorded!",
+      "recordFailed": "Failed to record meal"
+    },
+    "screen": {
+      "title": "Meal Records"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "Add Manually",
+      "item": "Item",
+      "itemPlaceholder": "e.g., Milk",
+      "category": "Category",
+      "expiryDate": "Expiry Date",
+      "quantity": "Quantity",
+      "submit": "Register to Stock",
+      "itemRequired": "Please enter item name",
+      "success": "Added to stock!"
+    },
+    "categories": {
+      "staple": "Staple",
+      "protein": "Protein",
+      "vegetable": "Vegetable",
+      "fruit": "Fruit",
+      "dairy": "Dairy",
+      "seasoning": "Seasoning",
+      "other": "Other"
+    },
+    "screen": {
+      "title": "Stock Management"
+    }
+  },
+  "expense": {
+    "list": {
+      "deleteConfirm": "Delete this expense?",
+      "noData": "No income/expense data for this month yet"
+    },
+    "screen": {
+      "title": "Expense Book",
+      "history": "Expense History"
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "Shopping List"
+    }
+  },
+  "goals": {
+    "setting": {
+      "title": "Goal Setting",
+      "editTitle": "Edit Goal",
+      "newTitle": "New Goal",
+      "type": "Goal Type",
+      "calorie": {
+        "label": "Calorie Goal",
+        "unit": "kcal",
+        "description": "Set daily calorie goal"
+      },
+      "budget": {
+        "label": "Budget Goal",
+        "unit": "yen",
+        "description": "Set monthly or weekly budget"
+      },
+      "weight": {
+        "label": "Weight Goal",
+        "unit": "kg",
+        "description": "Set target weight"
+      },
+      "exercise": {
+        "label": "Exercise Goal",
+        "unit": "min",
+        "description": "Set daily exercise time"
+      },
+      "titleLabel": "Title",
+      "descriptionLabel": "Description (optional)",
+      "targetValueLabel": "Target Value",
+      "periodLabel": "Period",
+      "required": "Please enter title and target value",
+      "saveFailed": "Failed to save goal"
+    },
+    "progress": {
+      "achieved": "Achieved!",
+      "budgetExceeded": "Budget Exceeded",
+      "budgetLow": "Budget Running Low",
+      "onTrack": "On Track",
+      "inProgress": "In Progress",
+      "paceUp": "Pace Up",
+      "needEffort": "Need Effort",
+      "deleteConfirm": "Delete this goal?",
+      "period": {
+        "day": "1 Day",
+        "week": "1 Week",
+        "month": "1 Month",
+        "daysRemaining": " days",
+        "custom": "Custom"
+      }
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "year": " Year ",
+    "month": " Month"
+  },
+  "bottomNav": {
+    "home": "Home",
+    "meals": "Meals",
+    "scan": "Scan",
+    "report": "Report",
+    "social": "Social",
+    "settings": "Settings",
+    "mainNavigation": "Main Navigation"
+  },
+  "settings": {
+    "prefecture": {
+      "title": "Prefecture"
+    },
+    "export": {
+      "csvHeader": "Type,Name,Calories,Amount,Date",
+      "csvFilename": "HealthFinanceApp_",
+      "jsonFilename": "HealthFinanceApp_",
+      "mealRecord": "Meal Record"
+    }
   }
 }
 

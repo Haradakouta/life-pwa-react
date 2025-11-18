@@ -3,6 +3,7 @@
  * アクティブな目標の進捗を簡潔に表示
  */
 import React, { useMemo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGoalStore } from '../../store/useGoalStore';
 import { GoalProgressCard } from './GoalProgressCard';
 import { MdTrendingUp, MdAdd } from 'react-icons/md';
@@ -14,6 +15,7 @@ interface GoalsSummaryProps {
 }
 
 export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
   const { goals, getActiveGoals, getGoalProgress, syncWithFirestore, subscribeToFirestore, initialized } = useGoalStore();
   const [progressMap, setProgressMap] = useState<Record<string, GoalProgress>>({});
 
@@ -65,10 +67,10 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
       >
         <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎯</div>
         <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
-          目標が設定されていません
+          {t('goalsSummary.noGoals')}
         </div>
         <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          目標を設定して、健康的な生活を始めましょう
+          {t('goalsSummary.suggestion')}
         </div>
         <button
           onClick={() => onNavigate('goals')}
@@ -97,7 +99,7 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
           }}
         >
           <MdAdd size={18} />
-          目標を作成
+          {t('goalsSummary.createGoal')}
         </button>
       </div>
     );
@@ -141,10 +143,10 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
                 backgroundClip: 'text',
               }}
             >
-              目標進捗
+              {t('goalsSummary.progress')}
             </h3>
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              {getActiveGoals().length}件のアクティブな目標
+              {getActiveGoals().length}{t('goalsSummary.activeGoals')}
             </div>
           </div>
         </div>
@@ -170,7 +172,7 @@ export const GoalsSummary: React.FC<GoalsSummaryProps> = ({ onNavigate }) => {
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          すべて見る
+          {t('goalsSummary.viewAll')}
         </button>
       </div>
 

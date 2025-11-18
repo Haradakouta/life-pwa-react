@@ -15,6 +15,7 @@ interface GoalProgressCardProps {
 }
 
 export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ goal, progress, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [displayPercentage, setDisplayPercentage] = useState(0);
 
@@ -109,7 +110,7 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
     if (isAchieved) {
       return {
         icon: <MdCheckCircle size={24} />,
-        message: '達成！',
+        message: t('goals.progress.achieved'),
         color: '#10b981',
         bgColor: 'rgba(16, 185, 129, 0.1)',
       };
@@ -118,28 +119,28 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
       if (progress.percentage >= 100) {
         return {
           icon: <MdWarning size={24} />,
-          message: '予算超過',
+          message: t('goals.progress.budgetExceeded'),
           color: '#ef4444',
           bgColor: 'rgba(239, 68, 68, 0.1)',
         };
       } else if (progress.percentage >= 80) {
         return {
           icon: <MdTrendingUp size={24} />,
-          message: '予算残りわずか',
+          message: t('goals.progress.budgetLow'),
           color: '#f59e0b',
           bgColor: 'rgba(245, 158, 11, 0.1)',
         };
       } else if (progress.percentage >= 50) {
         return {
           icon: <MdTrendingUp size={24} />,
-          message: '順調',
+          message: t('goals.progress.onTrack'),
           color: '#10b981',
           bgColor: 'rgba(16, 185, 129, 0.1)',
         };
       } else {
         return {
           icon: <MdTrendingUp size={24} />,
-          message: '進行中',
+          message: t('goals.progress.inProgress'),
           color: goalConfig.color,
           bgColor: `${goalConfig.color}15`,
         };
@@ -149,28 +150,28 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
       if (progress.percentage >= 80) {
         return {
           icon: <MdTrendingUp size={24} />,
-          message: '順調',
+          message: t('goals.progress.onTrack'),
           color: '#10b981',
           bgColor: 'rgba(16, 185, 129, 0.1)',
         };
       } else if (!progress.isOnTrack && progress.percentage < 50) {
         return {
           icon: <MdTrendingDown size={24} />,
-          message: 'ペースアップ',
+          message: t('goals.progress.paceUp'),
           color: '#f59e0b',
           bgColor: 'rgba(245, 158, 11, 0.1)',
         };
       } else if (progress.percentage < 30) {
         return {
           icon: <MdWarning size={24} />,
-          message: '要努力',
+          message: t('goals.progress.needEffort'),
           color: '#ef4444',
           bgColor: 'rgba(239, 68, 68, 0.1)',
         };
       } else {
         return {
           icon: <MdTrendingUp size={24} />,
-          message: '進行中',
+          message: t('goals.progress.inProgress'),
           color: goalConfig.color,
           bgColor: `${goalConfig.color}15`,
         };
@@ -182,23 +183,23 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
   const periodLabel = useMemo(() => {
     switch (goal.period) {
       case 'daily':
-        return '1日';
+        return t('goals.progress.period.day');
       case 'weekly':
-        return '1週間';
+        return t('goals.progress.period.week');
       case 'monthly':
-        return '1ヶ月';
+        return t('goals.progress.period.month');
       case 'custom':
         if (goal.endDate) {
           const endDate = new Date(goal.endDate);
           const today = new Date();
           const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          return `${daysRemaining}日間`;
+          return `${daysRemaining}${t('goals.progress.period.daysRemaining')}`;
         }
-        return 'カスタム';
+        return t('goals.progress.period.custom');
       default:
         return '';
     }
-  }, [goal.period, goal.endDate]);
+  }, [goal.period, goal.endDate, t]);
 
   return (
     <div
@@ -311,7 +312,7 @@ export const GoalProgressCard: React.FC<GoalProgressCardProps> = React.memo(({ g
           {onDelete && (
             <button
               onClick={() => {
-                if (confirm('この目標を削除しますか？')) {
+                if (confirm(t('goals.progress.deleteConfirm'))) {
                   onDelete(goal.id);
                 }
               }}

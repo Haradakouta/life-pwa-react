@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdEmail, MdLock, MdLogin } from 'react-icons/md';
 import { FaGoogle } from 'react-icons/fa';
 import { loginWithEmail, loginWithGoogle } from '../../utils/auth';
@@ -10,6 +11,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
+  const { t } = useTranslation();
   const [showRegisterFlow, setShowRegisterFlow] = useState(false);
   const [showPasswordResetFlow, setShowPasswordResetFlow] = useState(false);
   const [email, setEmail] = useState('');
@@ -30,7 +32,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         onLoginSuccess();
       }
     } catch (err: any) {
-      setError(err.message || '認証エラーが発生しました');
+      setError(err.message || t('auth.authError'));
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         onLoginSuccess();
       }
     } catch (err: any) {
-      setError(err.message || '認証エラーが発生しました');
+      setError(err.message || t('auth.authError'));
     } finally {
       setLoading(false);
     }
@@ -60,8 +62,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       <div className="login-screen">
         <div className="login-container">
           <div className="login-header">
-            <h1>🥗💰 健康家計アプリ</h1>
-            <p>新規登録</p>
+            <h1>🥗💰 {t('auth.appName')}</h1>
+            <p>{t('auth.register')}</p>
           </div>
 
           <RegisterFlow
@@ -115,8 +117,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       <div className="login-screen">
         <div className="login-container">
           <div className="login-header">
-            <h1>🥗💰 健康家計アプリ</h1>
-            <p>パスワードリセット</p>
+            <h1>🥗💰 {t('auth.appName')}</h1>
+            <p>{t('auth.passwordReset')}</p>
           </div>
 
           <PasswordResetFlow
@@ -169,14 +171,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div className="login-screen">
       <div className="login-container">
         <div className="login-header">
-          <h1>🥗💰 健康家計アプリ</h1>
-          <p>AIが健康をサポートする生活管理アプリ</p>
+          <h1>🥗💰 {t('auth.appName')}</h1>
+          <p>{t('auth.appDescription')}</p>
         </div>
 
         <form onSubmit={handleEmailLogin} className="login-form">
           <div className="form-group">
             <label>
-              <MdEmail /> メールアドレス
+              <MdEmail /> {t('auth.email')}
             </label>
             <input
               type="email"
@@ -189,13 +191,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
           <div className="form-group">
             <label>
-              <MdLock /> パスワード
+              <MdLock /> {t('auth.password')}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="6文字以上"
+              placeholder={t('auth.passwordPlaceholder')}
               minLength={6}
               required
             />
@@ -204,9 +206,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? '処理中...' : (
+            {loading ? t('auth.processing') : (
               <>
-                <MdLogin /> ログイン
+                <MdLogin /> {t('auth.login')}
               </>
             )}
           </button>
@@ -216,7 +218,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             onClick={() => setShowPasswordResetFlow(true)}
             className="forgot-password-button"
           >
-            パスワードをお忘れですか？
+            {t('auth.forgotPassword')}
           </button>
 
           <button
@@ -224,23 +226,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             onClick={() => setShowRegisterFlow(true)}
             className="register-link-button"
           >
-            アカウントをお持ちでない方はこちら
+            {t('auth.noAccount')}
           </button>
         </form>
 
         <div className="divider">
-          <span>または</span>
+          <span>{t('auth.or')}</span>
         </div>
 
         <button onClick={handleGoogleLogin} className="google-login-button" disabled={loading}>
-          <FaGoogle /> Googleでログイン
+          <FaGoogle /> {t('auth.googleLogin')}
         </button>
 
         <div className="login-footer">
           <p>
-            ※ Firebase Authenticationを使用した安全な認証です
+            {t('auth.securityNote')}
             <br />
-            データはFirestoreに安全に保存されます
+            {t('auth.dataNote')}
           </p>
         </div>
       </div>

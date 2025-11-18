@@ -2,6 +2,7 @@
  * ボトムナビゲーションコンポーネント
  */
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FiHome, FiCamera, FiBarChart2, FiSettings } from 'react-icons/fi';
 import { MdRestaurant, MdPeople } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
@@ -16,6 +17,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [dmUnreadCount, setDmUnreadCount] = useState(0);
@@ -49,20 +51,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate 
   const totalUnreadCount = notificationUnreadCount + dmUnreadCount;
 
   const navItems: Array<{ screen: Screen; icon: React.ReactNode; label: string }> = useMemo(() => [
-    { screen: 'home', icon: <FiHome size={24} />, label: 'ホーム' },
-    { screen: 'meals', icon: <MdRestaurant size={24} />, label: '食事' },
-    { screen: 'barcode', icon: <FiCamera size={24} />, label: 'スキャン' },
-    { screen: 'report', icon: <FiBarChart2 size={24} />, label: 'レポート' },
-    { screen: 'social', icon: <MdPeople size={24} />, label: 'ソーシャル' },
-    { screen: 'settings', icon: <FiSettings size={24} />, label: '設定' },
-  ], []);
+    { screen: 'home', icon: <FiHome size={24} />, label: t('bottomNav.home') },
+    { screen: 'meals', icon: <MdRestaurant size={24} />, label: t('bottomNav.meals') },
+    { screen: 'barcode', icon: <FiCamera size={24} />, label: t('bottomNav.scan') },
+    { screen: 'report', icon: <FiBarChart2 size={24} />, label: t('bottomNav.report') },
+    { screen: 'social', icon: <MdPeople size={24} />, label: t('bottomNav.social') },
+    { screen: 'settings', icon: <FiSettings size={24} />, label: t('bottomNav.settings') },
+  ], [t]);
 
   const handleNavClick = useCallback((screen: Screen) => {
     onNavigate(screen);
   }, [onNavigate]);
 
   return (
-    <nav id="bottomNav" role="navigation" aria-label="メインナビゲーション">
+    <nav id="bottomNav" role="navigation" aria-label={t('bottomNav.mainNavigation')}>
       {navItems.map((item) => {
         const showBadge = item.screen === 'social' && totalUnreadCount > 0;
         return (

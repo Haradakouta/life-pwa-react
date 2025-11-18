@@ -2,15 +2,17 @@
  * 家計簿画面コンポーネント
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ExpenseForm } from './ExpenseForm';
 import { BudgetProgress } from './BudgetProgress';
 import { ExpenseSummary } from './ExpenseSummary';
 import { ExpenseList } from './ExpenseList';
 
 export const ExpenseScreen: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <section className="screen active">
-      <h2>家計簿</h2>
+      <h2>{t('expense.screen.title')}</h2>
 
       {/* 月次予算と進捗 */}
       <BudgetProgress />
@@ -22,7 +24,7 @@ export const ExpenseScreen: React.FC = () => {
       <ExpenseSummary />
 
       {/* 支出一覧 */}
-      <h3>支出履歴</h3>
+      <h3>{t('expense.screen.history')}</h3>
       <ExpenseList />
     </section>
   );

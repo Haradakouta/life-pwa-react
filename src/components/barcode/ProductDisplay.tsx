@@ -2,6 +2,7 @@
  * スキャンした商品情報表示・追加コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useIntakeStore, useStockStore } from '../../store';
 import type { ProductInfo } from '../../types';
 import { detectStockCategory } from '../../utils/stockCategoryDetector';
@@ -18,6 +19,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
   onAdded,
   onNavigateToStock,
 }) => {
+  const { t } = useTranslation();
   const { addIntake } = useIntakeStore();
   const { addStock } = useStockStore();
 
@@ -27,11 +29,11 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
 
   const handleAddToMeals = () => {
     if (!calories) {
-      alert('カロリーを入力してください');
+      alert(t('product.addToMeals.caloriesRequired'));
       return;
     }
     if (!price) {
-      alert('金額を入力してください');
+      alert(t('product.addToMeals.priceRequired'));
       return;
     }
 
@@ -41,13 +43,13 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       price: Number(price),
     });
 
-    alert('食事記録に追加しました！');
+    alert(t('product.addToMeals.success'));
     onAdded();
   };
 
   const handleAddToStock = () => {
     if (!daysRemaining) {
-      alert('賞味期限までの日数を入力してください');
+      alert(t('product.addToStock.expiryDaysRequired'));
       return;
     }
 
@@ -67,7 +69,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       }, 100);
     } else {
       // 従来通りアラート表示
-      alert('在庫管理に追加しました！');
+      alert(t('product.addToStock.success'));
       onAdded();
     }
   };
@@ -76,7 +78,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
     <div className="card">
       <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <MdCheckCircle size={24} color="#10b981" />
-        商品情報を取得しました
+        {t('product.productInfo')}
       </h3>
 
       {/* 商品情報 */}
@@ -90,7 +92,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       >
         <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
-            商品名
+            {t('product.productName')}
           </div>
           <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>
             {product.name}
@@ -100,7 +102,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
         {product.manufacturer && (
           <div style={{ marginBottom: '12px' }}>
             <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
-              メーカー
+              {t('product.manufacturer')}
             </div>
             <div style={{ fontWeight: 500 }}>{product.manufacturer}</div>
           </div>
@@ -108,7 +110,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
 
         <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
-            バーコード
+            {t('product.barcode')}
           </div>
           <div style={{ fontFamily: 'monospace', color: '#666' }}>
             {product.barcode}
@@ -118,7 +120,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
         {product.price && (
           <div>
             <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
-              価格（参考）
+              {t('product.price')}
             </div>
             <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
               ¥{product.price.toLocaleString()}
@@ -140,11 +142,11 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
             display: 'inline-block',
           }}
         >
-          {product.source === 'rakuten_ichiba' && '楽天市場'}
-          {product.source === 'rakuten_product' && '楽天商品検索'}
-          {product.source === 'jancode_lookup' && 'JAN Code Lookup'}
-          {product.source === 'openfoodfacts' && 'Open Food Facts'}
-          {product.source === 'mock' && 'モックデータ'}
+          {product.source === 'rakuten_ichiba' && t('product.source.rakutenIchiba')}
+          {product.source === 'rakuten_product' && t('product.source.rakutenProduct')}
+          {product.source === 'jancode_lookup' && t('product.source.jancodeLookup')}
+          {product.source === 'openfoodfacts' && t('product.source.openfoodfacts')}
+          {product.source === 'mock' && t('product.source.mock')}
         </div>
       </div>
 
@@ -152,28 +154,28 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       <div style={{ marginBottom: '24px' }}>
         <h4 style={{ marginBottom: '12px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <MdRestaurant size={18} />
-          食事記録に追加
+          {t('product.addToMeals.title')}
         </h4>
-        <label>カロリー (kcal)</label>
+        <label>{t('product.addToMeals.calories')}</label>
         <input
           type="number"
           value={calories}
           onChange={(e) => setCalories(e.target.value)}
-          placeholder="例: 200"
+          placeholder={t('product.addToMeals.caloriesPlaceholder')}
         />
-        <label>金額 (円)</label>
+        <label>{t('product.addToMeals.price')}</label>
         <input
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          placeholder="例: 150"
+          placeholder={t('product.addToMeals.pricePlaceholder')}
         />
         <button
           className="submit"
           onClick={handleAddToMeals}
           style={{ background: '#3b82f6' }}
         >
-          食事記録に追加
+          {t('product.addToMeals.button')}
         </button>
       </div>
 
@@ -181,21 +183,21 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       <div>
         <h4 style={{ marginBottom: '12px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <MdInventory size={18} />
-          在庫管理に追加
+          {t('product.addToStock.title')}
         </h4>
-        <label>賞味期限までの日数</label>
+        <label>{t('product.addToStock.expiryDays')}</label>
         <input
           type="number"
           value={daysRemaining}
           onChange={(e) => setDaysRemaining(e.target.value)}
-          placeholder="例: 7"
+          placeholder={t('product.addToStock.expiryDaysPlaceholder')}
         />
         <button
           className="submit"
           onClick={handleAddToStock}
           style={{ background: '#10b981' }}
         >
-          {onNavigateToStock ? '在庫管理に追加して画面移動' : '在庫管理に追加'}
+          {onNavigateToStock ? t('product.addToStock.buttonWithNavigate') : t('product.addToStock.button')}
         </button>
       </div>
 
@@ -212,7 +214,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           color: '#666',
         }}
       >
-        キャンセル
+        {t('product.cancel')}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
  * 都道府県設定画面
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, updateUserProfile } from '../../utils/profile';
 import { prefectures, getPrefectureByCode } from '../../types/prefecture';
@@ -13,6 +14,7 @@ interface PrefectureSettingScreenProps {
 }
 
 export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = ({ onBack, onComplete }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [selectedPrefecture, setSelectedPrefecture] = useState('');
   const [currentPrefecture, setCurrentPrefecture] = useState<string | undefined>(undefined);
@@ -66,14 +68,14 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
     if (!user) return;
 
     if (!selectedPrefecture) {
-      setError('都道府県を選択してください');
+      setError(t('settings.prefecture.selectRequired'));
       return;
     }
 
     // 変更可能かチェック
     if (currentPrefecture && !canChangePrefecture()) {
       const daysLeft = getDaysUntilChange();
-      setError(`都道府県は30日に1回のみ変更可能です。あと${daysLeft}日お待ちください。`);
+      setError(t('settings.prefecture.changeLimit', { days: daysLeft }));
       return;
     }
 
@@ -103,7 +105,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
       }
     } catch (error: unknown) {
       console.error('都道府県設定エラー:', error);
-      setError('都道府県の設定に失敗しました');
+      setError(t('settings.prefecture.saveFailed'));
     } finally {
       setSaving(false);
     }

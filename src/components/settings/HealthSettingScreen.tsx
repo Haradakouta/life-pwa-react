@@ -2,6 +2,7 @@
  * 健康情報設定画面コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdHealthAndSafety, MdSave } from 'react-icons/md';
 import { useSettingsStore } from '../../store';
 
@@ -30,6 +31,7 @@ const getBMICategory = (bmi: number): string => {
 };
 
 export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack }) => {
+    const { t } = useTranslation();
     const { settings, updateSettings } = useSettingsStore();
     const [age, setAge] = useState(settings.age?.toString() || '');
     const [height, setHeight] = useState(settings.height?.toString() || '');
@@ -73,11 +75,11 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                 weightHistory: weightHistory.length > 0 ? weightHistory : undefined,
                 lastWeightInputDate: weightValue ? today : settings.lastWeightInputDate,
             });
-            alert('健康情報を保存しました！');
+            alert(t('settings.health.saved'));
             onBack();
         } catch (error) {
             console.error('健康情報の保存エラー:', error);
-            alert('健康情報の保存に失敗しました');
+            alert(t('settings.health.saveFailed'));
         } finally {
             setSaving(false);
         }

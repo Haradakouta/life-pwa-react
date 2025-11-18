@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "oshi-para"
+  },
+  "targets": {
+    "oshi-para": {
+      "hosting": {
+        "default": [
+          "oshi-para"
+        ]
+      }
+    }
   }
 }

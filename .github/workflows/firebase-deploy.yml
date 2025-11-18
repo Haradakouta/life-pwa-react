@@ -37,7 +37,12 @@ jobs:
             echo "Error: FIREBASE_TOKEN secret is not set in GitHub repository settings"
             exit 1
           fi
+          echo "Checking Firebase CLI installation..."
+          npx firebase-tools --version
+          echo "Checking build output..."
+          ls -la dist/ || (echo "Error: dist directory not found. Build may have failed." && exit 1)
           echo "Deploying to Firebase Hosting..."
-          npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
+          npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN" --project oshi-para
+          echo "Deployment completed successfully!"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -27,7 +27,7 @@ jobs:
         env:
           VITE_FCM_VAPID_KEY: ${{ secrets.VITE_FCM_VAPID_KEY }}
 
-      - name: Deploy to Firebase Hosting
-        run: npx firebase-tools deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
+            - name: Deploy to Firebase Hosting
+        run: npx firebase-tools deploy --only hosting --token $FIREBASE_TOKEN
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

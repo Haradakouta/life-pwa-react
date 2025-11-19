@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useIntakeStore, useMealTemplateStore } from '../../store';
 import { CalorieScanner } from './CalorieScanner';
-import { MdAdd, MdDelete } from 'react-icons/md';
+import { MdAdd, MdDelete, MdCameraAlt } from 'react-icons/md';
 import type { MealTemplate } from '../../types';
 
 export const MealForm: React.FC = () => {
@@ -52,10 +52,11 @@ export const MealForm: React.FC = () => {
     }
   }, [name, showCalorieScanner, calories, activeTab]);
 
-  const handleCalorieScanned = async (scannedCalories: number) => {
+  const handleCalorieScanned = async (scannedCalories: number, reasoning: string) => {
     setCalories(scannedCalories.toString());
     setShowCalorieScanner(false);
-    // 自動保存はせず、フォームに入力するだけにする
+    // reasoning（根拠）は現状保存する場所がないため、コンソールに出力のみ
+    console.log('Calorie reasoning:', reasoning);
   };
 
   const handleCancelScanner = () => {
@@ -188,6 +189,28 @@ export const MealForm: React.FC = () => {
                 />
               </div>
             </div>
+
+            <button
+              onClick={() => setShowCalorieScanner(true)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'var(--card)',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                borderRadius: '8px',
+                marginTop: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                fontWeight: 'bold',
+              }}
+            >
+              <MdCameraAlt size={20} />
+              {t('meals.form.scanCalories', '写真を撮ってカロリー計測')}
+            </button>
 
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
               <button 

@@ -6,6 +6,8 @@
     "edit": "Edit",
     "back": "Back",
     "loading": "Loading...",
+    "saving": "Saving...",
+    "admin": "Admin",
     "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
@@ -17,6 +19,9 @@
     "selectDate": "Select Date",
     "selectMonth": "Select Month",
     "selectMonthYear": "Tap to select year and month",
+    "select": "Please select",
+    "next": "Next",
+    "skipAndNext": "Skip and Next",
     "weekday": {
       "sun": "Sun",
       "mon": "Mon",
@@ -429,21 +434,6 @@
         "custom": "Custom"
       }
     }
-  },
-  "common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "back": "Back",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "confirm": "Confirm",
-    "yes": "Yes",
-    "no": "No",
-    "year": " Year ",
-    "month": " Month"
   },
   "bottomNav": {
     "home": "Home",

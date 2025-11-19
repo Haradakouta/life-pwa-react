@@ -4,15 +4,10 @@
 import { useBadgeStore } from '../../store';
 import { BADGE_DEFINITIONS } from '../../utils/badgeDefinitions';
 import type { BadgeCategory } from '../../types';
-
-const CATEGORY_NAMES: Record<BadgeCategory, string> = {
-  streak: '🔥 連続記録',
-  milestone: '📊 マイルストーン',
-  goal: '🎯 目標達成',
-  feature: '✨ 機能活用',
-};
+import { useTranslation } from 'react-i18next';
 
 export function BadgeList() {
+  const { t, i18n } = useTranslation();
   const { badges, isUnlocked, getUnlockedCount, getTotalCount } = useBadgeStore();
 
   const categories: BadgeCategory[] = ['streak', 'milestone', 'goal', 'feature'];
@@ -25,7 +20,7 @@ export function BadgeList() {
     <div className="badge-list">
       <div className="badge-summary">
         <h3>
-          バッジコレクション{' '}
+          {t('badges.title')}{' '}
           <span className="badge-count">
             {getUnlockedCount()} / {getTotalCount()}
           </span>
@@ -45,7 +40,7 @@ export function BadgeList() {
 
         return (
           <div key={category} className="badge-category">
-            <h4 className="category-title">{CATEGORY_NAMES[category]}</h4>
+            <h4 className="category-title">{t(`badges.categories.${category}`)}</h4>
             <div className="badge-grid">
               {categoryBadges.map((def) => {
                 const unlocked = isUnlocked(def.id);
@@ -65,7 +60,7 @@ export function BadgeList() {
                       )}
                       {unlocked && badge?.unlockedAt && (
                         <div className="badge-unlocked-date">
-                          {new Date(badge.unlockedAt).toLocaleDateString('ja-JP')}
+                          {new Date(badge.unlockedAt).toLocaleDateString(i18n.language)}
                         </div>
                       )}
                     </div>

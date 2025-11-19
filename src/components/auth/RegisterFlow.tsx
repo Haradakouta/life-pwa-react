@@ -323,7 +323,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="山田太郎"
+              placeholder={t('auth.usernamePlaceholder')}
               required
               autoFocus
             />
@@ -351,7 +351,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="password"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
-              placeholder="もう一度入力"
+              placeholder={t('auth.passwordConfirmPlaceholder')}
               minLength={6}
               required
             />
@@ -360,7 +360,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? '次へ...' : '次へ'}
+            {loading ? t('auth.nextProcessing') : t('auth.next')}
           </button>
         </form>
       )}
@@ -369,15 +369,15 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       {step === 'health' && (
         <form onSubmit={handleHealthSubmit} className="step-form">
           <h2>
-            <MdHealthAndSafety /> 健康情報を設定
+            <MdHealthAndSafety /> {t('auth.registerFlow.step4.title')}
           </h2>
           <p className="step-description">
-            個人情報を入力してください（任意）
+            {t('auth.registerFlow.step4.description')}
           </p>
 
           <div className="form-group">
             <label>
-              <MdHealthAndSafety /> 年齢（歳）
+              <MdHealthAndSafety /> {t('auth.registerFlow.step4.age')}
             </label>
             <input
               type="number"
@@ -391,7 +391,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
           <div className="form-group">
             <label>
-              <MdHealthAndSafety /> 身長（cm）
+              <MdHealthAndSafety /> {t('auth.registerFlow.step4.height')}
             </label>
             <input
               type="number"
@@ -405,7 +405,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
           <div className="form-group">
             <label>
-              <MdHealthAndSafety /> 体重（kg）
+              <MdHealthAndSafety /> {t('auth.registerFlow.step4.weight')}
             </label>
             <input
               type="number"
@@ -420,7 +420,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
 
           <div className="form-group">
             <label>
-              <MdHealthAndSafety /> 貯金額（円）
+              <MdHealthAndSafety /> {t('auth.registerFlow.step4.savings')}
             </label>
             <input
               type="number"
@@ -435,7 +435,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            次へ
+            {t('auth.next')}
           </button>
 
           <button
@@ -445,7 +445,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
             disabled={loading}
             style={{ textAlign: 'center' }}
           >
-            スキップして次へ
+            {t('auth.skipAndNext')}
           </button>
         </form>
       )}
@@ -454,15 +454,15 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
       {step === 'prefecture' && (
         <form onSubmit={handlePrefectureSubmit} className="step-form">
           <h2>
-            <MdLocationOn /> 都道府県を選択
+            <MdLocationOn /> {t('auth.registerFlow.step5.title')}
           </h2>
           <p className="step-description">
-            都道府県を選択してください（30日に1回のみ変更可能）
+            {t('auth.registerFlow.step5.description')}
           </p>
 
           <div className="form-group">
             <label>
-              <MdLocationOn /> 都道府県
+              <MdLocationOn /> {t('auth.registerFlow.step5.label')}
             </label>
             <select
               value={prefecture}
@@ -477,7 +477,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
                 color: 'var(--text)',
               }}
             >
-              <option value="">選択してください</option>
+              <option value="">{t('common.select')}</option>
               {prefectures.map((p) => (
                 <option key={p.code} value={p.code}>
                   {p.name}
@@ -489,7 +489,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'アカウント作成中...' : '登録完了'}
+            {loading ? t('auth.registerFlow.step5.creating') : t('auth.registerFlow.step5.complete')}
           </button>
         </form>
       )}

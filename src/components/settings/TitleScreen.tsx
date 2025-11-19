@@ -16,7 +16,7 @@ interface TitleScreenProps {
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
-  const { } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [userTitles, setUserTitles] = useState<UserTitle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,16 +74,16 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
       const newlyGranted = await checkAndGrantTitles(user.uid);
       if (newlyGranted.length > 0) {
         setNewlyGranted(newlyGranted);
-        alert(`🎉 ${newlyGranted.length}個の新しい称号を獲得しました！`);
+        alert(t('settings.honorific.newTitlesGranted', { count: newlyGranted.length }));
       } else {
-        alert('新しい称号はありません');
+        alert(t('settings.honorific.noNewTitles'));
       }
 
       const updatedTitles = await getUserTitles(user.uid);
       setUserTitles(updatedTitles);
     } catch (error) {
       console.error('称号チェックエラー:', error);
-      alert('称号チェックに失敗しました');
+      alert(t('settings.honorific.checkFailed'));
     } finally {
       setRefreshing(false);
     }
@@ -99,7 +99,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
       setUserTitles(updatedTitles);
     } catch (error) {
       console.error('称号装備エラー:', error);
-      alert('称号の装備に失敗しました');
+      alert(t('settings.honorific.equipFailed'));
     }
   };
 
@@ -121,14 +121,14 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
 
   // カテゴリ一覧
   const categories = [
-    { id: 'all', name: 'すべて', icon: '📋' },
-    { id: 'beginner', name: '初心者', icon: '🎉' },
-    { id: 'poster', name: '投稿者', icon: '📝' },
-    { id: 'social', name: 'ソーシャル', icon: '⭐' },
-    { id: 'recipe', name: 'レシピ', icon: '🍳' },
-    { id: 'achievement', name: 'アチーブメント', icon: '🏆' },
-    { id: 'prefecture', name: '都道府県', icon: '🗾' },
-    { id: 'special', name: '特別', icon: '👑' },
+    { id: 'all', name: t('settings.honorific.categories.all'), icon: '📋' },
+    { id: 'beginner', name: t('settings.honorific.categories.beginner'), icon: '🎉' },
+    { id: 'poster', name: t('settings.honorific.categories.poster'), icon: '📝' },
+    { id: 'social', name: t('settings.honorific.categories.social'), icon: '⭐' },
+    { id: 'recipe', name: t('settings.honorific.categories.recipe'), icon: '🍳' },
+    { id: 'achievement', name: t('settings.honorific.categories.achievement'), icon: '🏆' },
+    { id: 'prefecture', name: t('settings.honorific.categories.prefecture'), icon: '🗾' },
+    { id: 'special', name: t('settings.honorific.categories.special'), icon: '👑' },
   ];
 
   return (
@@ -160,7 +160,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
               <MdArrowBack size={24} color="var(--text)" />
             </button>
           )}
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)' }}>称号</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)' }}>{t('settings.honorific.title')}</h2>
         </div>
         <button
           onClick={handleRefresh}
@@ -182,7 +182,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
           }}
         >
           <MdRefresh size={18} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-          チェック
+          {t('settings.honorific.check')}
         </button>
       </div>
 
@@ -196,7 +196,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
           border: '2px solid #fcd34d',
         }}>
           <div style={{ fontSize: '16px', fontWeight: 700, color: '#92400e', marginBottom: '8px' }}>
-            🎉 {newlyGranted.length}個の新しい称号を獲得しました！
+            {t('settings.honorific.newTitlesGranted', { count: newlyGranted.length })}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {newlyGranted.map(titleId => {
@@ -251,7 +251,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
             borderRadius: '50%',
             animation: 'spin 0.8s linear infinite',
           }} />
-          読み込み中...
+          {t('common.loading')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -282,7 +282,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
                         fontSize: '12px',
                         fontWeight: 600,
                       }}>
-                        装備中
+                        {t('settings.honorific.equipped')}
                       </span>
                     )}
                   </div>
@@ -307,12 +307,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
                       {isEquipped ? (
                         <>
                           <MdCheckCircle size={18} />
-                          装備中
+                          {t('settings.honorific.equipped')}
                         </>
                       ) : (
                         <>
                           <MdRadioButtonUnchecked size={18} />
-                          装備
+                          {t('settings.honorific.equip')}
                         </>
                       )}
                     </button>
@@ -333,7 +333,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
                     gap: '6px',
                   }}>
                     <MdInfo size={14} />
-                    未獲得
+                    {t('settings.honorific.notEarned')}
                   </div>
                 )}
               </div>

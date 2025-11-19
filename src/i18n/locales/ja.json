@@ -19,6 +19,9 @@
     "selectDate": "日付を選択",
     "selectMonth": "月を選択",
     "selectMonthYear": "年月をタップして選択してください",
+    "select": "選択してください",
+    "next": "次へ",
+    "skipAndNext": "スキップして次へ",
     "weekday": {
       "sun": "日",
       "mon": "月",
@@ -60,64 +63,91 @@
       "enabled": "新しい通知を受け取ります",
       "disabled": "プッシュ通知は無効です"
     },
-    "export": {
-      "title": "データエクスポート",
-      "csv": "CSV",
-      "json": "JSON",
-      "csvHeader": "種類,名前,カロリー,金額,日付",
-      "csvFilename": "健康家計アプリ_",
-      "jsonFilename": "健康家計アプリ_",
-      "mealRecord": "食事記録"
-    },
     "prefecture": {
-      "title": "都道府県",
-      "selectRequired": "都道府県を選択してください",
-      "changeLimit": "都道府県は30日に1回のみ変更可能です。あと{{days}}日お待ちください。",
-      "saveFailed": "都道府県の設定に失敗しました"
+      "title": "都道府県設定",
+      "description": "お住まいの都道府県を設定します。",
+      "currentStatus": "現在の設定",
+      "label": "都道府県",
+      "change": "変更する",
+      "set": "設定する",
+      "daysRemaining": "あと{{days}}日変更できません",
+      "changeLimit": "※都道府県は30日に1回のみ変更可能です",
+      "select": "選択してください",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "saving": "保存中...",
+      "success": "都道府県を更新しました",
+      "error": "都道府県の更新に失敗しました",
+      "loadError": "プロフィールの取得に失敗しました"
     },
     "health": {
       "title": "健康情報",
+      "description": "BMIの計算や健康管理に使用します",
       "set": "健康情報を設定",
       "age": "年齢",
-      "height": "身長",
-      "weight": "体重",
-      "bmi": "BMI",
-      "savings": "貯金額",
-      "notSet": "個人情報が未設定です",
       "years": "歳",
+      "height": "身長",
       "cm": "cm",
+      "weight": "体重",
       "kg": "kg",
-      "saved": "健康情報を保存しました！",
-      "saveFailed": "健康情報の保存に失敗しました",
-      "weightRequired": "体重を入力してください",
-      "weightRecorded": "体重を記録しました！",
-      "weightSaveFailed": "体重の保存に失敗しました",
-      "weeklyRecordTitle": "週次体重記録",
-      "weeklyRecordDescription": "毎週月曜日に体重を記録することで、健康管理に役立ちます。",
-      "weightLabel": "体重（kg）",
-      "weightPlaceholder": "例: 65.5"
+      "bmi": "BMI",
+      "savings": "現在の貯金額",
+      "notSet": "健康情報は未設定です",
+      "save": "保存",
+      "saved": "健康情報を保存しました",
+      "placeholder": "例: 100000"
+    },
+    "honorific": {
+      "title": "称号",
+      "check": "チェック",
+      "newTitlesGranted": "🎉 {{count}}個の新しい称号を獲得しました！",
+      "noNewTitles": "新しい称号はありません",
+      "checkFailed": "称号チェックに失敗しました",
+      "equipFailed": "称号の装備に失敗しました",
+      "equipped": "装備中",
+      "equip": "装備",
+      "notEarned": "未獲得",
+      "categories": {
+        "all": "すべて",
+        "beginner": "初心者",
+        "poster": "投稿者",
+        "social": "ソーシャル",
+        "recipe": "レシピ",
+        "achievement": "アチーブメント",
+        "prefecture": "都道府県",
+        "special": "特別"
+      }
     },
     "ai": {
-      "title": "AI設定（Gemini API）",
-      "description": "AI機能（レシピ生成、レシートOCR、カロリー計測など）を使用するには、Google Gemini APIキーが必要です。",
-      "getKey": "APIキーを取得する",
+      "title": "AI設定",
+      "description": "Gemini APIキーを設定して、AI機能を有効にします",
+      "getKey": "APIキーを取得",
       "placeholder": "AIzaSy...",
-      "save": "APIキーを保存",
-      "saved": "✓ APIキーが設定されています"
+      "save": "保存",
+      "saved": "APIキーが保存されています"
     },
     "stats": {
-      "title": "データ統計",
+      "title": "統計情報",
       "intakes": "食事記録",
-      "expenses": "支出記録",
-      "stocks": "在庫アイテム",
-      "items": "件"
+      "items": "件",
+      "expenses": "家計簿",
+      "stocks": "在庫"
     },
     "account": {
       "title": "アカウント",
-      "login": "ログイン",
+      "login": "ログイン中",
       "logout": "ログアウト",
-      "logoutConfirm": "ログアウトしますか？",
+      "logoutConfirm": "ログアウトしてもよろしいですか？",
       "logoutError": "ログアウトに失敗しました"
+    },
+    "export": {
+      "title": "データエクスポート",
+      "csv": "CSVエクスポート",
+      "json": "JSONエクスポート",
+      "csvHeader": "タイプ,名前,カロリー,価格,日付",
+      "mealRecord": "食事記録",
+      "csvFilename": "life-pwa-data-",
+      "jsonFilename": "life-pwa-backup-"
     },
     "language": {
       "title": "言語",
@@ -131,27 +161,7 @@
       "russian": "Русский",
       "indonesian": "Bahasa Indonesia"
     },
-    "title": {
-      "title": "称号",
-      "change": "称号を変更",
-      "description": "称号を変更・購入できます",
-      "newTitlesGranted": "🎉 {{count}}個の新しい称号を獲得しました！",
-      "noNewTitles": "新しい称号はありません",
-      "checkFailed": "称号チェックに失敗しました",
-      "equipFailed": "称号の装備に失敗しました"
-    }
-  },
-  "dashboard": {
-    "title": "ホーム",
-    "subtitle": "健康と家計を管理"
-  },
-  "screens": {
-    "home": "健康家計アプリ",
-    "meals": "食事記録",
-    "barcode": "バーコードスキャン",
-    "report": "レポート",
     "social": "ソーシャル",
-    "settings": "設定",
     "stock": "在庫管理",
     "shopping": "買い物リスト",
     "recipe": "AIレシピ",
@@ -329,6 +339,12 @@
     "authError": "認証エラーが発生しました",
     "securityNote": "※ Firebase Authenticationを使用した安全な認証です",
     "dataNote": "データはFirestoreに安全に保存されます",
+    "next": "次へ",
+    "nextProcessing": "次へ...",
+    "skipAndNext": "スキップして次へ",
+    "complete": "登録完了",
+    "usernamePlaceholder": "山田太郎",
+    "passwordConfirmPlaceholder": "もう一度入力",
     "registerFlow": {
       "step1": {
         "title": "メールアドレスを入力",
@@ -359,19 +375,23 @@
       },
       "step4": {
         "title": "健康情報を入力",
+        "description": "個人情報を入力してください（任意）",
         "age": "年齢",
         "height": "身長 (cm)",
         "weight": "体重 (kg)",
         "savings": "貯金額 (円)",
         "optional": "（任意）",
-        "next": "次へ"
+        "next": "次へ",
+        "skip": "スキップして次へ"
       },
       "step5": {
         "title": "都道府県を選択",
-        "description": "お住まいの都道府県を選択してください",
+        "description": "都道府県を選択してください（30日に1回のみ変更可能）",
+        "label": "都道府県",
         "prefectureRequired": "都道府県を選択してください",
         "createAccount": "アカウントを作成",
         "creating": "作成中...",
+        "complete": "登録完了",
         "createFailed": "アカウント作成に失敗しました",
         "profileCreateFailed": "プロフィール作成に失敗しました: {{error}}"
       },
@@ -723,8 +743,55 @@
       "selectedCount": "{{count}}件選択中",
       "noStockInModal": "食材として使える在庫がありません",
       "quantity": "数量: {{count}}個",
-      "expiryDays": "期限まで: {{days}}日",
-      "addSelected": "選択した材料を追加"
+      "expiryDays": "期限まで: {{days}}日"
     }
+  },
+  "adminPanel": {
+    "title": "管理者パネル",
+    "loading": "管理者パネルを読み込み中...",
+    "noPermission": "管理者権限がありません。",
+    "apiKey": {
+      "title": "運営者Gemini APIキー設定",
+      "description": "全ユーザーが使用する運営者APIキーを設定します。\nこのAPIキーはFirestoreのadmin/configコレクションに保存されます。",
+      "save": "APIキーを保存",
+      "saving": "保存中...",
+      "success": "運営者APIキーを保存しました。キャッシュをクリアしました。",
+      "error": "APIキーの保存に失敗しました: {{error}}"
+    },
+    "deletePosts": {
+      "button": "すべての投稿を削除",
+      "confirm": "本当にすべての投稿を削除しますか？この操作は元に戻せません。",
+      "success": "すべての投稿が削除されました: {{result}}",
+      "error": "投稿の削除に失敗しました: {{error}}"
+    },
+    "deleteFollows": {
+      "button": "すべてのフォロー関係を削除",
+      "confirm": "本当にすべてのフォロー関係を削除しますか？この操作は元に戻せません。",
+      "success": "すべてのフォロー関係が削除されました: {{result}}",
+      "error": "フォロー関係の削除に失敗しました: {{error}}"
+    },
+    "unknownError": "不明なエラー"
+  },
+  "badges": {
+    "screenTitle": "🏆 アチーブメント",
+    "title": "バッジコレクション",
+    "unlocked": "バッジ獲得！",
+    "next": "次へ",
+    "ok": "OK",
+    "categories": {
+      "streak": "🔥 連続記録",
+      "milestone": "📊 マイルストーン",
+      "goal": "🎯 目標達成",
+      "feature": "✨ 機能活用"
+    }
+  },
+  "barcode": {
+    "title": "バーコードスキャン",
+    "cameraNotFound": "カメラが見つかりません",
+    "productNotFound": "商品情報が見つかりませんでした: {{code}}",
+    "fetchFailed": "商品情報の取得に失敗しました",
+    "cameraStartFailed": "カメラの起動に失敗しました",
+    "processing": "商品情報を取得中...",
+    "guide": "バーコードを枠内に合わせてください"
   }
 }

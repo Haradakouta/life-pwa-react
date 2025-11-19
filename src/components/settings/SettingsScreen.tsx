@@ -356,7 +356,7 @@ export const SettingsScreen: React.FC = () => {
               onChange={async (e) => {
                 const enabled = e.target.checked;
                 await updateSettings({ pushNotificationsEnabled: enabled });
-                
+
                 if (enabled) {
                   // プッシュ通知を有効化
                   try {
@@ -378,16 +378,16 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
-        <h3>{t('settings.language.title', '言語')}</h3>
+        <h3>{t('settings.language.title')}</h3>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-          {t('settings.language.description', 'アプリの表示言語を選択')}
+          {t('settings.language.description')}
         </p>
         <div className="setting-item">
           <div className="setting-item-left">
             <div className="setting-icon">
               <MdLanguage size={24} />
             </div>
-            <span className="setting-label">{t('settings.language.title', '言語')}</span>
+            <span className="setting-label">{t('settings.language.title')}</span>
           </div>
           <select
             value={settings.language || i18n.language || 'ja'}
@@ -406,14 +406,14 @@ export const SettingsScreen: React.FC = () => {
               minWidth: '150px',
             }}
           >
-            <option value="ja">{t('settings.language.japanese', '日本語')}</option>
-            <option value="en">{t('settings.language.english', 'English')}</option>
-            <option value="zh-CN">{t('settings.language.chineseSimplified', '简体中文')}</option>
-            <option value="zh-TW">{t('settings.language.chineseTraditional', '繁體中文')}</option>
-            <option value="ko">{t('settings.language.korean', '한국어')}</option>
-            <option value="vi">{t('settings.language.vietnamese', 'Tiếng Việt')}</option>
-            <option value="ru">{t('settings.language.russian', 'Русский')}</option>
-            <option value="id">{t('settings.language.indonesian', 'Bahasa Indonesia')}</option>
+            <option value="ja">{t('settings.language.japanese')}</option>
+            <option value="en">{t('settings.language.english')}</option>
+            <option value="zh-CN">{t('settings.language.chineseSimplified')}</option>
+            <option value="zh-TW">{t('settings.language.chineseTraditional')}</option>
+            <option value="ko">{t('settings.language.korean')}</option>
+            <option value="vi">{t('settings.language.vietnamese')}</option>
+            <option value="ru">{t('settings.language.russian')}</option>
+            <option value="id">{t('settings.language.indonesian')}</option>
           </select>
         </div>
       </div>

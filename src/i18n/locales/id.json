@@ -6,11 +6,31 @@
     "edit": "Edit",
     "back": "Kembali",
     "loading": "Memuat...",
+    "saving": "Menyimpan...",
+    "admin": "Admin",
     "error": "Kesalahan",
     "success": "Berhasil",
     "confirm": "Konfirmasi",
     "yes": "Ya",
-    "no": "Tidak"
+    "no": "Tidak",
+    "year": "tahun",
+    "month": "bulan",
+    "days": "hari",
+    "selectDate": "Pilih Tanggal",
+    "selectMonth": "Pilih Bulan",
+    "selectMonthYear": "Ketuk untuk memilih tahun dan bulan",
+    "select": "Silakan pilih",
+    "next": "Selanjutnya",
+    "skipAndNext": "Lewati dan lanjutkan",
+    "weekday": {
+      "sun": "Min",
+      "mon": "Sen",
+      "tue": "Sel",
+      "wed": "Rab",
+      "thu": "Kam",
+      "fri": "Jum",
+      "sat": "Sab"
+    }
   },
   "settings": {
     "title": "Pengaturan",
@@ -413,34 +433,6 @@
         "daysRemaining": " hari",
         "custom": "Kustom"
       }
-    }
-  },
-  "common": {
-    "save": "Simpan",
-    "cancel": "Batal",
-    "delete": "Hapus",
-    "edit": "Edit",
-    "back": "Kembali",
-    "loading": "Memuat...",
-    "error": "Kesalahan",
-    "success": "Berhasil",
-    "confirm": "Konfirmasi",
-    "yes": "Ya",
-    "no": "Tidak",
-    "year": " tahun ",
-    "month": " bulan",
-    "days": " hari",
-    "selectDate": "Pilih Tanggal",
-    "selectMonth": "Pilih Bulan",
-    "selectMonthYear": "Ketuk untuk memilih tahun dan bulan",
-    "weekday": {
-      "sun": "Min",
-      "mon": "Sen",
-      "tue": "Sel",
-      "wed": "Rab",
-      "thu": "Kam",
-      "fri": "Jum",
-      "sat": "Sab"
     }
   },
   "bottomNav": {

@@ -6,11 +6,31 @@
     "edit": "编辑",
     "back": "返回",
     "loading": "加载中...",
+    "saving": "保存中...",
+    "admin": "管理员",
     "error": "错误",
     "success": "成功",
     "confirm": "确认",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "year": "年",
+    "month": "月",
+    "days": "天",
+    "selectDate": "选择日期",
+    "selectMonth": "选择月份",
+    "selectMonthYear": "点击选择年月",
+    "select": "请选择",
+    "next": "下一步",
+    "skipAndNext": "跳过并继续",
+    "weekday": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    }
   },
   "settings": {
     "title": "设置",
@@ -413,34 +433,6 @@
         "daysRemaining": "天",
         "custom": "自定义"
       }
-    }
-  },
-  "common": {
-    "save": "保存",
-    "cancel": "取消",
-    "delete": "删除",
-    "edit": "编辑",
-    "back": "返回",
-    "loading": "加载中...",
-    "error": "错误",
-    "success": "成功",
-    "confirm": "确认",
-    "yes": "是",
-    "no": "否",
-    "year": "年",
-    "month": "月",
-    "days": "天",
-    "selectDate": "选择日期",
-    "selectMonth": "选择月份",
-    "selectMonthYear": "点击选择年月",
-    "weekday": {
-      "sun": "日",
-      "mon": "一",
-      "tue": "二",
-      "wed": "三",
-      "thu": "四",
-      "fri": "五",
-      "sat": "六"
     }
   },
   "bottomNav": {

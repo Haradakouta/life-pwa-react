@@ -4,6 +4,7 @@
  */
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { useTranslation } from 'react-i18next';
 import { searchProductByJAN } from '../../api/rakuten';
 import type { ProductInfo } from '../../types';
 
@@ -16,6 +17,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   onProductFound,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const videoInputDevices = await codeReader.listVideoInputDevices();
 
       if (videoInputDevices.length === 0) {
-        throw new Error('カメラが見つかりません');
+        throw new Error(t('barcode.cameraNotFound'));
       }
 
       // 外部カメラ（背面カメラ）を強制的に使用
@@ -93,7 +95,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 onProductFound(product);
                 stopScanning();
               } else {
-                setError(`商品情報が見つかりませんでした: ${code}`);
+                setError(t('barcode.productNotFound', { code }));
                 setIsProcessing(false);
                 // 3秒後にエラーをクリアして再スキャン可能にする
                 setTimeout(() => {
@@ -103,7 +105,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               }
             } catch (err) {
               console.error('商品情報取得エラー:', err);
-              setError('商品情報の取得に失敗しました');
+              setError(t('barcode.fetchFailed'));
               setIsProcessing(false);
               setTimeout(() => {
                 setError(null);
@@ -120,7 +122,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     } catch (err) {
       console.error('カメラ起動エラー:', err);
       setError(
-        err instanceof Error ? err.message : 'カメラの起動に失敗しました'
+        err instanceof Error ? err.message : t('barcode.cameraStartFailed')
       );
     }
   };
@@ -163,7 +165,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         }}
       >
         <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>
-          バーコードスキャン
+          {t('barcode.title')}
         </h2>
         <button
           onClick={handleClose}
@@ -231,7 +233,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               fontWeight: 600,
             }}
           >
-            商品情報を取得中...
+            {t('barcode.processing')}
           </div>
         )}
 
@@ -266,7 +268,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         }}
       >
         <p style={{ margin: 0, fontSize: '0.9rem', color: '#999' }}>
-          バーコードを枠内に合わせてください
+          {t('barcode.guide')}
         </p>
       </div>
     </div>

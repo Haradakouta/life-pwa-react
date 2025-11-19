@@ -6,11 +6,31 @@
     "edit": "Chỉnh sửa",
     "back": "Quay lại",
     "loading": "Đang tải...",
+    "saving": "Đang lưu...",
+    "admin": "Quản trị viên",
     "error": "Lỗi",
     "success": "Thành công",
     "confirm": "Xác nhận",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "year": "năm",
+    "month": "tháng",
+    "days": "ngày",
+    "selectDate": "Chọn ngày",
+    "selectMonth": "Chọn tháng",
+    "selectMonthYear": "Nhấn để chọn năm và tháng",
+    "select": "Vui lòng chọn",
+    "next": "Tiếp theo",
+    "skipAndNext": "Bỏ qua và tiếp theo",
+    "weekday": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    }
   },
   "settings": {
     "title": "Cài đặt",
@@ -413,34 +433,6 @@
         "daysRemaining": " ngày",
         "custom": "Tùy chỉnh"
       }
-    }
-  },
-  "common": {
-    "save": "Lưu",
-    "cancel": "Hủy",
-    "delete": "Xóa",
-    "edit": "Chỉnh sửa",
-    "back": "Quay lại",
-    "loading": "Đang tải...",
-    "error": "Lỗi",
-    "success": "Thành công",
-    "confirm": "Xác nhận",
-    "yes": "Có",
-    "no": "Không",
-    "year": " năm ",
-    "month": " tháng",
-    "days": " ngày",
-    "selectDate": "Chọn ngày",
-    "selectMonth": "Chọn tháng",
-    "selectMonthYear": "Nhấn để chọn năm và tháng",
-    "weekday": {
-      "sun": "CN",
-      "mon": "T2",
-      "tue": "T3",
-      "wed": "T4",
-      "thu": "T5",
-      "fri": "T6",
-      "sat": "T7"
     }
   },
   "bottomNav": {

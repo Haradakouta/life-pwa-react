@@ -123,7 +123,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
-        読み込み中...
+        {t('common.loading')}
       </div>
     );
   }
@@ -160,10 +160,10 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
       )}
 
       <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-        都道府県を設定
+        {t('settings.prefecture.title')}
       </h2>
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-        都道府県を選択してください（30日に1回のみ変更可能）
+        {t('settings.prefecture.description')}
       </p>
 
       {currentPrefecture && !canChange && (
@@ -180,7 +180,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
         }}>
           <MdInfo size={20} />
           <span style={{ fontSize: '14px' }}>
-            現在の都道府県: {getPrefectureByCode(currentPrefecture)?.name}。あと{daysLeft}日で変更可能です。
+            {t('settings.prefecture.currentStatus', { prefecture: getPrefectureByCode(currentPrefecture)?.name, days: daysLeft })}
           </span>
         </div>
       )}
@@ -188,7 +188,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
       <div style={{ marginBottom: '24px' }}>
         <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
           <MdLocationOn size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-          都道府県
+          {t('settings.prefecture.label')}
         </label>
         <select
           value={selectedPrefecture}
@@ -207,7 +207,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
             opacity: canChange || !currentPrefecture ? 1 : 0.6,
           }}
         >
-          <option value="">選択してください</option>
+          <option value="">{t('common.select')}</option>
           {prefectures.map((p) => (
             <option key={p.code} value={p.code}>
               {p.name}
@@ -246,7 +246,7 @@ export const PrefectureSettingScreen: React.FC<PrefectureSettingScreenProps> = (
           transition: 'all 0.2s',
         }}
       >
-        {saving ? '保存中...' : currentPrefecture ? '都道府県を変更' : '都道府県を設定'}
+        {saving ? t('common.saving') : currentPrefecture ? t('settings.prefecture.change') : t('settings.prefecture.set')}
       </button>
     </div>
   );

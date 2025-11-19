@@ -6,11 +6,31 @@
     "edit": "편집",
     "back": "뒤로",
     "loading": "로딩 중...",
+    "saving": "저장 중...",
+    "admin": "관리자",
     "error": "오류",
     "success": "성공",
     "confirm": "확인",
     "yes": "예",
-    "no": "아니오"
+    "no": "아니오",
+    "year": "년",
+    "month": "월",
+    "days": "일",
+    "selectDate": "날짜 선택",
+    "selectMonth": "월 선택",
+    "selectMonthYear": "년월을 탭하여 선택하세요",
+    "select": "선택하세요",
+    "next": "다음",
+    "skipAndNext": "건너뛰고 다음",
+    "weekday": {
+      "sun": "일",
+      "mon": "월",
+      "tue": "화",
+      "wed": "수",
+      "thu": "목",
+      "fri": "금",
+      "sat": "토"
+    }
   },
   "settings": {
     "title": "설정",
@@ -413,34 +433,6 @@
         "daysRemaining": "일",
         "custom": "사용자 정의"
       }
-    }
-  },
-  "common": {
-    "save": "저장",
-    "cancel": "취소",
-    "delete": "삭제",
-    "edit": "편집",
-    "back": "뒤로",
-    "loading": "로딩 중...",
-    "error": "오류",
-    "success": "성공",
-    "confirm": "확인",
-    "yes": "예",
-    "no": "아니오",
-    "year": "년",
-    "month": "월",
-    "days": "일",
-    "selectDate": "날짜 선택",
-    "selectMonth": "월 선택",
-    "selectMonthYear": "년월을 탭하여 선택하세요",
-    "weekday": {
-      "sun": "일",
-      "mon": "월",
-      "tue": "화",
-      "wed": "수",
-      "thu": "목",
-      "fri": "금",
-      "sat": "토"
     }
   },
   "bottomNav": {

@@ -6,12 +6,14 @@ import { adminOperations } from '../../utils/firestore';
 import { clearOperatorApiKeyCache } from '../../api/gemini';
 import { MdKey, MdVisibility, MdVisibilityOff, MdSave } from 'react-icons/md';
 import app from '../../config/firebase';
+import { useTranslation } from 'react-i18next';
 
 interface AdminScreenProps {
   onBack: () => void;
 }
 
 export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -71,55 +73,55 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
       // キャッシュをクリア
       clearOperatorApiKeyCache();
 
-      setMessage('運営者APIキーを保存しました。キャッシュをクリアしました。');
+      setMessage(t('adminPanel.apiKey.success'));
     } catch (e) {
       console.error("Error saving API key:", e);
-      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
-      setError(`APIキーの保存に失敗しました: ${errorMessage}`);
+      const errorMessage = e instanceof Error ? e.message : t('adminPanel.unknownError');
+      setError(t('adminPanel.apiKey.error', { error: errorMessage }));
     } finally {
       setLoadingApiKey(false);
     }
   };
 
   const handleDeleteAllPosts = async () => {
-    if (!window.confirm('本当にすべての投稿を削除しますか？この操作は元に戻せません。')) return;
+    if (!window.confirm(t('adminPanel.deletePosts.confirm'))) return;
     setMessage(null);
     setError(null);
     try {
       const result = await callDeleteAllPosts();
-      setMessage(`すべての投稿が削除されました: ${JSON.stringify(result.data)}`);
+      setMessage(t('adminPanel.deletePosts.success', { result: JSON.stringify(result.data) }));
     } catch (e: unknown) {
       console.error("Error deleting all posts:", e);
-      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
-      setError(`投稿の削除に失敗しました: ${errorMessage}`);
+      const errorMessage = e instanceof Error ? e.message : t('adminPanel.unknownError');
+      setError(t('adminPanel.deletePosts.error', { error: errorMessage }));
     }
   };
 
   const handleDeleteAllFollows = async () => {
-    if (!window.confirm('本当にすべてのフォロー関係を削除しますか？この操作は元に戻せません。')) return;
+    if (!window.confirm(t('adminPanel.deleteFollows.confirm'))) return;
     setMessage(null);
     setError(null);
     try {
       const result = await callDeleteAllFollows();
-      setMessage(`すべてのフォロー関係が削除されました: ${JSON.stringify(result.data)}`);
+      setMessage(t('adminPanel.deleteFollows.success', { result: JSON.stringify(result.data) }));
     } catch (e: unknown) {
       console.error("Error deleting all follows:", e);
-      const errorMessage = e instanceof Error ? e.message : '不明なエラー';
-      setError(`フォロー関係の削除に失敗しました: ${errorMessage}`);
+      const errorMessage = e instanceof Error ? e.message : t('adminPanel.unknownError');
+      setError(t('adminPanel.deleteFollows.error', { error: errorMessage }));
     }
   };
 
   if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>Loading admin panel...</div>;
+    return <div style={{ padding: '20px', textAlign: 'center' }}>{t('adminPanel.loading')}</div>;
   }
 
   if (!isAdmin) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>管理者権限がありません。</div>;
+    return <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>{t('adminPanel.noPermission')}</div>;
   }
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2 style={{ fontSize: '24px', marginBottom: '20px', color: 'var(--text)' }}>管理者パネル</h2>
+      <h2 style={{ fontSize: '24px', marginBottom: '20px', color: 'var(--text)' }}>{t('adminPanel.title')}</h2>
       {message && <div style={{ background: '#d4edda', color: '#155724', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{message}</div>}
       {error && <div style={{ background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px', marginBottom: '15px' }}>{error}</div>}
 
@@ -138,12 +140,10 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
           color: 'var(--text)'
         }}>
           <MdKey size={24} color="var(--primary)" />
-          運営者Gemini APIキー設定
+          {t('adminPanel.apiKey.title')}
         </h3>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-          全ユーザーが使用する運営者APIキーを設定します。
-          <br />
-          このAPIキーはFirestoreの`admin/config`コレクションに保存されます。
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px', whiteSpace: 'pre-line' }}>
+          {t('adminPanel.apiKey.description')}
         </p>
         <div style={{ position: 'relative', marginBottom: '12px' }}>
           <input
@@ -200,7 +200,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
           }}
         >
           <MdSave size={18} />
-          {loadingApiKey ? '保存中...' : 'APIキーを保存'}
+          {loadingApiKey ? t('adminPanel.apiKey.saving') : t('adminPanel.apiKey.save')}
         </button>
       </div>
 
@@ -218,7 +218,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
           marginBottom: '10px'
         }}
       >
-        すべての投稿を削除
+        {t('adminPanel.deletePosts.button')}
       </button>
       <button
         onClick={handleDeleteAllFollows}
@@ -233,7 +233,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
           cursor: 'pointer'
         }}
       >
-        すべてのフォロー関係を削除
+        {t('adminPanel.deleteFollows.button')}
       </button>
       <button
         onClick={onBack}
@@ -249,7 +249,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({ onBack }) => {
           marginTop: '20px'
         }}
       >
-        戻る
+        {t('common.back')}
       </button>
     </div>
   );

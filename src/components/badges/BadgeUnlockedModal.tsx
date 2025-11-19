@@ -3,10 +3,12 @@
  */
 import { useEffect, useState } from 'react';
 import { MdCheckCircle } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
 import { useBadgeStore } from '../../store';
 import { getBadgeDefinition } from '../../utils/badgeDefinitions';
 
 export function BadgeUnlockedModal() {
+  const { t } = useTranslation();
   const { newBadges, clearNewBadges } = useBadgeStore();
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -56,7 +58,7 @@ export function BadgeUnlockedModal() {
 
           <h2 className="badge-title-huge">
             <MdCheckCircle size={48} style={{ color: '#10b981', marginRight: '12px' }} />
-            バッジ獲得！
+            {t('badges.unlocked')}
           </h2>
 
           <h3 className="badge-name-huge">{badgeDef.name}</h3>
@@ -71,11 +73,11 @@ export function BadgeUnlockedModal() {
           <div className="badge-buttons-large">
             {currentBadgeIndex < newBadges.length - 1 ? (
               <button className="badge-btn-large badge-btn-next" onClick={handleNext}>
-                次へ
+                {t('badges.next')}
               </button>
             ) : (
               <button className="badge-btn-large badge-btn-ok" onClick={handleClose}>
-                OK
+                {t('badges.ok')}
               </button>
             )}
           </div>

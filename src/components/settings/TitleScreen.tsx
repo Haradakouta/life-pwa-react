@@ -16,7 +16,7 @@ interface TitleScreenProps {
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
-  const { t } = useTranslation();
+  const { } = useTranslation();
   const { user } = useAuth();
   const [userTitles, setUserTitles] = useState<UserTitle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,12 +45,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
 
   const fetchUserTitles = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const titles = await getUserTitles(user.uid);
       setUserTitles(titles);
-      
+
       // 称号チェックを実行（新しく獲得できる称号がないか確認）
       const newlyGranted = await checkAndGrantTitles(user.uid);
       if (newlyGranted.length > 0) {
@@ -68,7 +68,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
 
   const handleRefresh = async () => {
     if (!user) return;
-    
+
     setRefreshing(true);
     try {
       const newlyGranted = await checkAndGrantTitles(user.uid);
@@ -78,7 +78,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
       } else {
         alert('新しい称号はありません');
       }
-      
+
       const updatedTitles = await getUserTitles(user.uid);
       setUserTitles(updatedTitles);
     } catch (error) {
@@ -91,7 +91,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onBack }) => {
 
   const handleEquip = async (titleId: string) => {
     if (!user) return;
-    
+
     try {
       await equipTitle(user.uid, titleId);
       // 再取得

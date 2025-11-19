@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { MdClose, MdHealthAndSafety, MdSave } from 'react-icons/md';
 import { useSettingsStore } from '../../store';
 import type { WeightRecord } from '../../types/settings';
+import { useTranslation } from 'react-i18next';
 
 interface WeightInputModalProps {
   onClose: () => void;
@@ -26,7 +27,7 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
     try {
       const weightValue = Number(weight);
       const today = new Date().toISOString();
-      
+
       // 体重履歴を更新
       const weightHistory = settings.weightHistory || [];
       const newRecord: WeightRecord = {
@@ -163,6 +164,3 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
     </div>
   );
 };
-
-
-

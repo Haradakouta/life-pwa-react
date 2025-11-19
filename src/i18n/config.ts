@@ -17,41 +17,13 @@ const resources = {
   'zh-CN': { translation: zhCN },
   'zh-TW': { translation: zhTW },
   ko: { translation: ko },
-  vi: { translation: vi },
-  ru: { translation: ru },
-  id: { translation: id },
-};
-
-// 設定から言語を取得（localStorageから）
-const getStoredLanguage = (): string | undefined => {
-  try {
-    const storedSettings = localStorage.getItem('settings');
-    if (storedSettings) {
-      const settings = JSON.parse(storedSettings);
-      return settings.language;
-    }
-  } catch (error) {
-    console.error('Failed to get stored language:', error);
-  }
-  return undefined;
-};
-
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'ja',
-    // lng: getStoredLanguage() || undefined, // 削除: 自動検出に任せる
-    defaultNS: 'translation',
-    interpolation: {
-      escapeValue: false,
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'i18nextLng',
-    },
+  escapeValue: false,
+},
+  detection: {
+    order: ['localStorage', 'navigator'],
+    caches: ['localStorage'],
+    lookupLocalStorage: 'i18nextLng',
+  },
   });
 
 export default i18n;

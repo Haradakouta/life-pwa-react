@@ -159,14 +159,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // コレクション全体へのクエリを許可（ユーザーが参加している会話のみ）
     match /conversations/{conversationId} {
       function isParticipant() {
         return request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
       }
 
-      // Allow read only if the document doesn't exist yet, or if the user is a participant.
+      // コレクションクエリ用: ユーザーが参加している会話のみ読み取り可能
+      // resource.data.participants は各ドキュメントの participants 配列を参照します
+      // where('participants', 'array-contains', userId) クエリと組み合わせて使用します
+      allow list: if isAuth() && request.auth.uid in resource.data.participants;
+      
+      // 個別ドキュメントの読み取り: ドキュメントが存在しない場合、またはユーザーが参加者である場合
       // This is crucial for getOrCreateConversation to be able to check for existence.
-      allow read: if (exists(/databases/$(database)/documents/conversations/$(conversationId)) == false) || isParticipant();
+      allow get: if !exists(/databases/$(database)/documents/conversations/$(conversationId)) || isParticipant();
 
       allow create: if isAuth()
                     && request.resource.data.participants.size() == 2

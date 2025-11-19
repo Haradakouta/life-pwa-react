@@ -12,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal, Exercise } from '../types';
+import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal, Exercise, MealTemplate } from '../types';
 
 // コレクション名の定義
 const COLLECTIONS = {
@@ -24,6 +24,7 @@ const COLLECTIONS = {
   SETTINGS: 'settings',
   GOALS: 'goals',
   EXERCISES: 'exercises',
+  MEAL_TEMPLATES: 'mealTemplates',
 };
 
 // ユーザーIDベースのコレクションパスを取得
@@ -379,6 +380,42 @@ export const exerciseOperations = {
     return onSnapshot(q, (snapshot) => {
       const exercises = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Exercise));
       callback(exercises);
+    });
+  },
+};
+
+// 食事テンプレート（MealTemplate）の操作
+export const mealTemplateOperations = {
+  getAll: async (userId: string): Promise<MealTemplate[]> => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES)),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MealTemplate));
+  },
+
+  add: async (userId: string, template: Omit<MealTemplate, 'id'>) => {
+    const docRef = await addDoc(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES)),
+      template
+    );
+    return docRef.id;
+  },
+
+  delete: async (userId: string, id: string) => {
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES), id);
+    await deleteDoc(docRef);
+  },
+
+  subscribe: (userId: string, callback: (templates: MealTemplate[]) => void) => {
+    const q = query(
+      collection(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES)),
+      orderBy('createdAt', 'desc')
+    );
+    return onSnapshot(q, (snapshot) => {
+      const templates = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MealTemplate));
+      callback(templates);
     });
   },
 };

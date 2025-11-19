@@ -20,5 +20,20 @@ export interface IntakeFormData {
   calories: number;
   price: number;
   category?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  source?: 'receipt' | 'recipe' | 'manual'; // データの出所
+  source?: 'receipt' | 'recipe' | 'manual' | 'stock'; // データの出所
+}
+
+export interface MealTemplate {
+  id: string;
+  name: string;
+  calories: number;
+  price: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MealTemplateFormData {
+  name: string;
+  calories: number;
+  price: number;
 }

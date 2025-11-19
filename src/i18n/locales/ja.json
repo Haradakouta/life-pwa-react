@@ -621,7 +621,19 @@
       "dishNamePlaceholder": "例: カレーライス",
       "dishNameHint": "料理名を入力すると、カロリー計測画面が表示されます",
       "recorded": "食事を記録しました！",
-      "recordFailed": "食事記録に失敗しました"
+      "recordFailed": "食事記録に失敗しました",
+      "template": {
+        "tab": "マイセット",
+        "manualTab": "手動入力",
+        "add": "マイセットに登録",
+        "addSuccess": "マイセットに登録しました！",
+        "deleteConfirm": "このマイセットを削除しますか？",
+        "empty": "マイセットがありません",
+        "use": "記録",
+        "name": "セット名",
+        "calories": "カロリー",
+        "price": "金額"
+      }
     },
     "screen": {
       "title": "食事記録"
@@ -673,6 +685,9 @@
       "noResults": "該当する在庫がありません",
       "deleteConfirm": "この在庫を削除しますか？",
       "deleteWhenZero": "数量が0になります。在庫を削除しますか？",
+      "consume": "消費して記録",
+      "consumeConfirm": "{{name}}を消費して食事記録に追加しますか？",
+      "consumed": "「{{name}}」を消費して記録しました！",
       "addToShoppingList": "「{{name}}」を買い物リストに追加しました！",
       "addToShoppingListTitle": "買い物リストに追加",
       "deleteTitle": "削除",

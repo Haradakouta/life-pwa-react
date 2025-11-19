@@ -3,8 +3,8 @@
  */
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStockStore, useShoppingStore } from '../../store';
-import { MdDelete, MdShoppingCart, MdAdd, MdRemove, MdSearch } from 'react-icons/md';
+import { useStockStore, useShoppingStore, useIntakeStore } from '../../store';
+import { MdDelete, MdShoppingCart, MdAdd, MdRemove, MdSearch, MdRestaurant } from 'react-icons/md';
 import type { StockCategory } from '../../types';
 
 type SortOption = 'expiry' | 'name' | 'category';
@@ -13,6 +13,7 @@ export const StockList: React.FC = () => {
   const { t } = useTranslation();
   const { stocks, deleteStock, updateStock } = useStockStore();
   const { addItem } = useShoppingStore();
+  const { addIntake } = useIntakeStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('expiry');
   const [filterCategory, setFilterCategory] = useState<StockCategory | 'all'>('all');
@@ -29,6 +30,23 @@ export const StockList: React.FC = () => {
       quantity: stockQuantity,
     });
     alert(t('stock.list.addToShoppingList', { name: stockName }));
+  };
+
+  const handleConsume = async (stock: { id: string; name: string; quantity: number; price?: number }) => {
+    if (confirm(t('stock.list.consumeConfirm', { name: stock.name }))) {
+      // 食事記録に追加
+      await addIntake({
+        name: stock.name,
+        calories: 0, // カロリーは不明なので0
+        price: stock.price || 0,
+        source: 'stock',
+      });
+
+      // 在庫を減らす
+      handleQuantityChange(stock.id, stock.quantity, -1);
+      
+      alert(t('stock.list.consumed', { name: stock.name }));
+    }
   };
 
   const handleQuantityChange = (id: string, currentQuantity: number, delta: number) => {
@@ -277,6 +295,23 @@ export const StockList: React.FC = () => {
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginLeft: '12px' }}>
+                <button
+                  onClick={() => handleConsume(stock)}
+                  style={{
+                    background: '#f59e0b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={t('stock.list.consume')}
+                >
+                  <MdRestaurant size={20} />
+                </button>
                 <button
                   onClick={() => handleAddToShopping(stock.name, stock.quantity)}
                   style={{

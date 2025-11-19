@@ -10,3 +10,4 @@ export { useSettingsStore } from './useSettingsStore';
 export { useBadgeStore } from './useBadgeStore';
 export { useGoalStore } from './useGoalStore';
 export { useExerciseStore } from './useExerciseStore';
+export { useMealTemplateStore } from './useMealTemplateStore';

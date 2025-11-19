@@ -10,7 +10,7 @@ export interface Intake {
   category?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   barcode?: string; // バーコード情報
   manufacturer?: string; // メーカー名
-  source?: 'receipt' | 'recipe' | 'manual'; // データの出所（レシート/AIレシピ/手動入力）
+  source?: 'receipt' | 'recipe' | 'manual' | 'stock'; // データの出所（レシート/AIレシピ/手動入力/在庫）
   createdAt: string;
   updatedAt?: string;
 }

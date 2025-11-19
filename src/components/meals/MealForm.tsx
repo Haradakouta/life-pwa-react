@@ -5,7 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useIntakeStore, useMealTemplateStore } from '../../store';
 import { CalorieScanner } from './CalorieScanner';
-import { MdAdd, MdDelete, MdRestaurant } from 'react-icons/md';
+import { MdAdd, MdDelete } from 'react-icons/md';
+import type { MealTemplate } from '../../types';
 
 export const MealForm: React.FC = () => {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export const MealForm: React.FC = () => {
     }
   }, [name, showCalorieScanner, calories, activeTab]);
 
-  const handleCalorieScanned = async (scannedCalories: number, reasoning: string) => {
+  const handleCalorieScanned = async (scannedCalories: number) => {
     setCalories(scannedCalories.toString());
     setShowCalorieScanner(false);
     // 自動保存はせず、フォームに入力するだけにする
@@ -101,7 +102,7 @@ export const MealForm: React.FC = () => {
     }
   };
 
-  const handleUseTemplate = async (template: { name: string; calories: number; price: number }) => {
+  const handleUseTemplate = async (template: MealTemplate) => {
     try {
       await addIntake({
         name: template.name,

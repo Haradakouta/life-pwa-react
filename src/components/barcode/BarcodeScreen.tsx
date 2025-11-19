@@ -2,6 +2,7 @@
  * バーコードスキャン画面コンポーネント
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarcodeScanner } from './BarcodeScanner';
 import { ProductDisplay } from './ProductDisplay';
 import { ReceiptScanner } from './ReceiptScanner';
@@ -17,6 +18,7 @@ interface BarcodeScreenProps {
 }
 
 export const BarcodeScreen: React.FC<BarcodeScreenProps> = ({ onNavigateToStock }) => {
+  const { t } = useTranslation();
   const [scanMode, setScanMode] = useState<ScanMode>('select');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedProduct, setScannedProduct] = useState<ProductInfo | null>(null);
@@ -63,7 +65,7 @@ export const BarcodeScreen: React.FC<BarcodeScreenProps> = ({ onNavigateToStock 
 
   return (
     <section className="screen active">
-      <h2>スキャン</h2>
+      <h2>{t('barcode.screen.title')}</h2>
 
       {/* モード選択画面 */}
       {scanMode === 'select' && !isScanning && !scannedProduct && !receiptResult && (
@@ -71,10 +73,10 @@ export const BarcodeScreen: React.FC<BarcodeScreenProps> = ({ onNavigateToStock 
           <div className="card">
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MdCamera size={20} />
-              スキャンモードを選択
+              {t('barcode.screen.selectMode')}
             </h3>
             <p style={{ color: '#666', marginBottom: '20px', lineHeight: '1.6' }}>
-              バーコードまたはレシートをスキャンできます
+              {t('barcode.screen.modeDescription')}
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -96,8 +98,8 @@ export const BarcodeScreen: React.FC<BarcodeScreenProps> = ({ onNavigateToStock 
                 }}
               >
                 <MdQrCodeScanner size={48} />
-                <span>バーコード</span>
-                <span style={{ fontSize: '12px', opacity: 0.9 }}>JANコード</span>
+                <span>{t('barcode.screen.barcodeButton')}</span>
+                <span style={{ fontSize: '12px', opacity: 0.9 }}>{t('barcode.screen.barcodeSubtext')}</span>
               </button>
 
               <button
@@ -118,8 +120,8 @@ export const BarcodeScreen: React.FC<BarcodeScreenProps> = ({ onNavigateToStock 
                 }}
               >
                 <MdReceipt size={48} />
-                <span>レシート</span>
-                <span style={{ fontSize: '12px', opacity: 0.9 }}>OCR読み取り</span>
+                <span>{t('barcode.screen.receiptButton')}</span>
+                <span style={{ fontSize: '12px', opacity: 0.9 }}>{t('barcode.screen.receiptSubtext')}</span>
               </button>
             </div>
           </div>

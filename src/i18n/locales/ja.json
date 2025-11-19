@@ -558,11 +558,11 @@
       "noData": "この月の支出データがありません",
       "totalExpense": "合計支出"
     },
-      "budget": {
-        "title": "月次予算",
-        "editPrompt": "新しい月次予算を入力してください",
-        "invalidAmount": "正しい金額を入力してください",
-        "remaining": "残り ¥{{amount}}",
+    "budget": {
+      "title": "月次予算",
+      "editPrompt": "新しい月次予算を入力してください",
+      "invalidAmount": "正しい金額を入力してください",
+      "remaining": "残り ¥{{amount}}",
       "exceeded": "超過 ¥{{amount}}",
       "expense": "支出",
       "budget": "予算",
@@ -621,10 +621,10 @@
       "title": "食事を記録",
       "dishName": "料理名",
       "dishNamePlaceholder": "例: カレーライス",
-          "dishNameHint": "料理名を入力すると、カロリー計測画面が表示されます",
-          "scanCalories": "写真を撮ってカロリー計測",
-          "submit": "記録する",
-          "recorded": "食事を記録しました！",
+      "dishNameHint": "料理名を入力すると、カロリー計測画面が表示されます",
+      "scanCalories": "写真を撮ってカロリー計測",
+      "submit": "記録する",
+      "recorded": "食事を記録しました！",
       "recordFailed": "食事記録に失敗しました",
       "template": {
         "tab": "マイセット",
@@ -831,6 +831,22 @@
     "fetchFailed": "商品情報の取得に失敗しました",
     "cameraStartFailed": "カメラの起動に失敗しました",
     "processing": "商品情報を取得中...",
-    "guide": "バーコードを枠内に合わせてください"
+    "guide": "バーコードを枠内に合わせてください",
+    "screen": {
+      "title": "スキャン",
+      "selectMode": "スキャンモードを選択",
+      "modeDescription": "バーコードまたはレシートをスキャンできます",
+      "barcodeButton": "バーコード",
+      "barcodeSubtext": "JANコード",
+      "receiptButton": "レシート",
+      "receiptSubtext": "OCR読み取り"
+    },
+    "receiptScanner": {
+      "title": "レシートをスキャン",
+      "guide": "レシートを枠内に収めてください",
+      "cameraError": "カメラにアクセスできません。ファイル選択をお試しください。",
+      "ocrError": "レシートの読み取りに失敗しました",
+      "selectFile": "ファイル選択"
+    }
   }
 }

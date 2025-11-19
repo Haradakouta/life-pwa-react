@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmailV2 = void 0;
+exports.getFewShotExamples = exports.logGeminiInteraction = exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmailV2 = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -495,5 +495,72 @@ exports.deleteAllPosts = functions.https.onCall({ timeoutSeconds: 540, memory: '
     }
     console.log('Finished deleting all posts and resetting post counts.');
     return { result: 'All posts deleted successfully.' };
+});
+// BigQuery Integration
+const bigquery_1 = require("@google-cloud/bigquery");
+const bigquery = new bigquery_1.BigQuery();
+const DATASET_ID = 'gemini_logs';
+const TABLE_ID = 'interactions';
+exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' }, async (request) => {
+    // 認証チェックは行わない（未ログインユーザーも使う可能性があるため）
+    // ただし、必要に応じて制限を追加することを検討
+    var _a;
+    const { requestType, prompt, response, model, status, errorMessage, metadata, timestamp } = request.data;
+    const userId = ((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'anonymous';
+    const row = {
+        timestamp: bigquery.timestamp(new Date(timestamp || Date.now())),
+        user_id: userId,
+        request_type: requestType,
+        prompt: prompt,
+        response: response,
+        model: model,
+        status: status,
+        error_message: errorMessage || null,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+        created_at: bigquery.timestamp(new Date()),
+    };
+    try {
+        // データセットとテーブルの存在確認は省略（事前に作成されている前提）
+        // 必要であれば、createDataset / createTable を実装
+        await bigquery
+            .dataset(DATASET_ID)
+            .table(TABLE_ID)
+            .insert([row]);
+        console.log('Logged Gemini interaction to BigQuery');
+        return { success: true };
+    }
+    catch (error) {
+        console.error('Error logging to BigQuery:', error);
+        // ログ保存の失敗はクライアントにエラーとして返さない（メイン機能に影響させない）
+        return { success: false, error: 'Logging failed' };
+    }
+});
+exports.getFewShotExamples = functions.https.onCall({ region: 'us-central1' }, async (request) => {
+    const { requestType, limit = 3 } = request.data;
+    if (!requestType) {
+        throw new functions.https.HttpsError('invalid-argument', 'Request type is required');
+    }
+    const query = `
+      SELECT prompt, response
+      FROM \`${DATASET_ID}.${TABLE_ID}\`
+      WHERE request_type = @requestType
+        AND status = 'success'
+        AND error_message IS NULL
+      ORDER BY created_at DESC
+      LIMIT @limit
+    `;
+    const options = {
+        query: query,
+        params: { requestType, limit },
+    };
+    try {
+        const [rows] = await bigquery.query(options);
+        return { examples: rows };
+    }
+    catch (error) {
+        console.error('Error fetching examples from BigQuery:', error);
+        // 失敗しても空のリストを返して、メイン処理を止めない
+        return { examples: [] };
+    }
 });
 //# sourceMappingURL=index.js.map

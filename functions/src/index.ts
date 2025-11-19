@@ -47,7 +47,7 @@ sendVerificationEmailApp.post('/', async (req, res) => {
   // シークレットの確認
   const gmailEmail = process.env.GMAIL_EMAIL;
   const gmailPassword = process.env.GMAIL_APP_PASSWORD;
-  
+
   if (!gmailEmail || !gmailPassword) {
     console.error('Gmail credentials not found in environment variables');
     console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
@@ -64,11 +64,11 @@ sendVerificationEmailApp.post('/', async (req, res) => {
       pass: gmailPassword,
     },
   });
-    const mailOptions = {
-      from: '"健康家計アプリ" <noreply@life-pwa.app>',
-      to: email,
-      subject: '【健康家計アプリ】メール確認コード',
-      html: `
+  const mailOptions = {
+    from: '"健康家計アプリ" <noreply@life-pwa.app>',
+    to: email,
+    subject: '【健康家計アプリ】メール確認コード',
+    html: `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -196,7 +196,7 @@ sendVerificationEmailApp.post('/', async (req, res) => {
 </body>
 </html>
       `,
-      text: `
+    text: `
 健康家計アプリ - メール確認コード
 
 こんにちは！
@@ -229,7 +229,7 @@ AIが健康をサポートする生活管理アプリです。
 © 2025 健康家計アプリ
 https://healthfinanse.jp
       `,
-    };
+  };
 
   try {
     await transporter.sendMail(mailOptions);
@@ -270,7 +270,7 @@ export const sendPasswordResetEmail = functions.https.onCall(
     // シークレットの確認
     const gmailEmail = process.env.GMAIL_EMAIL;
     const gmailPassword = process.env.GMAIL_APP_PASSWORD;
-    
+
     if (!gmailEmail || !gmailPassword) {
       console.error('Gmail credentials not found in environment variables');
       console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
@@ -493,12 +493,12 @@ export const deleteAllFollows = functions.https.onCall({ timeoutSeconds: 540, me
     await deleteCollection(`users/${userDoc.id}/following`, 100);
     const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
     try {
-        await profileRef.update({
-            'stats.followerCount': 0,
-            'stats.followingCount': 0,
-        });
+      await profileRef.update({
+        'stats.followerCount': 0,
+        'stats.followingCount': 0,
+      });
     } catch (e) {
-        console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
+      console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
     }
   }
   console.log('Finished deleting all follow/following relationships and resetting stats.');
@@ -521,11 +521,105 @@ export const deleteAllPosts = functions.https.onCall({ timeoutSeconds: 540, memo
   for (const userDoc of usersSnapshot.docs) {
     const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
     try {
-        await profileRef.update({ 'stats.postCount': 0 });
+      await profileRef.update({ 'stats.postCount': 0 });
     } catch (e) {
-        console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
+      console.log(`Could not update stats for user ${userDoc.id}, probably stats field does not exist.`);
     }
   }
   console.log('Finished deleting all posts and resetting post counts.');
   return { result: 'All posts deleted successfully.' };
 });
+
+// BigQuery Integration
+import { BigQuery } from '@google-cloud/bigquery';
+
+const bigquery = new BigQuery();
+const DATASET_ID = 'gemini_logs';
+const TABLE_ID = 'interactions';
+
+interface GeminiLogData {
+  requestType: string;
+  prompt: string;
+  response: string;
+  model: string;
+  status: 'success' | 'error';
+  errorMessage?: string;
+  metadata?: any;
+  timestamp?: number;
+}
+
+export const logGeminiInteraction = functions.https.onCall(
+  { region: 'us-central1' },
+  async (request: functions.https.CallableRequest<GeminiLogData>) => {
+    // 認証チェックは行わない（未ログインユーザーも使う可能性があるため）
+    // ただし、必要に応じて制限を追加することを検討
+
+    const { requestType, prompt, response, model, status, errorMessage, metadata, timestamp } = request.data;
+    const userId = request.auth?.uid || 'anonymous';
+
+    const row = {
+      timestamp: bigquery.timestamp(new Date(timestamp || Date.now())),
+      user_id: userId,
+      request_type: requestType,
+      prompt: prompt,
+      response: response,
+      model: model,
+      status: status,
+      error_message: errorMessage || null,
+      metadata: metadata ? JSON.stringify(metadata) : null,
+      created_at: bigquery.timestamp(new Date()),
+    };
+
+    try {
+      // データセットとテーブルの存在確認は省略（事前に作成されている前提）
+      // 必要であれば、createDataset / createTable を実装
+
+      await bigquery
+        .dataset(DATASET_ID)
+        .table(TABLE_ID)
+        .insert([row]);
+
+      console.log('Logged Gemini interaction to BigQuery');
+      return { success: true };
+    } catch (error) {
+      console.error('Error logging to BigQuery:', error);
+      // ログ保存の失敗はクライアントにエラーとして返さない（メイン機能に影響させない）
+      return { success: false, error: 'Logging failed' };
+    }
+  }
+);
+
+export const getFewShotExamples = functions.https.onCall(
+  { region: 'us-central1' },
+  async (request: functions.https.CallableRequest<{ requestType: string; limit?: number }>) => {
+    const { requestType, limit = 3 } = request.data;
+
+    if (!requestType) {
+      throw new functions.https.HttpsError('invalid-argument', 'Request type is required');
+    }
+
+    const query = `
+      SELECT prompt, response
+      FROM \`${DATASET_ID}.${TABLE_ID}\`
+      WHERE request_type = @requestType
+        AND status = 'success'
+        AND error_message IS NULL
+      ORDER BY created_at DESC
+      LIMIT @limit
+    `;
+
+    const options = {
+      query: query,
+      params: { requestType, limit },
+    };
+
+    try {
+      const [rows] = await bigquery.query(options);
+      return { examples: rows };
+    } catch (error) {
+      console.error('Error fetching examples from BigQuery:', error);
+      // 失敗しても空のリストを返して、メイン処理を止めない
+      return { examples: [] };
+    }
+  }
+);

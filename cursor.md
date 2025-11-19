@@ -192,7 +192,8 @@ life-pwa-react/
   - **プロジェクトID:** `oshi-para`
   - **リージョン:** `us-central1`（Cloud Functions）
   - **プラン:** Blaze（従量課金制）
-- **Cloud Functions v2** - Node.js 20, Express, CORS, Nodemailer
+- **Cloud Functions v2** - Node.js 20, Express, CORS, Nodemailer, BigQuery Client
+- **BigQuery** - Gemini APIログの蓄積・分析（データセット: `gemini_logs`, テーブル: `interactions`）
 - **Secret Manager** - 環境変数管理（GMAIL_EMAIL, GMAIL_APP_PASSWORD）
 
 ### 外部API
@@ -207,6 +208,9 @@ life-pwa-react/
   - **エラーハンドリング:**
     - 429エラー時に自動リトライ（最大1回、retry-afterヘッダーに基づく待機時間）
     - 403エラー時はユーザーにエラーメッセージを表示
+  - **ログ記録:**
+    - 全インタラクションをBigQueryに記録（`logGeminiInteraction`）
+    - Few-shot Prompting用に過去の成功例を取得（`getFewShotExamples`）
 - **楽天市場商品検索API** - バーコードスキャン
 - **JAN Code Lookup API** - バーコードスキャン
 - **Open Food Facts API** - バーコードスキャン
@@ -347,6 +351,8 @@ firebase deploy --only storage
 ### `functions/src/index.ts`
 - Cloud Functions定義
 - **メール送信:** `sendVerificationEmailV2`（onRequest, Express, CORS）
+- **Geminiログ記録:** `logGeminiInteraction`（onCall） - BigQueryへの非同期ログ記録
+- **Few-shot例取得:** `getFewShotExamples`（onCall） - BigQueryから成功例を取得
 - **シークレット:** `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`
 - **リージョン:** `us-central1`
 
@@ -472,7 +478,10 @@ firebase deploy --only storage
 - **リージョン:** `us-central1`
 - **ランタイム:** Node.js 20
 - **シークレット:** `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`
-- **関数:** `sendVerificationEmailV2`（onRequest, Express, CORS）
+- **関数:** 
+  - `sendVerificationEmailV2`（onRequest, Express, CORS）
+  - `logGeminiInteraction`（onCall）
+  - `getFewShotExamples`（onCall）
 - **CORS設定:** `https://haradakouta.github.io`, `http://localhost:5173`
 
 ### Firestore

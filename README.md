@@ -125,7 +125,8 @@
 - **Firebase Authentication** - ユーザー認証
 - **Firestore Database** - NoSQLクラウドデータベース
 - **Firebase Storage** - 画像アップロード
-- **Cloud Functions (v2)** - メール送信（Nodemailer + Gmail SMTP）
+- **Cloud Functions (v2)** - メール送信（Nodemailer + Gmail SMTP）、BigQueryログ記録
+- **BigQuery** - AIインタラクションログの分析・蓄積
 - **Secret Manager** - 環境変数管理
 
 ---
@@ -304,7 +305,6 @@ life-pwa-react/
 ├── package.json
 ├── README.md                   # このファイル
 ├── README_EMAIL_SETUP.md       # メール設定手順
-├── GEMINI.md                   # Gemini API情報
 ├── cursor.md                   # 開発用メモ（AIコーディング用）
 └── .github/workflows/
     └── deploy.yml              # GitHub Actions デプロイワークフロー
@@ -485,6 +485,8 @@ location.reload();
 - ✅ **ユーザーAPIキー設定** - 設定画面で各自のGemini APIキーを設定可能
 - ✅ **自動リトライ機能** - 429エラー時に自動的に再試行（約37秒後）
 - ✅ **無料プラン対応** - `gemini-2.5-flash-lite`モデルを使用して無料プランでも利用可能
+- ✅ **BigQuery統合** - Gemini APIのログ記録とFew-shot Promptingによる精度向上
+- ✅ **バーコード機能の多言語化** - スキャン画面、結果画面の日本語化完了
 
 ## 🎯 今後の予定
 

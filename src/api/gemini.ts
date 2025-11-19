@@ -7,6 +7,7 @@
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
 import { useSettingsStore } from '../store';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 // レシートOCR用の型定義
 export interface ReceiptItem {
@@ -200,6 +201,72 @@ async function retryOn429<T>(
 }
 
 /**
+ * Geminiのやり取りをログに記録（非同期・Fire-and-Forget）
+ */
+const logInteraction = (
+  requestType: string,
+  prompt: string,
+  response: string,
+  model: string,
+  status: 'success' | 'error',
+  errorMessage?: string,
+  metadata?: any
+) => {
+  try {
+    const functions = getFunctions();
+    const logGeminiInteraction = httpsCallable(functions, 'logGeminiInteraction');
+    logGeminiInteraction({
+      requestType,
+      prompt,
+      response,
+      model,
+      status,
+      errorMessage,
+      metadata,
+      timestamp: Date.now(),
+    }).catch((err) => {
+      console.warn('[Gemini] Logging failed (background):', err);
+    });
+  } catch (err) {
+    console.warn('[Gemini] Logging initialization failed:', err);
+  }
+};
+
+/**
+ * 過去の成功例を取得（Few-shot Prompting用）
+ */
+const fetchExamples = async (requestType: string): Promise<string> => {
+  try {
+    const functions = getFunctions();
+    const getFewShotExamples = httpsCallable(functions, 'getFewShotExamples');
+
+    // タイムアウトを設定（例取得に時間がかかりすぎてUXを損なわないように）
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), 2000)
+    );
+
+    const resultPromise = getFewShotExamples({ requestType, limit: 2 });
+
+    const result = await Promise.race([resultPromise, timeoutPromise]) as any;
+    const examples = result.data.examples || [];
+
+    if (examples.length === 0) return '';
+
+    let examplesText = '\n\n【出力例（参考）】\n以下の形式とトーンを参考にしてください。\n';
+    examples.forEach((ex: any, index: number) => {
+      // プロンプトが長くなりすぎないように、例の長さを制限するなどの処理が必要かも
+      examplesText += `\n--- 例 ${index + 1} ---\nAI: ${ex.response}\n`;
+    });
+
+    console.log(`[Gemini] Fetched ${examples.length} few-shot examples`);
+    return examplesText;
+  } catch (err) {
+    console.warn('[Gemini] Failed to fetch examples (skipping):', err);
+    return '';
+  }
+};
+
+/**
  * 材料からレシピを生成（内部実装：指定されたAPIキーで試行）
  */
 /**
@@ -251,6 +318,9 @@ async function generateRecipeFromStockWithKey(
       return info;
     }).join('\n');
 
+    // 過去の成功例を取得
+    const examples = await fetchExamples('recipe_from_stock');
+
     const prompt = `
 あなたは日本語で答えるプロの料理アドバイザーです。
 必ず日本語で回答してください。英語は使わないでください。
@@ -281,6 +351,7 @@ ${stockList}
 【ポイント】
 （料理のコツやアドバイス）
 ---
+${examples}
 
 在庫から使える材料を最大限活用したレシピを提案してください。
 `;
@@ -350,9 +421,36 @@ ${stockList}
       'レシピの生成に失敗しました。';
 
     console.log('[Gemini] レシピ生成成功', { length: recipeText.length });
+
+    // ログ記録（成功）
+    logInteraction(
+      'recipe_from_stock',
+      prompt,
+      recipeText,
+      'gemini-2.5-flash-lite',
+      'success',
+      undefined,
+      { stockCount: stockItems.length, dietaryRestriction, difficulty, customRequest }
+    );
+
     return recipeText;
   } catch (error) {
     console.error('[Gemini] レシピ生成エラー', error);
+
+    // ログ記録（エラー）
+    // prompt変数がスコープ外になる可能性があるため、tryブロック内で定義するか、ここで再構築する必要があるが、
+    // 簡易的にエラーのみ記録するか、構造を見直す。
+    // ここではエラー発生時の詳細なコンテキストがないため、最低限の情報を記録
+    logInteraction(
+      'recipe_from_stock',
+      'ERROR_DURING_GENERATION', // プロンプトは取得できない場合がある
+      '',
+      'gemini-2.5-flash-lite',
+      'error',
+      error instanceof Error ? error.message : String(error),
+      { stockCount: stockItems.length, dietaryRestriction, difficulty, customRequest }
+    );
+
     throw error;
   }
 }
@@ -395,6 +493,9 @@ async function generateRecipeWithKey(
       ? `\n\n**追加のリクエスト**: ${customRequest}`
       : '';
 
+    // 過去の成功例を取得
+    const examples = await fetchExamples('recipe');
+
     const prompt = `
 あなたは日本語で答えるプロの料理アドバイザーです。
 必ず日本語で回答してください。英語は使わないでください。
@@ -421,6 +522,7 @@ async function generateRecipeWithKey(
 【ポイント】
 （料理のコツやアドバイス）
 ---
+${examples}
 `.trim();
 
     // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
@@ -538,6 +640,18 @@ async function generateRecipeWithKey(
       if (candidate.content?.parts && candidate.content.parts.length > 0) {
         const text = candidate.content.parts[0].text;
         console.log('[Gemini] レシピ生成成功');
+
+        // ログ記録（成功）
+        logInteraction(
+          'recipe',
+          prompt,
+          text.trim(),
+          'gemini-2.5-flash-lite',
+          'success',
+          undefined,
+          { ingredients, dietaryRestriction, difficulty, customRequest }
+        );
+
         return text.trim();
       }
     }
@@ -552,6 +666,17 @@ async function generateRecipeWithKey(
       errorStack: error instanceof Error ? error.stack : undefined,
       hasStatus: error instanceof Error && 'status' in error,
     });
+
+    // ログ記録（エラー）
+    logInteraction(
+      'recipe',
+      'ERROR_DURING_GENERATION',
+      '',
+      'gemini-2.5-flash-lite',
+      'error',
+      error instanceof Error ? error.message : String(error),
+      { ingredients, dietaryRestriction, difficulty, customRequest }
+    );
 
     // ネットワークエラーなどの場合、statusプロパティがない可能性がある
     if (error instanceof Error && !('status' in error)) {

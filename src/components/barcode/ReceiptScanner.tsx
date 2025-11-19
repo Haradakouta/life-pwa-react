@@ -2,6 +2,7 @@
  * レシートスキャナーコンポーネント
  */
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { scanReceipt, type ReceiptOCRResult } from '../../api/gemini';
 import { MdCamera, MdClose, MdPhotoCamera } from 'react-icons/md';
 
@@ -14,6 +15,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
   onReceiptScanned,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +37,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
       }
     } catch (err) {
       console.error('カメラアクセスエラー:', err);
-      setError('カメラにアクセスできません。ファイル選択をお試しください。');
+      setError(t('barcode.receiptScanner.cameraError'));
     }
   };
 
@@ -94,7 +96,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
       onReceiptScanned(result);
     } catch (err: any) {
       console.error('OCRエラー:', err);
-      setError(err.message || 'レシートの読み取りに失敗しました');
+      setError(err.message || t('barcode.receiptScanner.ocrError'));
     } finally {
       setIsProcessing(false);
     }
@@ -119,7 +121,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
       onReceiptScanned(result);
     } catch (err: any) {
       console.error('OCRエラー:', err);
-      setError(err.message || 'レシートの読み取りに失敗しました');
+      setError(err.message || t('barcode.receiptScanner.ocrError'));
     } finally {
       setIsProcessing(false);
     }
@@ -156,7 +158,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
           alignItems: 'center',
         }}
       >
-        <h3 style={{ color: 'white', margin: 0 }}>レシートをスキャン</h3>
+        <h3 style={{ color: 'white', margin: 0 }}>{t('barcode.receiptScanner.title')}</h3>
         <button
           onClick={handleClose}
           style={{
@@ -214,7 +216,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            レシートを枠内に収めてください
+            {t('barcode.receiptScanner.guide')}
           </div>
         </div>
 
@@ -275,7 +277,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
           }}
         >
           <MdPhotoCamera size={20} />
-          ファイル選択
+          {t('barcode.receiptScanner.selectFile')}
         </button>
 
         <button

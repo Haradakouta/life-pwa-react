@@ -16,11 +16,27 @@ const calculateBMI = (height: number, weight: number): number => {
 };
 
 export const SummaryCard: React.FC = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { getTotalCaloriesByDate } = useIntakeStore();
   const { getTotalByMonth } = useExpenseStore();
   const { settings } = useSettingsStore();
   const [isVisible, setIsVisible] = useState(false);
+  
+  // 言語変更を監視して再レンダリング
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsVisible((prev) => !prev);
+      setTimeout(() => setIsVisible((prev) => !prev), 0);
+    };
+    
+    window.addEventListener('i18n:languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('i18n:languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   // 今日のカロリー
   const todayCalories = useMemo(() => {

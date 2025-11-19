@@ -58,6 +58,7 @@ function App() {
   const [syncing, setSyncing] = useState(false);
   const [showPrefectureSetting, setShowPrefectureSetting] = useState(false);
   const [showWeightInputModal, setShowWeightInputModal] = useState(false);
+  const [, forceUpdate] = useState({});
 
   const intakeStore = useIntakeStore();
   const expenseStore = useExpenseStore();
@@ -80,6 +81,11 @@ function App() {
         i18n.changeLanguage(language).then(() => {
           // 言語変更後に強制的に再レンダリングをトリガー
           window.dispatchEvent(new Event('languagechange'));
+          window.dispatchEvent(new Event('i18n:languageChanged'));
+          // 強制的に再レンダリング
+          forceUpdate({});
+        }).catch((error) => {
+          console.error('Failed to change language:', error);
         });
       }
       document.documentElement.lang = language;

@@ -52,7 +52,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       if ('language' in updates) {
         const language = updates.language || 'ja';
         if (i18n.language !== language) {
-          i18n.changeLanguage(language);
+          i18n.changeLanguage(language).then(() => {
+            // 言語変更後に強制的に再レンダリングをトリガー
+            window.dispatchEvent(new Event('languagechange'));
+            // すべてのコンポーネントを強制的に再レンダリング
+            if (window.dispatchEvent) {
+              window.dispatchEvent(new Event('i18n:languageChanged'));
+            }
+          }).catch((error) => {
+            console.error('Failed to change language:', error);
+          });
         }
         // HTMLのlang属性も更新
         document.documentElement.lang = language;
@@ -137,7 +146,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         // 言語を適用（確実に適用する）
         const language = firestoreSettings.language || 'ja';
         if (i18n.language !== language) {
-          i18n.changeLanguage(language);
+          i18n.changeLanguage(language).then(() => {
+            // 言語変更後に強制的に再レンダリングをトリガー
+            window.dispatchEvent(new Event('languagechange'));
+            window.dispatchEvent(new Event('i18n:languageChanged'));
+          }).catch((error) => {
+            console.error('Failed to change language:', error);
+          });
         }
         document.documentElement.lang = language;
       } else {
@@ -149,7 +164,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         // 言語を適用（確実に適用する）
         const language = currentSettings.language || 'ja';
         if (i18n.language !== language) {
-          i18n.changeLanguage(language);
+          i18n.changeLanguage(language).then(() => {
+            // 言語変更後に強制的に再レンダリングをトリガー
+            window.dispatchEvent(new Event('languagechange'));
+            window.dispatchEvent(new Event('i18n:languageChanged'));
+          }).catch((error) => {
+            console.error('Failed to change language:', error);
+          });
         }
         document.documentElement.lang = language;
 

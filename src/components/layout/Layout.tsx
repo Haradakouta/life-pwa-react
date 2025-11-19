@@ -51,10 +51,26 @@ const ScreenLoader: React.FC = () => {
 };
 
 export const Layout: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // 言語変更を監視して再レンダリング
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // 強制的に再レンダリング
+      setCurrentScreen((prev) => prev);
+    };
+    
+    window.addEventListener('i18n:languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('i18n:languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   // 画面遷移アニメーション
   useEffect(() => {

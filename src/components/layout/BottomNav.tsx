@@ -17,7 +17,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [dmUnreadCount, setDmUnreadCount] = useState(0);
@@ -57,7 +57,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate 
     { screen: 'report', icon: <FiBarChart2 size={24} />, label: t('bottomNav.report') },
     { screen: 'social', icon: <MdPeople size={24} />, label: t('bottomNav.social') },
     { screen: 'settings', icon: <FiSettings size={24} />, label: t('bottomNav.settings') },
-  ], [t]);
+  ], [t, i18n.language]);
 
   const handleNavClick = useCallback((screen: Screen) => {
     onNavigate(screen);

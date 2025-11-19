@@ -31,7 +31,7 @@ interface FunctionCard {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigate }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [, startTransition] = useTransition();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -102,7 +102,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
       label: t('quickActions.settings'),
       color: '#64748b',
     },
-  ], [t]);
+  ], [t, i18n.language]);
 
         const handleClick = useCallback((card: FunctionCard) => {
     startTransition(() => {

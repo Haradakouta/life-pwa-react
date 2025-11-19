@@ -304,6 +304,26 @@
       "create": "目標を作成"
     }
   },
+  "dashboard": {
+    "title": "ホーム",
+    "subtitle": "健康と家計を管理"
+  },
+  "screens": {
+    "home": "ホーム",
+    "meals": "食事記録",
+    "barcode": "バーコードスキャン",
+    "report": "レポート",
+    "social": "ソーシャル",
+    "settings": "設定",
+    "stock": "在庫管理",
+    "shopping": "買い物リスト",
+    "recipe": "AIレシピ",
+    "expense": "家計簿",
+    "badges": "アチーブメント",
+    "admin": "管理者パネル",
+    "goals": "目標管理",
+    "exercise": "運動記録"
+  },
   "summary": {
     "todayCalories": "今日のカロリー",
     "monthExpense": "今月の支出",

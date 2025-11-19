@@ -95,7 +95,7 @@ export const GoalsScreen: React.FC = () => {
     try {
       await useGoalStore.getState().deleteGoal(goalId);
     } catch (error) {
-      console.error('目標の削除に失敗しました:', error);
+      console.error('Failed to delete goal:', error);
       alert(t('goals.deleteFailed'));
     }
   };

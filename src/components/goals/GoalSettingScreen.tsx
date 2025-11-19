@@ -111,7 +111,7 @@ export const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({ onBack, ed
         onBack();
       });
     } catch (error) {
-      console.error('目標の保存に失敗しました:', error);
+      console.error('Failed to save goal:', error);
       alert(t('goals.setting.saveFailed'));
     }
   };

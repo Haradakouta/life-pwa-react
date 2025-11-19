@@ -24,8 +24,17 @@ const getStoredLanguage = (): string | undefined => {
 
 const initialLanguage = getStoredLanguage();
 if (initialLanguage) {
-  i18n.changeLanguage(initialLanguage);
-  document.documentElement.lang = initialLanguage;
+  i18n.changeLanguage(initialLanguage).then(() => {
+    document.documentElement.lang = initialLanguage;
+    // 言語変更イベントを発火
+    window.dispatchEvent(new Event('languagechange'));
+    window.dispatchEvent(new Event('i18n:languageChanged'));
+  }).catch((error) => {
+    console.error('Failed to change language:', error);
+  });
+} else {
+  // デフォルト言語を設定
+  document.documentElement.lang = 'ja';
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

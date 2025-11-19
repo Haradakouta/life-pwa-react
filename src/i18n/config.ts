@@ -37,6 +37,14 @@ i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },
+    react: {
+      useSuspense: false, // Suspenseを使わない（エラーを防ぐ）
+    },
   });
+
+// 言語変更イベントをリッスンして、すべてのコンポーネントを再レンダリング
+i18n.on('languageChanged', () => {
+  window.dispatchEvent(new Event('i18n:languageChanged'));
+});
 
 export default i18n;

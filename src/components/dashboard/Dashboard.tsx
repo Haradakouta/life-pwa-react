@@ -2,7 +2,7 @@
  * Dashboard画面コンポーネント
  * React 19の機能を活用したモダンなUI
  */
-import React, { useTransition, Suspense, lazy } from 'react';
+import React, { useTransition, Suspense, lazy, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SummaryCard } from './SummaryCard';
 import { QuickActions } from './QuickActions';
@@ -31,8 +31,24 @@ const SummaryCardSkeleton: React.FC = () => (
 );
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isPending, startTransition] = useTransition();
+  
+  // 言語変更を監視して再レンダリング
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // 強制的に再レンダリング
+      startTransition(() => {});
+    };
+    
+    window.addEventListener('i18n:languageChanged', handleLanguageChange);
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('i18n:languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n, startTransition]);
 
   const handleNavigate = React.useCallback((screen: Screen) => {
     startTransition(() => {

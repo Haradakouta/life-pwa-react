@@ -5,13 +5,13 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import { useSettingsStore } from '../../store/useSettingsStore';
-import { MdTrendingUp, MdWarning, MdCheckCircle, MdCalendarToday } from 'react-icons/md';
+import { MdTrendingUp, MdWarning, MdCheckCircle, MdCalendarToday, MdEdit } from 'react-icons/md';
 import { MonthPickerModal } from '../common/MonthPickerModal';
 
 export const BudgetProgress: React.FC = () => {
   const { t } = useTranslation();
   const { getTotalByMonth } = useExpenseStore();
-  const { settings } = useSettingsStore();
+  const { settings, updateSettings } = useSettingsStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
@@ -43,9 +43,41 @@ export const BudgetProgress: React.FC = () => {
     setSelectedMonth(month);
   };
 
+  const handleEditBudget = async () => {
+    const currentBudget = settings.monthlyBudget ?? 30000;
+    const input = prompt(t('expense.budget.editPrompt', '新しい月次予算を入力してください'), currentBudget.toString());
+    
+    if (input !== null) {
+      const newBudget = parseInt(input, 10);
+      if (!isNaN(newBudget) && newBudget > 0) {
+        await updateSettings({ monthlyBudget: newBudget });
+      } else {
+        alert(t('expense.budget.invalidAmount', '正しい金額を入力してください'));
+      }
+    }
+  };
+
   return (
     <div className="card">
-      <h3 style={{ marginBottom: '15px' }}>{t('expense.budget.title')}</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h3 style={{ margin: 0 }}>{t('expense.budget.title')}</h3>
+        <button
+          onClick={handleEditBudget}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--primary)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '14px',
+          }}
+        >
+          <MdEdit size={18} />
+          {t('common.edit')}
+        </button>
+      </div>
 
       <button
         onClick={() => setIsMonthPickerOpen(true)}

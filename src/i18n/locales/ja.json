@@ -558,9 +558,11 @@
       "noData": "この月の支出データがありません",
       "totalExpense": "合計支出"
     },
-    "budget": {
-      "title": "月次予算",
-      "remaining": "残り ¥{{amount}}",
+      "budget": {
+        "title": "月次予算",
+        "editPrompt": "新しい月次予算を入力してください",
+        "invalidAmount": "正しい金額を入力してください",
+        "remaining": "残り ¥{{amount}}",
       "exceeded": "超過 ¥{{amount}}",
       "expense": "支出",
       "budget": "予算",

@@ -75,12 +75,8 @@ function getOperatorApiKey(): string | null {
   }
 
   // デフォルト値（フォールバック）
-  const defaultKey = 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
-  if (!cachedOperatorApiKey || cachedOperatorApiKey !== defaultKey) {
-    cachedOperatorApiKey = defaultKey;
-    cacheTimestamp = now;
-  }
-  return defaultKey;
+  // セキュリティのためハードコードされたキーは削除
+  return null;
 }
 
 /**

@@ -42,7 +42,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'ja',
-    lng: getStoredLanguage() || undefined, // 設定から言語を読み込む
+    // lng: getStoredLanguage() || undefined, // 削除: 自動検出に任せる
     defaultNS: 'translation',
     interpolation: {
       escapeValue: false,

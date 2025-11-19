@@ -4,6 +4,7 @@
 import React from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import type { Screen } from './BottomNav';
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   title: string;
@@ -12,9 +13,10 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ title, currentScreen, onNavigate }) => {
+  const { t } = useTranslation();
   // ホーム画面以外で戻るボタンを表示
   const showBackButton = currentScreen !== 'home';
-  
+
   return (
     <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
       {showBackButton && (
@@ -59,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ title, currentScreen, onNavigate
           fontSize: '12px',
         }}
       >
-        Admin
+        {t('common.admin', '管理者')}
       </button>
     </header>
   );

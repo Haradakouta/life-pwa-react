@@ -82,7 +82,7 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
         >
           <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <MdHealthAndSafety size={24} color="var(--primary)" />
-            週次体重記録
+            {t('settings.health.weeklyRecordTitle')}
           </h3>
           <button
             onClick={onClose}
@@ -93,15 +93,15 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
         </div>
 
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          毎週月曜日に体重を記録することで、健康管理に役立ちます。
+          {t('settings.health.weeklyRecordDescription')}
         </p>
 
-        <label>体重（kg）</label>
+        <label>{t('settings.health.weightLabel')}</label>
         <input
           type="number"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="例: 65.5"
+          placeholder={t('settings.health.weightPlaceholder')}
           min="1"
           max="300"
           step="0.1"
@@ -139,7 +139,7 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
               fontWeight: 600,
             }}
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -157,7 +157,7 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
             }}
           >
             <MdSave size={18} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-            {saving ? '保存中...' : '保存'}
+            {saving ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </div>

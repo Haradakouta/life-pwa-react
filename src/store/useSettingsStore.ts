@@ -27,15 +27,8 @@ const defaultSettings: Settings = {
 // 初期設定を取得
 const initialSettings = { ...defaultSettings, ...getFromStorage(STORAGE_KEYS.SETTINGS, defaultSettings) };
 
-// 初期言語を適用
-if (initialSettings.language) {
-  i18n.changeLanguage(initialSettings.language);
-  document.documentElement.lang = initialSettings.language;
-} else {
-  // デフォルト言語を設定
-  i18n.changeLanguage('ja');
-  document.documentElement.lang = 'ja';
-}
+// 初期言語の適用は i18n/config.ts の LanguageDetector に任せる
+// ここでの強制適用は削除し、競合を防ぐ
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: initialSettings,
@@ -73,7 +66,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       try {
         const currentSettings = get().settings;
         await settingsOperations.set(user.uid, currentSettings);
-        
+
         // 体重目標の進捗を自動更新（体重が変更された場合）
         if ('weight' in updates) {
           try {
@@ -152,14 +145,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         console.log(`[SettingsStore] No settings found, using defaults`);
         const currentSettings = get().settings;
         await settingsOperations.set(user.uid, currentSettings);
-        
+
         // 言語を適用（確実に適用する）
         const language = currentSettings.language || 'ja';
         if (i18n.language !== language) {
           i18n.changeLanguage(language);
         }
         document.documentElement.lang = language;
-        
+
         set({ loading: false, initialized: true });
       }
     } catch (error) {

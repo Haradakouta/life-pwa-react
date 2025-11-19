@@ -6,6 +6,8 @@
     "edit": "編集",
     "back": "戻る",
     "loading": "読み込み中...",
+    "saving": "保存中...",
+    "admin": "管理者",
     "error": "エラー",
     "success": "成功",
     "confirm": "確認",
@@ -89,7 +91,11 @@
       "saveFailed": "健康情報の保存に失敗しました",
       "weightRequired": "体重を入力してください",
       "weightRecorded": "体重を記録しました！",
-      "weightSaveFailed": "体重の保存に失敗しました"
+      "weightSaveFailed": "体重の保存に失敗しました",
+      "weeklyRecordTitle": "週次体重記録",
+      "weeklyRecordDescription": "毎週月曜日に体重を記録することで、健康管理に役立ちます。",
+      "weightLabel": "体重（kg）",
+      "weightPlaceholder": "例: 65.5"
     },
     "ai": {
       "title": "AI設定（Gemini API）",
@@ -214,7 +220,79 @@
       "all": "目標がありません",
       "suggestion": "最初の目標を設定してみましょう！"
     },
-    "deleteFailed": "目標の削除に失敗しました"
+    "deleteFailed": "目標の削除に失敗しました",
+    "setting": {
+      "title": "目標設定",
+      "editTitle": "目標を編集",
+      "newTitle": "新しい目標",
+      "type": "目標タイプ",
+      "calorie": {
+        "label": "カロリー目標",
+        "unit": "kcal",
+        "description": "1日の目標カロリーを設定"
+      },
+      "budget": {
+        "label": "予算目標",
+        "unit": "円",
+        "description": "月次または週次の予算を設定"
+      },
+      "weight": {
+        "label": "体重目標",
+        "unit": "kg",
+        "description": "目標体重を設定"
+      },
+      "exercise": {
+        "label": "運動目標",
+        "unit": "分",
+        "description": "1日の運動時間を設定"
+      },
+      "titleLabel": "タイトル",
+      "descriptionLabel": "説明（オプション）",
+      "targetValueLabel": "目標値",
+      "periodLabel": "期間",
+      "required": "タイトルと目標値を入力してください",
+      "saveFailed": "目標の保存に失敗しました"
+    },
+    "progress": {
+      "achieved": "達成！",
+      "budgetExceeded": "予算超過",
+      "budgetLow": "予算残りわずか",
+      "onTrack": "順調",
+      "inProgress": "進行中",
+      "paceUp": "ペースアップ",
+      "needEffort": "要努力",
+      "deleteConfirm": "この目標を削除しますか？",
+      "current": "現在",
+      "target": "目標",
+      "exceeded": "超過",
+      "remaining": "残り",
+      "daysRemaining": "残り日数",
+      "dailyAverage": "1日平均",
+      "estimatedDate": "予測達成日",
+      "period": {
+        "day": "1日",
+        "week": "1週間",
+        "month": "1ヶ月",
+        "daysRemaining": "日間",
+        "custom": "カスタム"
+      }
+    },
+    "progressCard": {
+      "current": "現在:",
+      "target": "目標:",
+      "exceeded": "超過:",
+      "remaining": "残り:",
+      "daysRemaining": "残り日数",
+      "dailyAverage": "1日平均",
+      "predictedDate": "予測達成日"
+    },
+    "settingScreen": {
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "select": "選択してください",
+      "update": "更新",
+      "create": "目標を作成"
+    }
   },
   "summary": {
     "todayCalories": "今日のカロリー",
@@ -426,7 +504,32 @@
       "expenseRecorded": "支出を記録しました！",
       "incomeRecorded": "収入を記録しました！"
     },
-    "dateFormat": "年{{month}}月{{day}}日"
+    "dateFormat": "年{{month}}月{{day}}日",
+    "list": {
+      "deleteConfirm": "この支出を削除しますか？",
+      "noData": "この月の収支はまだありません"
+    },
+    "screen": {
+      "title": "家計簿",
+      "history": "支出履歴"
+    },
+    "summary": {
+      "title": "カテゴリ別集計",
+      "noData": "この月の支出データがありません",
+      "totalExpense": "合計支出"
+    },
+    "budget": {
+      "title": "月次予算",
+      "remaining": "残り ¥{{amount}}",
+      "exceeded": "超過 ¥{{amount}}",
+      "expense": "支出",
+      "budget": "予算",
+      "status": {
+        "exceeded": "予算超過",
+        "low": "予算残りわずか",
+        "onTrack": "順調"
+      }
+    }
   },
   "shopping": {
     "screen": {
@@ -560,38 +663,6 @@
       "safe": "✅ 安全"
     }
   },
-  "expense": {
-    "list": {
-      "deleteConfirm": "この支出を削除しますか？",
-      "noData": "この月の収支はまだありません"
-    },
-    "screen": {
-      "title": "家計簿",
-      "history": "支出履歴"
-    },
-    "summary": {
-      "title": "カテゴリ別集計",
-      "noData": "この月の支出データがありません",
-      "totalExpense": "合計支出"
-    },
-    "budget": {
-      "title": "月次予算",
-      "remaining": "残り ¥{{amount}}",
-      "exceeded": "超過 ¥{{amount}}",
-      "expense": "支出",
-      "budget": "予算",
-      "status": {
-        "exceeded": "予算超過",
-        "low": "予算残りわずか",
-        "onTrack": "順調"
-      }
-    }
-  },
-  "shopping": {
-    "screen": {
-      "title": "買い物リスト"
-    }
-  },
   "recipe": {
     "generator": {
       "title": "レシピ生成",
@@ -655,80 +726,5 @@
       "expiryDays": "期限まで: {{days}}日",
       "addSelected": "選択した材料を追加"
     }
-  },
-  "goals": {
-    "setting": {
-      "title": "目標設定",
-      "editTitle": "目標を編集",
-      "newTitle": "新しい目標",
-      "type": "目標タイプ",
-      "calorie": {
-        "label": "カロリー目標",
-        "unit": "kcal",
-        "description": "1日の目標カロリーを設定"
-      },
-      "budget": {
-        "label": "予算目標",
-        "unit": "円",
-        "description": "月次または週次の予算を設定"
-      },
-      "weight": {
-        "label": "体重目標",
-        "unit": "kg",
-        "description": "目標体重を設定"
-      },
-      "exercise": {
-        "label": "運動目標",
-        "unit": "分",
-        "description": "1日の運動時間を設定"
-      },
-      "titleLabel": "タイトル",
-      "descriptionLabel": "説明（オプション）",
-      "targetValueLabel": "目標値",
-      "periodLabel": "期間",
-      "required": "タイトルと目標値を入力してください",
-      "saveFailed": "目標の保存に失敗しました"
-    },
-    "progress": {
-      "achieved": "達成！",
-      "budgetExceeded": "予算超過",
-      "budgetLow": "予算残りわずか",
-      "onTrack": "順調",
-      "inProgress": "進行中",
-      "paceUp": "ペースアップ",
-      "needEffort": "要努力",
-      "deleteConfirm": "この目標を削除しますか？",
-      "current": "現在",
-      "target": "目標",
-      "exceeded": "超過",
-      "remaining": "残り",
-      "daysRemaining": "残り日数",
-      "dailyAverage": "1日平均",
-      "estimatedDate": "予測達成日",
-      "period": {
-        "day": "1日",
-        "week": "1週間",
-        "month": "1ヶ月",
-        "daysRemaining": "日間",
-        "custom": "カスタム"
-      }
-    },
-    "progressCard": {
-      "current": "現在:",
-      "target": "目標:",
-      "exceeded": "超過:",
-      "remaining": "残り:",
-      "daysRemaining": "残り日数",
-      "dailyAverage": "1日平均",
-      "predictedDate": "予測達成日"
-    },
-    "settingScreen": {
-      "startDate": "開始日",
-      "endDate": "終了日",
-      "select": "選択してください",
-      "update": "更新",
-      "create": "目標を作成"
-    }
   }
 }
-

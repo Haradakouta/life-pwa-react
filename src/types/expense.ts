@@ -19,7 +19,10 @@ export type ExpenseCategory =
   | 'utilities' // 光熱費
   | 'entertainment' // 娯楽
   | 'health' // 医療
-  | 'other'; // その他
+  | 'other' // その他（支出）
+  | 'salary' // 給与
+  | 'bonus' // 賞与
+  | 'income_other'; // その他（収入）
 
 export interface ExpenseFormData {
   type: 'expense' | 'income'; // 支出 or 収入

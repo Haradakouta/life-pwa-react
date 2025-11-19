@@ -10,12 +10,16 @@ import { getPredefinedCategoryColor, getColorForCustomCategory } from '../../uti
 
 export const ExpenseList: React.FC = () => {
   const { t } = useTranslation();
-  const { deleteExpense, getExpensesByMonth } = useExpenseStore();
+  const expenses = useExpenseStore((state) => state.expenses);
+  const { deleteExpense } = useExpenseStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
 
-  const monthlyExpenses = getExpensesByMonth(selectedYear, selectedMonth);
+  const monthlyExpenses = expenses.filter((expense) => {
+    const date = new Date(expense.date);
+    return date.getFullYear() === selectedYear && date.getMonth() + 1 === selectedMonth;
+  });
 
   const categoryLabels: Record<string, string> = {
     food: t('expense.categories.food'),
@@ -24,17 +28,20 @@ export const ExpenseList: React.FC = () => {
     entertainment: t('expense.categories.entertainment'),
     health: t('expense.categories.health'),
     other: t('expense.categories.other'),
+    salary: t('expense.categories.salary'),
+    bonus: t('expense.categories.bonus'),
+    income_other: t('expense.categories.other'),
   };
 
   const getCategoryDisplay = (expense: any) => {
-    if (expense.category === 'other' && expense.customCategory) {
+    if ((expense.category === 'other' || expense.category === 'income_other') && expense.customCategory) {
       return expense.customCategory;
     }
-    return categoryLabels[expense.category];
+    return categoryLabels[expense.category] || expense.category;
   };
 
   const getCategoryColor = (expense: any) => {
-    if (expense.category === 'other' && expense.customCategory) {
+    if ((expense.category === 'other' || expense.category === 'income_other') && expense.customCategory) {
       return getColorForCustomCategory(expense.customCategory);
     }
     return getPredefinedCategoryColor(expense.category);

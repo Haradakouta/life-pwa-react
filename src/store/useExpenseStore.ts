@@ -120,7 +120,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   getTotalByCategory: (category, year, month) => {
     const expenses = get().getExpensesByMonth(year, month);
     return expenses
-      .filter((expense) => expense.category === category)
+      .filter((expense) => expense.category === category && expense.type === 'expense')
       .reduce((sum, expense) => sum + expense.amount, 0);
   },
 

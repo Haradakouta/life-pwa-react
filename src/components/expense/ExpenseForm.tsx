@@ -29,9 +29,9 @@ export const ExpenseForm: React.FC = () => {
   ];
 
   const incomeCategories: Array<{ value: ExpenseCategory; label: string }> = [
-    { value: 'other', label: t('expense.categories.salary') },
-    { value: 'other', label: t('expense.categories.bonus') },
-    { value: 'other', label: t('expense.categories.other') },
+    { value: 'salary', label: t('expense.categories.salary') },
+    { value: 'bonus', label: t('expense.categories.bonus') },
+    { value: 'income_other', label: t('expense.categories.other') },
   ];
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
@@ -42,7 +42,7 @@ export const ExpenseForm: React.FC = () => {
       return;
     }
 
-    if (category === 'other' && !customCategory.trim()) {
+    if ((category === 'other' || category === 'income_other') && !customCategory.trim()) {
       alert(t('expense.form.customCategoryRequired'));
       return;
     }
@@ -50,7 +50,7 @@ export const ExpenseForm: React.FC = () => {
     addExpense({
       type,
       category,
-      customCategory: category === 'other' ? customCategory.trim() : undefined,
+      customCategory: (category === 'other' || category === 'income_other') ? customCategory.trim() : undefined,
       amount: Number(amount),
       memo: memo || undefined,
       date: selectedDate.toISOString(),
@@ -94,7 +94,7 @@ export const ExpenseForm: React.FC = () => {
         <button
           onClick={() => {
             setType('income');
-            setCategory('other');
+            setCategory('salary');
             setCustomCategory('');
           }}
           style={{
@@ -147,7 +147,7 @@ export const ExpenseForm: React.FC = () => {
         ))}
       </select>
 
-      {category === 'other' && (
+      {(category === 'other' || category === 'income_other') && (
         <>
           <label>{t('expense.form.customCategory')}</label>
           <input

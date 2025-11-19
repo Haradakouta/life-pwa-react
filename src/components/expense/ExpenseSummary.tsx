@@ -45,7 +45,7 @@ export const ExpenseSummary: React.FC = () => {
 
     // カスタムカテゴリを集計
     monthlyExpenses.forEach((expense) => {
-      if (expense.category === 'other' && expense.customCategory) {
+      if ((expense.category === 'other' || expense.category === 'income_other') && expense.customCategory && expense.type === 'expense') {
         const key = `custom_${expense.customCategory}`;
         const existing = categoryMap.get(key);
         if (existing) {
@@ -64,6 +64,10 @@ export const ExpenseSummary: React.FC = () => {
   }, [selectedYear, selectedMonth, monthlyExpenses, getTotalByCategory]);
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  
+  const totalIncome = monthlyExpenses
+    .filter((expense) => expense.type === 'income')
+    .reduce((sum, expense) => sum + expense.amount, 0);
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('ja-JP').format(amount);
@@ -105,20 +109,36 @@ export const ExpenseSummary: React.FC = () => {
         </p>
       ) : (
         <>
-          <div
-            style={{
-              background: 'var(--background)',
-              padding: '15px',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '5px' }}>
-              {t('expense.summary.totalExpense')}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+            <div
+              style={{
+                background: 'var(--background)',
+                padding: '15px',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '5px' }}>
+                {t('expense.form.income')}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#10b981' }}>
+                ¥{formatAmount(totalIncome)}
+              </div>
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--danger)' }}>
-              ¥{formatAmount(total)}
+            <div
+              style={{
+                background: 'var(--background)',
+                padding: '15px',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '5px' }}>
+                {t('expense.summary.totalExpense')}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--danger)' }}>
+                ¥{formatAmount(total)}
+              </div>
             </div>
           </div>
 

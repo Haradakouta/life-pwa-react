@@ -1,32 +1,39 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFewShotExamples = exports.logGeminiInteraction = exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmailV2 = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
-const express = require("express");
-const cors = require("cors");
+const bigquery_1 = require("@google-cloud/bigquery");
 admin.initializeApp();
 const db = admin.firestore();
-// CORS設定
-const corsOptions = {
-    origin: [
-        'https://healthfinanse.jp',
-        'https://www.healthfinanse.jp',
-        'https://oshi-para.web.app',
-        'https://haradakouta.github.io',
-        'http://localhost:5173',
-    ],
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-};
-// シークレットを使用する関数の設定
-// Firebase Functions v2では、シークレットは自動的にprocess.envに設定されます
-const sendVerificationEmailApp = express();
-sendVerificationEmailApp.use(cors(corsOptions));
-sendVerificationEmailApp.use(express.json());
-sendVerificationEmailApp.post('/', async (req, res) => {
+const bigquery = new bigquery_1.BigQuery();
+const DATASET_ID = 'gemini_logs';
+const TABLE_ID = 'interactions';
+// メール送信関数（共通ロジック）
+const sendVerificationEmailApp = async (req, res) => {
+    // CORS設定
+    res.set('Access-Control-Allow-Origin', '*');
+    if (req.method === 'OPTIONS') {
+        res.set('Access-Control-Allow-Methods', 'POST');
+        res.set('Access-Control-Allow-Headers', 'Content-Type');
+        res.status(204).send('');
+        return;
+    }
     const { email, code } = req.body;
     if (!email || !code) {
         res.status(400).json({ error: 'メールアドレスと確認コードが必要です' });
@@ -37,12 +44,9 @@ sendVerificationEmailApp.post('/', async (req, res) => {
     const gmailPassword = process.env.GMAIL_APP_PASSWORD;
     if (!gmailEmail || !gmailPassword) {
         console.error('Gmail credentials not found in environment variables');
-        console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
-        console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'SET' : 'NOT SET');
-        res.status(500).json({ error: 'Gmail認証情報が設定されていません。管理者に連絡してください。' });
+        res.status(500).json({ error: 'サーバー設定エラー: メール認証情報が不足しています' });
         return;
     }
-    // シークレットから環境変数を取得してtransporterを作成
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -53,7 +57,7 @@ sendVerificationEmailApp.post('/', async (req, res) => {
     const mailOptions = {
         from: '"健康家計アプリ" <noreply@life-pwa.app>',
         to: email,
-        subject: '【健康家計アプリ】メール確認コード',
+        subject: '【健康家計アプリ】メールアドレスの確認',
         html: `
 <!DOCTYPE html>
 <html lang="ja">
@@ -100,26 +104,10 @@ sendVerificationEmailApp.post('/', async (req, res) => {
       margin: 10px 0;
     }
     .info {
-      background-color: #e8f5e9;
+      background-color: #fff3cd;
       padding: 15px;
       border-radius: 6px;
       margin: 20px 0;
-    }
-    .features {
-      background-color: #f5f5f5;
-      padding: 20px;
-      border-radius: 6px;
-      margin: 20px 0;
-    }
-    .features h3 {
-      color: #4caf50;
-      margin-top: 0;
-    }
-    .features ul {
-      padding-left: 20px;
-    }
-    .features li {
-      margin: 8px 0;
     }
     .footer {
       text-align: center;
@@ -139,7 +127,7 @@ sendVerificationEmailApp.post('/', async (req, res) => {
   <div class="container">
     <div class="header">
       <h1>🥗💰 健康家計アプリ</h1>
-      <p>メール確認コード</p>
+      <p>メールアドレス確認</p>
     </div>
 
     <p>こんにちは！</p>
@@ -160,19 +148,6 @@ sendVerificationEmailApp.post('/', async (req, res) => {
       </ul>
     </div>
 
-    <div class="features">
-      <h3>健康家計アプリについて</h3>
-      <p>AIが健康をサポートする生活管理アプリです</p>
-      <ul>
-        <li>✓ 食事記録とカロリー管理</li>
-        <li>✓ AIレシピ生成（Gemini API）</li>
-        <li>✓ 家計簿機能（カテゴリ別集計）</li>
-        <li>✓ 在庫管理（期限切れアラート）</li>
-        <li>✓ バーコードスキャン（商品検索）</li>
-        <li>✓ レシートOCR（自動読み取り）</li>
-      </ul>
-    </div>
-
     <div class="footer">
       <p>© 2025 健康家計アプリ</p>
       <p><a href="https://healthfinanse.jp" style="color: #4caf50; text-decoration: none;">https://healthfinanse.jp</a></p>
@@ -181,9 +156,9 @@ sendVerificationEmailApp.post('/', async (req, res) => {
   </div>
 </body>
 </html>
-      `,
+    `,
         text: `
-健康家計アプリ - メール確認コード
+健康家計アプリ - メールアドレス確認
 
 こんにちは！
 
@@ -214,7 +189,7 @@ AIが健康をサポートする生活管理アプリです。
 
 © 2025 健康家計アプリ
 https://healthfinanse.jp
-      `,
+    `,
     };
     try {
         await transporter.sendMail(mailOptions);
@@ -224,15 +199,9 @@ https://healthfinanse.jp
     catch (error) {
         console.error('Error sending email:', error);
         const errorMessage = error.message || 'メール送信に失敗しました';
-        console.error('Error details:', {
-            code: error.code,
-            command: error.command,
-            response: error.response,
-            responseCode: error.responseCode,
-        });
         res.status(500).json({ error: `メール送信に失敗しました: ${errorMessage}` });
     }
-});
+};
 exports.sendVerificationEmailV2 = functions.https.onRequest({
     region: 'us-central1',
     secrets: ['GMAIL_EMAIL', 'GMAIL_APP_PASSWORD'],
@@ -245,16 +214,11 @@ exports.sendPasswordResetEmail = functions.https.onCall({
     if (!email || !code) {
         throw new functions.https.HttpsError('invalid-argument', 'メールアドレスと確認コードが必要です');
     }
-    // シークレットの確認
     const gmailEmail = process.env.GMAIL_EMAIL;
     const gmailPassword = process.env.GMAIL_APP_PASSWORD;
     if (!gmailEmail || !gmailPassword) {
-        console.error('Gmail credentials not found in environment variables');
-        console.error('GMAIL_EMAIL:', gmailEmail ? 'SET' : 'NOT SET');
-        console.error('GMAIL_APP_PASSWORD:', gmailPassword ? 'SET' : 'NOT SET');
         throw new functions.https.HttpsError('failed-precondition', 'Gmail認証情報が設定されていません。管理者に連絡してください。');
     }
-    // シークレットから環境変数を取得してtransporterを作成
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -353,7 +317,6 @@ exports.sendPasswordResetEmail = functions.https.onCall({
         <li>このコードは <span class="warning">10分間</span> 有効です</li>
         <li>このメールに心当たりがない場合は、無視していただいて構いません</li>
         <li>確認コードは他人に教えないでください</li>
-        <li>パスワードリセットをリクエストしていない場合は、誰かがあなたのアカウントにアクセスしようとしている可能性があります</li>
       </ul>
     </div>
 
@@ -394,12 +357,6 @@ https://healthfinanse.jp
     catch (error) {
         console.error('Error sending password reset email:', error);
         const errorMessage = error.message || 'パスワードリセットメール送信に失敗しました';
-        console.error('Error details:', {
-            code: error.code,
-            command: error.command,
-            response: error.response,
-            responseCode: error.responseCode,
-        });
         throw new functions.https.HttpsError('internal', `パスワードリセットメール送信に失敗しました: ${errorMessage}`);
     }
 });
@@ -496,14 +453,7 @@ exports.deleteAllPosts = functions.https.onCall({ timeoutSeconds: 540, memory: '
     console.log('Finished deleting all posts and resetting post counts.');
     return { result: 'All posts deleted successfully.' };
 });
-// BigQuery Integration
-const bigquery_1 = require("@google-cloud/bigquery");
-const bigquery = new bigquery_1.BigQuery();
-const DATASET_ID = 'gemini_logs';
-const TABLE_ID = 'interactions';
 exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' }, async (request) => {
-    // 認証チェックは行わない（未ログインユーザーも使う可能性があるため）
-    // ただし、必要に応じて制限を追加することを検討
     var _a;
     const { requestType, prompt, response, model, status, errorMessage, metadata, timestamp } = request.data;
     const userId = ((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'anonymous';
@@ -520,8 +470,6 @@ exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' },
         created_at: bigquery.timestamp(new Date()),
     };
     try {
-        // データセットとテーブルの存在確認は省略（事前に作成されている前提）
-        // 必要であれば、createDataset / createTable を実装
         await bigquery
             .dataset(DATASET_ID)
             .table(TABLE_ID)
@@ -531,7 +479,6 @@ exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' },
     }
     catch (error) {
         console.error('Error logging to BigQuery:', error);
-        // ログ保存の失敗はクライアントにエラーとして返さない（メイン機能に影響させない）
         return { success: false, error: 'Logging failed' };
     }
 });
@@ -559,8 +506,8 @@ exports.getFewShotExamples = functions.https.onCall({ region: 'us-central1' }, a
     }
     catch (error) {
         console.error('Error fetching examples from BigQuery:', error);
-        // 失敗しても空のリストを返して、メイン処理を止めない
         return { examples: [] };
     }
 });
+__exportStar(require("./vision"), exports);
 //# sourceMappingURL=index.js.map

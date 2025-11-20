@@ -120,79 +120,174 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                 </h2>
             </div>
 
-            <div className="card">
-                <h3>{t('settings.health.basicInfo')}</h3>
-                <label>{t('settings.health.age')} ({t('settings.health.years')})</label>
-                <input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="例: 30"
-                    min="1"
-                    max="150"
-                />
-
-                <label>{t('settings.health.height')} ({t('settings.health.cm')})</label>
-                <input
-                    type="number"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    placeholder="例: 170"
-                    min="1"
-                    max="300"
-                />
-
-                <label>{t('settings.health.weight')} ({t('settings.health.kg')})</label>
-                <input
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    placeholder={t('settings.health.weightPlaceholder')}
-                    min="1"
-                    max="300"
-                    step="0.1"
-                />
-
-                {bmi && (
-                    <div
-                        style={{
-                            marginTop: '16px',
-                            padding: '12px',
-                            background: bmi >= 18.5 && bmi < 25 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                            border: `2px solid ${bmi >= 18.5 && bmi < 25 ? '#10b981' : '#f59e0b'}`,
-                            borderRadius: '8px',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <MdHealthAndSafety size={20} color={bmi >= 18.5 && bmi < 25 ? '#10b981' : '#f59e0b'} />
-                            <strong style={{ color: 'var(--text)' }}>BMI: {bmi.toFixed(1)}</strong>
+            <div style={{ padding: '0 16px 32px' }}>
+                {/* Google Fit連携 */}
+                <div style={{
+                    background: 'var(--card)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    marginBottom: '24px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            background: '#e8f5e9',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#2e7d32',
+                        }}>
+                            <MdHealthAndSafety size={24} />
                         </div>
-                        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            {t('settings.health.category')}: {t(`bmi.${bmiCategory}`)}
-                        </p>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Google Fit連携</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                体重データを自動で同期します
+                            </p>
+                        </div>
                     </div>
-                )}
 
-                <button className="submit" onClick={handleSave} disabled={saving} style={{ marginTop: '16px' }}>
-                    <MdSave size={18} style={{ marginRight: '8px' }} />
-                    {saving ? t('common.saving') : t('common.save')}
-                </button>
-            </div>
+                    {/* Google Fit連携（開発中） */}
+                    <div style={{ opacity: 0.7 }}>
+                        {settings.isGoogleFitConnected ? (
+                            <div>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '8px 12px',
+                                    background: '#e8f5e9',
+                                    borderRadius: '8px',
+                                    color: '#2e7d32',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    marginBottom: '12px',
+                                }}>
+                                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2e7d32' }} />
+                                    連携済み
+                                </div>
+                                <button
+                                    onClick={() => useSettingsStore.getState().syncGoogleFitData()}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        background: 'var(--background)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '8px',
+                                        color: 'var(--text)',
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    今すぐ同期
+                                </button>
+                                {settings.lastSyncTime && (
+                                    <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                                        最終同期: {new Date(settings.lastSyncTime).toLocaleString()}
+                                    </p>
+                                )}
+                            </div>
+                        ) : (
+                            <button
+                                disabled
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    background: 'var(--disabled)', // 変数がない場合は '#ccc' など
+                                    color: 'var(--text-secondary)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    cursor: 'not-allowed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                }}
+                            >
+                                Google Fitと連携する (準備中)
+                            </button>
+                        )}
+                    </div>
+                </div>
 
-            <div className="card">
-                <h3>{t('settings.health.about')}</h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                    {t('settings.health.aboutDescription')}
-                </p>
-                <ul style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.8', paddingLeft: '20px' }}>
-                    <li>{t('settings.health.aboutList.bmi')}</li>
-                    <li>{t('settings.health.aboutList.shopping')}</li>
-                    <li>{t('settings.health.aboutList.meal')}</li>
-                    <li>{t('settings.health.aboutList.weight')}</li>
-                </ul>
+                <div className="card">
+                    <h3>{t('settings.health.basicInfo')}</h3>
+                    <label>{t('settings.health.age')} ({t('settings.health.years')})</label>
+                    <input
+                        type="number"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        placeholder="例: 30"
+                        min="1"
+                        max="150"
+                    />
+
+                    <label>{t('settings.health.height')} ({t('settings.health.cm')})</label>
+                    <input
+                        type="number"
+                        value={height}
+                        onChange={(e) => setHeight(e.target.value)}
+                        placeholder="例: 170"
+                        min="1"
+                        max="300"
+                    />
+
+                    <label>{t('settings.health.weight')} ({t('settings.health.kg')})</label>
+                    <input
+                        type="number"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        placeholder={t('settings.health.weightPlaceholder')}
+                        min="1"
+                        max="300"
+                        step="0.1"
+                    />
+
+                    {bmi && (
+                        <div
+                            style={{
+                                marginTop: '16px',
+                                padding: '12px',
+                                background: bmi >= 18.5 && bmi < 25 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                border: `2px solid ${bmi >= 18.5 && bmi < 25 ? '#10b981' : '#f59e0b'}`,
+                                borderRadius: '8px',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <MdHealthAndSafety size={20} color={bmi >= 18.5 && bmi < 25 ? '#10b981' : '#f59e0b'} />
+                                <strong style={{ color: 'var(--text)' }}>BMI: {bmi.toFixed(1)}</strong>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                {t('settings.health.category')}: {t(`bmi.${bmiCategory}`)}
+                            </p>
+                        </div>
+                    )}
+
+                    <button className="submit" onClick={handleSave} disabled={saving} style={{ marginTop: '16px' }}>
+                        <MdSave size={18} style={{ marginRight: '8px' }} />
+                        {saving ? t('common.saving') : t('common.save')}
+                    </button>
+                </div>
+
+                <div className="card">
+                    <h3>{t('settings.health.about')}</h3>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                        {t('settings.health.aboutDescription')}
+                    </p>
+                    <ul style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.8', paddingLeft: '20px' }}>
+                        <li>{t('settings.health.aboutList.bmi')}</li>
+                        <li>{t('settings.health.aboutList.shopping')}</li>
+                        <li>{t('settings.health.aboutList.meal')}</li>
+                        <li>{t('settings.health.aboutList.weight')}</li>
+                    </ul>
+                </div>
             </div>
         </section>
     );
 };
-
-

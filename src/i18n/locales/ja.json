@@ -95,7 +95,21 @@
       "notSet": "健康情報は未設定です",
       "save": "保存",
       "saved": "健康情報を保存しました",
-      "placeholder": "例: 100000"
+      "placeholder": "例: 100000",
+      "about": "このアプリについて",
+      "aboutDescription": "このアプリは、健康管理と家計管理を統合したPWAです。",
+      "aboutList": {
+        "bmi": "BMI計算機能",
+        "shopping": "買い物リスト管理",
+        "meal": "食事記録",
+        "weight": "体重管理"
+      },
+      "weeklyRecordTitle": "週次体重記録",
+      "weeklyRecordDescription": "週に一度の体重記録の時間です。健康管理のために現在の体重を入力してください。",
+      "weightLabel": "現在の体重 (kg)",
+      "weightRequired": "体重を入力してください",
+      "weightRecorded": "体重を記録しました",
+      "weightSaveFailed": "体重の保存に失敗しました"
     },
     "honorific": {
       "title": "称号",
@@ -845,8 +859,9 @@
       "title": "レシートをスキャン",
       "guide": "レシートを枠内に収めてください",
       "cameraError": "カメラにアクセスできません。ファイル選択をお試しください。",
-      "ocrError": "レシートの読み取りに失敗しました",
-      "selectFile": "ファイル選択"
+      "ocrError": "読み取りに失敗しました",
+      "processing": "読み取り中...",
+      "album": "アルバム"
     }
   }
 }

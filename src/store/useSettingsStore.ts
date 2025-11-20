@@ -16,12 +16,19 @@ interface SettingsStore {
   toggleDarkMode: () => Promise<void>;
   setFirstTime: (value: boolean) => void;
   syncWithFirestore: () => Promise<void>;
+  // Google Fit
+  isGoogleFitConnected: boolean;
+  lastSyncTime: number | null;
+  connectGoogleFit: () => Promise<void>;
+  syncGoogleFitData: () => Promise<void>;
 }
 
 const defaultSettings: Settings = {
   monthlyBudget: 30000,
   darkMode: false,
   firstTime: true,
+  isGoogleFitConnected: false,
+  lastSyncTime: null,
 };
 
 // 初期設定を取得
@@ -179,6 +186,80 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to sync settings with Firestore:', error);
       set({ loading: false });
+    }
+  },
+
+  // Google Fit
+  isGoogleFitConnected: false,
+  lastSyncTime: null,
+
+  connectGoogleFit: async () => {
+    try {
+      const { initializeGoogleFit } = await import('../api/googleFit');
+      const token = await initializeGoogleFit();
+      if (token) {
+        set((state) => {
+          const newSettings = { ...state.settings, isGoogleFitConnected: true };
+          saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
+          return { settings: newSettings, isGoogleFitConnected: true };
+        });
+        await get().updateSettings({ isGoogleFitConnected: true });
+        await get().syncGoogleFitData();
+      }
+    } catch (error) {
+      console.error('Google Fit connection failed:', error);
+      throw error;
+    }
+  },
+
+  syncGoogleFitData: async () => {
+    try {
+      const { initializeGoogleFit, fetchWeightData } = await import('../api/googleFit');
+      // トークン取得（サイレントログイン的な挙動を期待、または再ポップアップ）
+      const token = await initializeGoogleFit();
+
+      if (!token) throw new Error('No access token');
+
+      // 過去30日分のデータを取得
+      const endTime = Date.now();
+      const startTime = endTime - (30 * 24 * 60 * 60 * 1000);
+
+      const weightData = await fetchWeightData(token, startTime, endTime);
+
+      if (weightData.length > 0) {
+        // 最新の体重データを適用
+        const latest = weightData[weightData.length - 1];
+
+        // 体重履歴をマージ
+        const currentHistory = get().settings.weightHistory || [];
+        const newHistory = [...currentHistory];
+
+        weightData.forEach(point => {
+          const dateStr = point.date.split('T')[0];
+          const existingIndex = newHistory.findIndex(h => h.date.startsWith(dateStr));
+
+          if (existingIndex >= 0) {
+            // Google Fitのデータを優先して上書き
+            newHistory[existingIndex] = { date: point.date, weight: point.weight };
+          } else {
+            newHistory.push({ date: point.date, weight: point.weight });
+          }
+        });
+
+        // 日付順にソート
+        newHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        await get().updateSettings({
+          weight: latest.weight,
+          weightHistory: newHistory,
+          lastWeightInputDate: latest.date,
+          lastSyncTime: Date.now(),
+        });
+
+        set({ lastSyncTime: Date.now() });
+      }
+    } catch (error) {
+      console.error('Google Fit sync failed:', error);
     }
   },
 }));

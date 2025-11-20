@@ -15,6 +15,8 @@ export interface Settings {
   geminiApiKey?: string; // Gemini APIキー（ユーザーが各自設定）
   pushNotificationsEnabled?: boolean; // プッシュ通知の有効/無効（デフォルト: true）
   language?: string; // 言語設定（'ja', 'en', 'zh-CN', 'zh-TW', 'ko', 'vi', 'ru', 'id'）
+  isGoogleFitConnected?: boolean; // Google Fit連携状態
+  lastSyncTime?: number | null; // 最終同期時刻
 }
 
 export interface WeightRecord {

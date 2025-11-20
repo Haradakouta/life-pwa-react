@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseStore, useShoppingStore, useStockStore, useIntakeStore } from '../../store';
-import type { ReceiptItem, ReceiptOCRResult } from '../../api/gemini';
+import type { ReceiptItem, ReceiptOCRResult } from '../../api/vision';
 import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart, MdInventory, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
 

@@ -263,7 +263,7 @@ function App() {
         const { useExerciseStore } = await import('./store/useExerciseStore');
         const goalStore = useGoalStore.getState();
         const exerciseStore = useExerciseStore.getState();
-        
+
         await Promise.all([
           intakeStore.syncWithFirestore(),
           expenseStore.syncWithFirestore(),
@@ -274,7 +274,7 @@ function App() {
           goalStore.syncWithFirestore(),
           exerciseStore.syncWithFirestore(),
         ]);
-        
+
         // 目標ストアと運動ストアのリアルタイム同期を開始
         goalStore.subscribeToFirestore();
         exerciseStore.subscribeToFirestore();
@@ -287,7 +287,7 @@ function App() {
           try {
             const { initializePushNotifications, onForegroundMessage } = await import('./utils/pushNotification');
             await initializePushNotifications();
-            
+
             // フォアグラウンドでの通知受信をリッスン
             onForegroundMessage((payload) => {
               // ブラウザ通知を表示
@@ -356,8 +356,8 @@ function App() {
 
   // 週次体重入力リマインダー（月曜日に表示）
   useEffect(() => {
-    if (!user || !settings.height) {
-      // 身長が設定されていない場合は表示しない
+    if (!user) {
+      // ユーザーがログインしていない場合は表示しない
       return;
     }
 

@@ -96,17 +96,27 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
           {t('settings.health.weeklyRecordDescription')}
         </p>
 
-        <label>{t('settings.health.weightLabel')}</label>
-        <input
-          type="number"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          placeholder={t('settings.health.weightPlaceholder')}
-          min="1"
-          max="300"
-          step="0.1"
-          autoFocus
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '20px 0' }}>
+          <label style={{ marginBottom: '8px', fontWeight: 'bold' }}>{t('settings.health.weightLabel')}</label>
+          <input
+            type="number"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder={t('settings.health.weightPlaceholder')}
+            min="1"
+            max="300"
+            step="0.1"
+            autoFocus
+            style={{
+              textAlign: 'center',
+              fontSize: '24px',
+              padding: '12px',
+              width: '150px',
+              borderRadius: '12px',
+              border: '2px solid var(--border)',
+            }}
+          />
+        </div>
 
         {settings.height && weight && Number(weight) > 0 && (
           <div

@@ -3,25 +3,25 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "delete": "Xóa",
-    "edit": "Chỉnh sửa",
+    "edit": "Sửa",
     "back": "Quay lại",
     "loading": "Đang tải...",
     "saving": "Đang lưu...",
-    "admin": "Quản trị viên",
+    "admin": "Quản trị",
     "error": "Lỗi",
     "success": "Thành công",
     "confirm": "Xác nhận",
     "yes": "Có",
     "no": "Không",
-    "year": "năm",
-    "month": "tháng",
-    "days": "ngày",
+    "year": "Năm",
+    "month": "Tháng",
+    "days": "Ngày",
     "selectDate": "Chọn ngày",
     "selectMonth": "Chọn tháng",
-    "selectMonthYear": "Nhấn để chọn năm và tháng",
+    "selectMonthYear": "Chọn năm tháng",
     "select": "Vui lòng chọn",
     "next": "Tiếp theo",
-    "skipAndNext": "Bỏ qua và tiếp theo",
+    "skipAndNext": "Bỏ qua và tiếp tục",
     "weekday": {
       "sun": "CN",
       "mon": "T2",
@@ -37,17 +37,48 @@
     "profile": {
       "title": "Hồ sơ",
       "edit": "Chỉnh sửa hồ sơ",
-      "description": "Chỉnh sửa biểu tượng, tên, giới thiệu, v.v."
+      "description": "Chỉnh sửa biểu tượng, tên, giới thiệu, v.v.",
+      "loadError": "Không thể tải hồ sơ",
+      "loginRequired": "Yêu cầu đăng nhập",
+      "avatarUploaded": "Đã tải lên ảnh đại diện",
+      "avatarUploadError": "Tải lên ảnh đại diện thất bại",
+      "coverUploaded": "Đã tải lên ảnh bìa",
+      "coverUploadError": "Tải lên ảnh bìa thất bại",
+      "displayNameRequired": "Vui lòng nhập tên hiển thị",
+      "usernameTaken": "Tên người dùng này đã được sử dụng",
+      "updateSuccess": "Đã cập nhật hồ sơ!",
+      "updateError": "Cập nhật hồ sơ thất bại",
+      "editTitle": "Chỉnh sửa hồ sơ",
+      "changeCover": "Thay đổi ảnh bìa",
+      "uploading": "Đang tải lên...",
+      "displayName": "Tên hiển thị",
+      "displayNamePlaceholder": "Nguyen Van A",
+      "username": "Tên người dùng",
+      "usernameHint": "Chỉ chữ cái, số và dấu gạch dưới (_)",
+      "bio": "Giới thiệu",
+      "bioPlaceholder": "Giới thiệu về bản thân bạn...",
+      "website": "URL trang web",
+      "publicProfile": "Công khai hồ sơ",
+      "publicDescription": "Bất kỳ ai cũng có thể xem hồ sơ của bạn",
+      "privateDescription": "Chỉ người theo dõi mới có thể xem hồ sơ của bạn"
+    },
+    "googleFit": {
+      "title": "Liên kết Google Fit",
+      "description": "Tự động đồng bộ dữ liệu cân nặng",
+      "connected": "Đã liên kết",
+      "syncNow": "Đồng bộ ngay",
+      "lastSync": "Đồng bộ lần cuối: {{date}}",
+      "connect": "Liên kết Google Fit (Sắp ra mắt)"
     },
     "cosmetic": {
       "title": "Trang trí",
       "change": "Thay đổi trang trí",
-      "description": "Có thể thay đổi và mua trang trí"
+      "description": "Thay đổi và mua vật phẩm trang trí"
     },
     "mission": {
       "title": "Nhiệm vụ & Phần thưởng",
       "daily": "Nhiệm vụ hàng ngày",
-      "description": "Hoàn thành nhiệm vụ để kiếm điểm"
+      "description": "Hoàn thành nhiệm vụ để nhận điểm"
     },
     "budget": {
       "title": "Ngân sách hàng tháng",
@@ -61,51 +92,111 @@
       "title": "Thông báo",
       "push": "Thông báo đẩy",
       "enabled": "Bạn sẽ nhận được thông báo mới",
-      "disabled": "Thông báo đẩy đã bị tắt"
+      "disabled": "Thông báo đẩy đã tắt"
     },
-    "export": {
-      "title": "Xuất dữ liệu",
-      "csv": "CSV",
-      "json": "JSON"
+    "prefecture": {
+      "title": "Cài đặt tỉnh/thành phố",
+      "description": "Đặt tỉnh/thành phố nơi bạn cư trú.",
+      "currentStatus": "Cài đặt hiện tại",
+      "label": "Tỉnh/Thành phố",
+      "change": "Thay đổi",
+      "set": "Đặt",
+      "daysRemaining": "Không thể thay đổi trong {{days}} ngày",
+      "changeLimit": "※ Tỉnh/Thành phố chỉ có thể thay đổi 30 ngày một lần",
+      "select": "Vui lòng chọn",
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "saving": "Đang lưu...",
+      "success": "Đã cập nhật tỉnh/thành phố",
+      "error": "Cập nhật thất bại",
+      "loadError": "Tải hồ sơ thất bại"
     },
     "health": {
       "title": "Thông tin sức khỏe",
+      "description": "Dùng để tính BMI và quản lý sức khỏe",
       "set": "Đặt thông tin sức khỏe",
       "age": "Tuổi",
-      "height": "Chiều cao",
-      "weight": "Cân nặng",
-      "bmi": "BMI",
-      "savings": "Tiết kiệm",
-      "notSet": "Thông tin cá nhân chưa được đặt",
       "years": "tuổi",
+      "height": "Chiều cao",
       "cm": "cm",
-      "kg": "kg"
+      "weight": "Cân nặng",
+      "kg": "kg",
+      "bmi": "BMI",
+      "savings": "Tiết kiệm hiện tại",
+      "notSet": "Chưa đặt thông tin sức khỏe",
+      "save": "Lưu",
+      "saved": "Đã lưu thông tin sức khỏe",
+      "placeholder": "Ví dụ: 100000",
+      "about": "Về ứng dụng",
+      "aboutDescription": "Ứng dụng này là một PWA tích hợp quản lý sức khỏe và tài chính gia đình.",
+      "aboutList": {
+        "bmi": "Máy tính BMI",
+        "shopping": "Quản lý danh sách mua sắm",
+        "meal": "Ghi chép bữa ăn",
+        "weight": "Quản lý cân nặng"
+      },
+      "weeklyRecordTitle": "Ghi chép cân nặng hàng tuần",
+      "weeklyRecordDescription": "Đã đến lúc ghi chép cân nặng hàng tuần. Vui lòng nhập cân nặng hiện tại để quản lý sức khỏe.",
+      "weightLabel": "Cân nặng hiện tại (kg)",
+      "weightRequired": "Vui lòng nhập cân nặng",
+      "weightRecorded": "Đã ghi chép cân nặng",
+      "weightSaveFailed": "Lưu cân nặng thất bại"
+    },
+    "honorific": {
+      "title": "Danh hiệu",
+      "check": "Kiểm tra",
+      "newTitlesGranted": "🎉 Bạn đã nhận được {{count}} danh hiệu mới!",
+      "noNewTitles": "Không có danh hiệu mới",
+      "checkFailed": "Kiểm tra danh hiệu thất bại",
+      "equipFailed": "Trang bị danh hiệu thất bại",
+      "equipped": "Đang trang bị",
+      "equip": "Trang bị",
+      "notEarned": "Chưa đạt được",
+      "categories": {
+        "all": "Tất cả",
+        "beginner": "Người mới",
+        "poster": "Người đăng",
+        "social": "Xã hội",
+        "recipe": "Công thức",
+        "achievement": "Thành tựu",
+        "prefecture": "Khu vực",
+        "special": "Đặc biệt"
+      }
     },
     "ai": {
-      "title": "Cài đặt AI (Gemini API)",
-      "description": "Để sử dụng các tính năng AI (tạo công thức, OCR hóa đơn, đo calo, v.v.), bạn cần khóa API Google Gemini.",
+      "title": "Cài đặt AI",
+      "description": "Đặt khóa API Gemini để bật tính năng AI",
       "getKey": "Lấy khóa API",
       "placeholder": "AIzaSy...",
-      "save": "Lưu khóa API",
-      "saved": "✓ Khóa API đã được đặt"
+      "save": "Lưu",
+      "saved": "Đã lưu khóa API"
     },
     "stats": {
-      "title": "Thống kê dữ liệu",
-      "intakes": "Bản ghi bữa ăn",
-      "expenses": "Bản ghi chi tiêu",
-      "stocks": "Mục tồn kho",
-      "items": "mục"
+      "title": "Thống kê",
+      "intakes": "Ghi chép bữa ăn",
+      "items": "mục",
+      "expenses": "Chi tiêu",
+      "stocks": "Kho"
     },
     "account": {
       "title": "Tài khoản",
-      "login": "Đăng nhập",
+      "login": "Đã đăng nhập",
       "logout": "Đăng xuất",
-      "logoutConfirm": "Bạn có muốn đăng xuất không?",
+      "logoutConfirm": "Bạn có chắc chắn muốn đăng xuất?",
       "logoutError": "Đăng xuất thất bại"
+    },
+    "export": {
+      "title": "Xuất dữ liệu",
+      "csv": "Xuất CSV",
+      "json": "Xuất JSON",
+      "csvHeader": "Loại,Tên,Calo,Giá,Ngày",
+      "mealRecord": "Ghi chép bữa ăn",
+      "csvFilename": "life-pwa-data-",
+      "jsonFilename": "life-pwa-backup-"
     },
     "language": {
       "title": "Ngôn ngữ",
-      "description": "Chọn ngôn ngữ hiển thị ứng dụng",
+      "description": "Chọn ngôn ngữ hiển thị",
       "japanese": "日本語",
       "english": "English",
       "chineseSimplified": "简体中文",
@@ -114,19 +205,8 @@
       "vietnamese": "Tiếng Việt",
       "russian": "Русский",
       "indonesian": "Bahasa Indonesia"
-    }
-  },
-  "dashboard": {
-    "title": "Trang chủ",
-    "subtitle": "Quản lý sức khỏe và tài chính"
-  },
-  "screens": {
-    "home": "Ứng dụng Tài chính Sức khỏe",
-    "meals": "Bản ghi bữa ăn",
-    "barcode": "Quét mã vạch",
-    "report": "Báo cáo",
+    },
     "social": "Xã hội",
-    "settings": "Cài đặt",
     "stock": "Quản lý kho",
     "shopping": "Danh sách mua sắm",
     "recipe": "Công thức AI",
@@ -134,39 +214,48 @@
     "badges": "Thành tựu",
     "admin": "Bảng quản trị",
     "goals": "Quản lý mục tiêu",
-    "exercise": "Bản ghi tập thể dục"
+    "exercise": "Ghi chép vận động"
+  },
+  "bottomNav": {
+    "home": "Trang chủ",
+    "meals": "Bữa ăn",
+    "scan": "Quét",
+    "report": "Báo cáo",
+    "social": "Xã hội",
+    "settings": "Cài đặt",
+    "mainNavigation": "Điều hướng chính"
   },
   "bmi": {
     "underweight": "Thiếu cân",
     "normal": "Bình thường",
-    "obese1": "Béo phì cấp 1",
-    "obese2": "Béo phì cấp 2",
-    "obese3": "Béo phì cấp 3",
-    "obese4": "Béo phì cấp 4"
+    "obese1": "Béo phì độ 1",
+    "obese2": "Béo phì độ 2",
+    "obese3": "Béo phì độ 3",
+    "obese4": "Béo phì độ 4"
   },
   "exercise": {
-    "title": "Bản ghi tập thể dục",
-    "subtitle": "Ghi lại bài tập của bạn và hướng tới mục tiêu",
+    "title": "Ghi chép vận động",
+    "subtitle": "Ghi lại vận động để đạt mục tiêu",
     "form": {
-      "title": "Ghi lại bài tập",
+      "title": "Ghi lại vận động",
       "name": "Tên bài tập",
-      "namePlaceholder": "VD: Chạy bộ, Tập tạ, Đi bộ",
-      "duration": "Thời gian（phút）",
-      "durationPlaceholder": "VD: 30",
-      "calories": "Calo đốt cháy（tùy chọn）",
-      "caloriesPlaceholder": "VD: 200",
+      "namePlaceholder": "Ví dụ: Chạy bộ, Tập tạ, Đi bộ",
+      "duration": "Thời gian (phút)",
+      "durationPlaceholder": "Ví dụ: 30",
+      "calories": "Calo tiêu thụ (tùy chọn)",
+      "caloriesPlaceholder": "Ví dụ: 200",
       "submit": "Ghi lại",
       "nameRequired": "Vui lòng nhập tên bài tập",
       "durationRequired": "Vui lòng nhập thời gian",
-      "recorded": "Đã ghi lại bài tập！",
-      "recordFailed": "Ghi lại bài tập thất bại"
+      "recorded": "Đã ghi lại vận động!",
+      "recordFailed": "Ghi lại thất bại"
     },
     "list": {
-      "title": "Bản ghi hôm nay",
-      "empty": "Chưa có bản ghi",
-      "total": "Tổng",
+      "title": "Ghi chép hôm nay",
+      "empty": "Chưa có ghi chép",
+      "total": "Tổng cộng",
       "minutes": "phút",
-      "deleteConfirm": "Xóa bản ghi này？"
+      "deleteConfirm": "Xóa ghi chép này?"
     }
   },
   "goals": {
@@ -175,7 +264,7 @@
     "newGoal": "Mục tiêu mới",
     "createGoal": "Tạo mục tiêu",
     "active": "Đang hoạt động",
-    "completed": "Hoàn thành",
+    "completed": "Đã hoàn thành",
     "completionRate": "Tỷ lệ hoàn thành",
     "all": "Tất cả",
     "activeFilter": "Đang hoạt động",
@@ -184,203 +273,12 @@
       "completed": "Không có mục tiêu đã hoàn thành",
       "active": "Không có mục tiêu đang hoạt động",
       "all": "Không có mục tiêu",
-      "suggestion": "Hãy đặt mục tiêu đầu tiên của bạn！"
+      "suggestion": "Hãy đặt mục tiêu đầu tiên của bạn!"
     },
-    "deleteFailed": "Xóa mục tiêu thất bại"
-  },
-  "summary": {
-    "todayCalories": "Calo hôm nay",
-    "monthExpense": "Chi tiêu tháng này",
-    "bmi": "BMI"
-  },
-  "quickActions": {
-    "meals": "Bản ghi bữa ăn",
-    "exercise": "Bản ghi tập thể dục",
-    "scan": "Quét",
-    "expense": "Sổ chi tiêu",
-    "stock": "Quản lý kho",
-    "recipe": "Công thức AI",
-    "shopping": "Mua sắm",
-    "report": "Báo cáo",
-    "badges": "Huy hiệu",
-    "goals": "Mục tiêu",
-    "settings": "Cài đặt"
-  },
-  "auth": {
-    "appName": "Ứng dụng Tài chính Sức khỏe",
-    "appDescription": "Ứng dụng quản lý cuộc sống hỗ trợ sức khỏe bằng AI",
-    "email": "Địa chỉ email",
-    "password": "Mật khẩu",
-    "passwordPlaceholder": "6 ký tự trở lên",
-    "login": "Đăng nhập",
-    "processing": "Đang xử lý...",
-    "forgotPassword": "Quên mật khẩu?",
-    "noAccount": "Chưa có tài khoản? Nhấp vào đây",
-    "or": "hoặc",
-    "googleLogin": "Đăng nhập bằng Google",
-    "register": "Đăng ký",
-    "passwordReset": "Đặt lại mật khẩu",
-    "authError": "Đã xảy ra lỗi xác thực",
-    "securityNote": "※ Xác thực an toàn sử dụng Firebase Authentication",
-    "dataNote": "Dữ liệu được lưu trữ an toàn trong Firestore"
-  },
-  "product": {
-    "productInfo": "Đã lấy thông tin sản phẩm",
-    "productName": "Tên sản phẩm",
-    "manufacturer": "Nhà sản xuất",
-    "barcode": "Mã vạch",
-    "price": "Giá (tham khảo)",
-    "source": {
-      "rakutenIchiba": "Rakuten Ichiba",
-      "rakutenProduct": "Tìm kiếm sản phẩm Rakuten",
-      "jancodeLookup": "JAN Code Lookup",
-      "openfoodfacts": "Open Food Facts",
-      "mock": "Dữ liệu mô phỏng"
-    },
-    "addToMeals": {
-      "title": "Thêm vào bản ghi bữa ăn",
-      "calories": "Calo (kcal)",
-      "caloriesPlaceholder": "vd: 200",
-      "price": "Giá (yên)",
-      "pricePlaceholder": "vd: 150",
-      "button": "Thêm vào bản ghi bữa ăn",
-      "caloriesRequired": "Vui lòng nhập calo",
-      "priceRequired": "Vui lòng nhập giá",
-      "success": "Đã thêm vào bản ghi bữa ăn！"
-    },
-    "addToStock": {
-      "title": "Thêm vào quản lý kho",
-      "expiryDays": "Số ngày đến khi hết hạn",
-      "expiryDaysPlaceholder": "vd: 7",
-      "button": "Thêm vào quản lý kho",
-      "buttonWithNavigate": "Thêm vào kho và điều hướng",
-      "expiryDaysRequired": "Vui lòng nhập số ngày đến khi hết hạn",
-      "success": "Đã thêm vào quản lý kho！"
-    },
-    "cancel": "Hủy"
-  },
-  "expense": {
-    "categories": {
-      "food": "Thực phẩm",
-      "transport": "Giao thông",
-      "utilities": "Tiện ích",
-      "entertainment": "Giải trí",
-      "health": "Chăm sóc sức khỏe",
-      "other": "Khác",
-      "salary": "Lương",
-      "bonus": "Thưởng"
-    },
-    "form": {
-      "type": "Loại",
-      "expense": "Chi tiêu",
-      "income": "Thu nhập",
-      "date": "Ngày",
-      "category": "Danh mục",
-      "customCategory": "Tên danh mục tùy chỉnh",
-      "customCategoryPlaceholder": "vd: Sở thích, Thú cưng, Sách",
-      "amount": "Số tiền (yên)",
-      "memo": "Ghi chú (tùy chọn)",
-      "memoPlaceholder": "vd: Bữa trưa",
-      "submit": "Ghi lại",
-      "amountRequired": "Vui lòng nhập số tiền hợp lệ",
-      "customCategoryRequired": "Vui lòng nhập tên danh mục tùy chỉnh",
-      "expenseRecorded": "Chi tiêu đã được ghi lại！",
-      "incomeRecorded": "Thu nhập đã được ghi lại！"
-    },
-    "dateFormat": "{{year}}年{{month}}月{{day}}日"
-  },
-  "shopping": {
-    "form": {
-      "title": "Thêm thủ công",
-      "productName": "Tên sản phẩm",
-      "productNamePlaceholder": "vd: Sữa",
-      "quantity": "Số lượng",
-      "submit": "Thêm vào danh sách",
-      "productNameRequired": "Vui lòng nhập tên sản phẩm"
-    }
-  },
-  "goalsSummary": {
-    "noGoals": "Chưa đặt mục tiêu",
-    "suggestion": "Đặt mục tiêu để bắt đầu lối sống lành mạnh",
-    "createGoal": "Tạo mục tiêu",
-    "progress": "Tiến độ mục tiêu",
-    "activeGoals": "mục tiêu đang hoạt động",
-    "viewAll": "Xem tất cả"
-  },
-  "meals": {
-    "form": {
-      "title": "Ghi lại bữa ăn",
-      "dishName": "Tên món ăn",
-      "dishNamePlaceholder": "vd: Cơm cà ri",
-      "dishNameHint": "Nhập tên món ăn để hiển thị màn hình đo calo",
-      "recorded": "Đã ghi lại bữa ăn！",
-      "recordFailed": "Ghi lại bữa ăn thất bại"
-    },
-    "screen": {
-      "title": "Bản ghi bữa ăn"
-    }
-  },
-  "stock": {
-    "form": {
-      "title": "Thêm thủ công",
-      "item": "Mục",
-      "itemPlaceholder": "vd: Sữa",
-      "category": "Danh mục",
-      "expiryDate": "Ngày hết hạn",
-      "quantity": "Số lượng",
-      "submit": "Đăng ký vào kho",
-      "itemRequired": "Vui lòng nhập tên mục",
-      "success": "Đã thêm vào kho！"
-    },
-    "categories": {
-      "staple": "Lương thực chính",
-      "protein": "Protein",
-      "vegetable": "Rau",
-      "fruit": "Trái cây",
-      "dairy": "Sữa",
-      "seasoning": "Gia vị",
-      "other": "Khác"
-    },
-    "screen": {
-      "title": "Quản lý kho"
-    }
-  },
-  "expense": {
-    "list": {
-      "deleteConfirm": "Xóa chi tiêu này?",
-      "noData": "Chưa có dữ liệu thu chi cho tháng này"
-    },
-    "screen": {
-      "title": "Sổ chi tiêu",
-      "history": "Lịch sử chi tiêu"
-    },
-    "summary": {
-      "title": "Tổng hợp theo danh mục",
-      "noData": "Không có dữ liệu chi tiêu cho tháng này",
-      "totalExpense": "Tổng chi tiêu"
-    },
-    "budget": {
-      "title": "Ngân sách hàng tháng",
-      "remaining": "Còn lại ¥{{amount}}",
-      "exceeded": "Vượt quá ¥{{amount}}",
-      "expense": "Chi tiêu",
-      "budget": "Ngân sách",
-      "status": {
-        "exceeded": "Vượt quá ngân sách",
-        "low": "Ngân sách còn lại ít",
-        "onTrack": "Đúng hướng"
-      }
-    }
-  },
-  "shopping": {
-    "screen": {
-      "title": "Danh sách mua sắm"
-    }
-  },
-  "goals": {
+    "deleteFailed": "Xóa mục tiêu thất bại",
     "setting": {
-      "title": "Thiết lập mục tiêu",
-      "editTitle": "Chỉnh sửa mục tiêu",
+      "title": "Cài đặt mục tiêu",
+      "editTitle": "Sửa mục tiêu",
       "newTitle": "Mục tiêu mới",
       "type": "Loại mục tiêu",
       "calorie": {
@@ -399,24 +297,24 @@
         "description": "Đặt cân nặng mục tiêu"
       },
       "exercise": {
-        "label": "Mục tiêu tập thể dục",
+        "label": "Mục tiêu vận động",
         "unit": "phút",
-        "description": "Đặt thời gian tập thể dục hàng ngày"
+        "description": "Đặt thời gian vận động hàng ngày"
       },
       "titleLabel": "Tiêu đề",
-      "descriptionLabel": "Mô tả（tùy chọn）",
+      "descriptionLabel": "Mô tả (tùy chọn)",
       "targetValueLabel": "Giá trị mục tiêu",
-      "periodLabel": "Thời kỳ",
+      "periodLabel": "Thời gian",
       "required": "Vui lòng nhập tiêu đề và giá trị mục tiêu",
       "saveFailed": "Lưu mục tiêu thất bại"
     },
     "progress": {
-      "achieved": "Đạt được！",
+      "achieved": "Đã đạt được!",
       "budgetExceeded": "Vượt quá ngân sách",
-      "budgetLow": "Ngân sách còn lại ít",
-      "onTrack": "Đúng hướng",
+      "budgetLow": "Sắp hết ngân sách",
+      "onTrack": "Đúng tiến độ",
       "inProgress": "Đang tiến hành",
-      "paceUp": "Tăng tốc",
+      "paceUp": "Cần cố gắng hơn",
       "needEffort": "Cần nỗ lực",
       "deleteConfirm": "Xóa mục tiêu này?",
       "current": "Hiện tại",
@@ -425,7 +323,7 @@
       "remaining": "Còn lại",
       "daysRemaining": "Số ngày còn lại",
       "dailyAverage": "Trung bình hàng ngày",
-      "estimatedDate": "Ngày hoàn thành dự kiến",
+      "estimatedDate": "Ngày dự kiến hoàn thành",
       "period": {
         "day": "1 ngày",
         "week": "1 tuần",
@@ -433,27 +331,503 @@
         "daysRemaining": " ngày",
         "custom": "Tùy chỉnh"
       }
+    },
+    "progressCard": {
+      "current": "Hiện tại:",
+      "target": "Mục tiêu:",
+      "exceeded": "Vượt quá:",
+      "remaining": "Còn lại:",
+      "daysRemaining": "Số ngày còn lại",
+      "dailyAverage": "Trung bình hàng ngày",
+      "predictedDate": "Ngày dự kiến"
+    },
+    "settingScreen": {
+      "startDate": "Ngày bắt đầu",
+      "endDate": "Ngày kết thúc",
+      "select": "Vui lòng chọn",
+      "update": "Cập nhật",
+      "create": "Tạo mục tiêu"
     }
   },
-  "bottomNav": {
+  "dashboard": {
+    "title": "Trang chủ",
+    "subtitle": "Quản lý sức khỏe và tài chính"
+  },
+  "screens": {
     "home": "Trang chủ",
     "meals": "Bữa ăn",
-    "scan": "Quét",
+    "barcode": "Quét",
     "report": "Báo cáo",
     "social": "Xã hội",
     "settings": "Cài đặt",
-    "mainNavigation": "Điều hướng chính"
+    "stock": "Kho",
+    "shopping": "Mua sắm",
+    "recipe": "Công thức",
+    "expense": "Chi tiêu",
+    "badges": "Huy hiệu",
+    "admin": "Quản trị",
+    "goals": "Mục tiêu",
+    "exercise": "Vận động"
   },
-  "settings": {
-    "prefecture": {
-      "title": "Tỉnh"
+  "summary": {
+    "todayCalories": "Calo hôm nay",
+    "monthExpense": "Chi tiêu tháng này",
+    "bmi": "BMI"
+  },
+  "quickActions": {
+    "meals": "Bữa ăn",
+    "exercise": "Vận động",
+    "scan": "Quét",
+    "expense": "Chi tiêu",
+    "stock": "Kho",
+    "recipe": "Công thức",
+    "shopping": "Mua sắm",
+    "report": "Báo cáo",
+    "badges": "Huy hiệu",
+    "goals": "Mục tiêu",
+    "settings": "Cài đặt"
+  },
+  "auth": {
+    "appName": "Kensuke",
+    "appDescription": "Ứng dụng quản lý cuộc sống hỗ trợ AI \"Kensuke\"",
+    "email": "Địa chỉ email",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "6 ký tự trở lên",
+    "login": "Đăng nhập",
+    "processing": "Đang xử lý...",
+    "forgotPassword": "Quên mật khẩu?",
+    "noAccount": "Chưa có tài khoản?",
+    "or": "hoặc",
+    "googleLogin": "Đăng nhập bằng Google",
+    "register": "Đăng ký",
+    "passwordReset": "Đặt lại mật khẩu",
+    "authError": "Đã xảy ra lỗi xác thực",
+    "securityNote": "※ Xác thực an toàn qua Firebase",
+    "dataNote": "Dữ liệu được lưu trữ an toàn trong Firestore",
+    "next": "Tiếp theo",
+    "nextProcessing": "Tiếp theo...",
+    "skipAndNext": "Bỏ qua và tiếp tục",
+    "complete": "Hoàn thành",
+    "usernamePlaceholder": "Nguyen Van A",
+    "passwordConfirmPlaceholder": "Nhập lại mật khẩu",
+    "registerFlow": {
+      "step1": {
+        "title": "Nhập Email",
+        "description": "Chúng tôi sẽ gửi mã xác minh",
+        "sendCode": "Gửi mã",
+        "sending": "Đang gửi...",
+        "sendFailed": "Gửi mã thất bại"
+      },
+      "step2": {
+        "title": "Nhập mã",
+        "description": "Nhập mã 6 chữ số đã gửi đến {{email}}",
+        "verify": "Xác minh",
+        "verifying": "Đang xác minh...",
+        "resend": "Gửi lại mã",
+        "resendSuccess": "Đã gửi lại mã!",
+        "resendFailed": "Gửi lại thất bại",
+        "invalidCode": "Mã không hợp lệ",
+        "verifyFailed": "Xác minh thất bại"
+      },
+      "step3": {
+        "title": "Thông tin người dùng",
+        "username": "Tên người dùng",
+        "password": "Mật khẩu",
+        "passwordConfirm": "Xác nhận mật khẩu",
+        "passwordMismatch": "Mật khẩu không khớp",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+        "usernameRequired": "Vui lòng nhập tên người dùng"
+      },
+      "step4": {
+        "title": "Thông tin sức khỏe",
+        "description": "Nhập thông tin cá nhân (tùy chọn)",
+        "age": "Tuổi",
+        "height": "Chiều cao (cm)",
+        "weight": "Cân nặng (kg)",
+        "savings": "Tiết kiệm (yên)",
+        "optional": "(Tùy chọn)",
+        "next": "Tiếp theo",
+        "skip": "Bỏ qua"
+      },
+      "step5": {
+        "title": "Chọn tỉnh/thành phố",
+        "description": "Chọn tỉnh/thành phố của bạn (Có thể thay đổi 30 ngày một lần)",
+        "label": "Tỉnh/Thành phố",
+        "prefectureRequired": "Vui lòng chọn tỉnh/thành phố",
+        "createAccount": "Tạo tài khoản",
+        "creating": "Đang tạo...",
+        "complete": "Hoàn thành",
+        "createFailed": "Tạo tài khoản thất bại",
+        "profileCreateFailed": "Tạo hồ sơ thất bại: {{error}}"
+      },
+      "back": "Quay lại"
     },
-    "export": {
-      "csvHeader": "Loại,Tên,Calo,Số tiền,Ngày",
-      "csvFilename": "UngDungTaiChinhSucKhoe_",
-      "jsonFilename": "UngDungTaiChinhSucKhoe_",
-      "mealRecord": "Bản ghi bữa ăn"
+    "passwordResetFlow": {
+      "step1": {
+        "title": "Nhập Email",
+        "description": "Chúng tôi sẽ gửi mã để đặt lại mật khẩu",
+        "sendCode": "Gửi mã",
+        "sending": "Đang gửi...",
+        "sendFailed": "Gửi mã thất bại"
+      },
+      "step2": {
+        "title": "Nhập mã",
+        "description": "Nhập mã 6 chữ số đã gửi đến {{email}}",
+        "verify": "Xác minh",
+        "verifying": "Đang xác minh...",
+        "resend": "Gửi lại mã",
+        "resendSuccess": "Đã gửi lại mã!",
+        "resendFailed": "Gửi lại thất bại",
+        "invalidCode": "Mã không hợp lệ",
+        "verifyFailed": "Xác minh thất bại"
+      },
+      "step3": {
+        "title": "Đặt mật khẩu mới",
+        "description": "Nhập mật khẩu mới của bạn",
+        "newPassword": "Mật khẩu mới",
+        "confirmPassword": "Xác nhận mật khẩu",
+        "passwordMismatch": "Mật khẩu không khớp",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+        "update": "Cập nhật mật khẩu",
+        "updating": "Đang cập nhật...",
+        "updateFailed": "Cập nhật mật khẩu thất bại",
+        "updateSuccess": "Đặt lại mật khẩu hoàn tất! Vui lòng đăng nhập bằng mật khẩu mới."
+      },
+      "back": "Quay lại"
+    }
+  },
+  "product": {
+    "productInfo": "Đã lấy thông tin sản phẩm",
+    "productName": "Tên sản phẩm",
+    "manufacturer": "Nhà sản xuất",
+    "barcode": "Mã vạch",
+    "price": "Giá (Tham khảo)",
+    "source": {
+      "rakutenIchiba": "Rakuten Ichiba",
+      "rakutenProduct": "Rakuten Product",
+      "jancodeLookup": "Tra cứu mã JAN",
+      "openfoodfacts": "Open Food Facts",
+      "mock": "Dữ liệu giả lập"
+    },
+    "addToMeals": {
+      "title": "Thêm vào bữa ăn",
+      "calories": "Calo (kcal)",
+      "caloriesPlaceholder": "Ví dụ: 200",
+      "price": "Giá (yên)",
+      "pricePlaceholder": "Ví dụ: 150",
+      "button": "Thêm vào bữa ăn",
+      "caloriesRequired": "Vui lòng nhập calo",
+      "priceRequired": "Vui lòng nhập giá",
+      "success": "Đã thêm vào bữa ăn!"
+    },
+    "addToStock": {
+      "title": "Thêm vào kho",
+      "expiryDays": "Số ngày đến khi hết hạn",
+      "expiryDaysPlaceholder": "Ví dụ: 7",
+      "button": "Thêm vào kho",
+      "buttonWithNavigate": "Thêm & Đến kho",
+      "expiryDaysRequired": "Vui lòng nhập số ngày hết hạn",
+      "success": "Đã thêm vào kho!"
+    },
+    "cancel": "Hủy"
+  },
+  "receipt": {
+    "title": "Nội dung hóa đơn",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả",
+    "add": "Thêm",
+    "store": "Cửa hàng:",
+    "date": "Ngày:",
+    "noItems": "Không tìm thấy mặt hàng nào. Vui lòng thêm thủ công.",
+    "productName": "Tên sản phẩm",
+    "price": "Giá",
+    "quantity": "SL: {{count}}",
+    "total": "Tổng cộng",
+    "addToStock": "Thêm vào kho ({{count}})",
+    "addToShoppingList": "Thêm vào danh sách mua sắm",
+    "addToExpenses": "Thêm vào chi tiêu",
+    "cancel": "Hủy",
+    "showRawText": "Hiện văn bản gốc",
+    "deleteConfirm": "Xóa mục này?",
+    "productNamePrompt": "Nhập tên sản phẩm",
+    "pricePrompt": "Nhập giá",
+    "invalidPrice": "Giá không hợp lệ",
+    "noItemsError": "Không có mặt hàng",
+    "addToExpensesConfirm": "Thêm {{count}} mục vào chi tiêu?\nTổng cộng: ¥{{total}}",
+    "addToExpensesSuccess": "Đã thêm vào chi tiêu!",
+    "addToShoppingListConfirm": "Thêm {{count}} mục vào danh sách mua sắm?",
+    "addToShoppingListSuccess": "Đã thêm vào danh sách mua sắm!",
+    "selectItemsRequired": "Vui lòng chọn mặt hàng",
+    "addToStockConfirm": "Thêm {{count}} mục vào kho?",
+    "addToStockSuccess": "Đã thêm {{count}} mục vào kho!\nHạn sử dụng: {{date}} ({{days}} ngày sau)."
+  },
+  "expense": {
+    "categories": {
+      "food": "Ăn uống",
+      "transport": "Đi lại",
+      "utilities": "Điện nước",
+      "entertainment": "Giải trí",
+      "health": "Y tế",
+      "other": "Khác",
+      "salary": "Lương",
+      "bonus": "Thưởng"
+    },
+    "form": {
+      "type": "Loại",
+      "expense": "Chi tiêu",
+      "income": "Thu nhập",
+      "date": "Ngày",
+      "category": "Danh mục",
+      "customCategory": "Danh mục tùy chỉnh",
+      "customCategoryPlaceholder": "Ví dụ: Sở thích, Thú cưng",
+      "amount": "Số tiền (yên)",
+      "memo": "Ghi chú (tùy chọn)",
+      "memoPlaceholder": "Ví dụ: Ăn trưa",
+      "submit": "Ghi lại",
+      "amountRequired": "Số tiền không hợp lệ",
+      "customCategoryRequired": "Nhập danh mục tùy chỉnh",
+      "expenseRecorded": "Đã ghi lại chi tiêu!",
+      "incomeRecorded": "Đã ghi lại thu nhập!"
+    },
+    "dateFormat": "{{year}}/{{month}}/{{day}}",
+    "list": {
+      "deleteConfirm": "Xóa chi tiêu này?",
+      "noData": "Không có dữ liệu cho tháng này"
+    },
+    "screen": {
+      "title": "Sổ chi tiêu",
+      "history": "Lịch sử"
+    },
+    "summary": {
+      "title": "Tóm tắt theo danh mục",
+      "noData": "Không có dữ liệu cho tháng này",
+      "totalExpense": "Tổng chi tiêu"
+    },
+    "budget": {
+      "title": "Ngân sách hàng tháng",
+      "editPrompt": "Nhập ngân sách hàng tháng mới",
+      "invalidAmount": "Số tiền không hợp lệ",
+      "remaining": "Còn lại ¥{{amount}}",
+      "exceeded": "Vượt quá ¥{{amount}}",
+      "expense": "Chi tiêu",
+      "budget": "Ngân sách",
+      "status": {
+        "exceeded": "Vượt quá",
+        "low": "Thấp",
+        "onTrack": "Ổn định"
+      }
+    }
+  },
+  "shopping": {
+    "screen": {
+      "title": "Danh sách mua sắm"
+    },
+    "form": {
+      "title": "Thêm thủ công",
+      "productName": "Tên sản phẩm",
+      "productNamePlaceholder": "Ví dụ: Sữa",
+      "quantity": "SL",
+      "submit": "Thêm",
+      "productNameRequired": "Nhập tên sản phẩm"
+    },
+    "list": {
+      "title": "Danh sách mua sắm",
+      "empty": "Danh sách trống",
+      "clearConfirm": "Xóa tất cả mục đã chọn?",
+      "noCheckedItems": "Không có mục nào được chọn",
+      "moveToStockConfirm": "Thêm {{count}} mục đã chọn vào kho?\n(Hạn sử dụng đặt là 7 ngày sau)",
+      "afterShopping": "Sau khi mua sắm!",
+      "moveToStockDescription": "Thêm hàng loạt mục đã chọn vào kho.\nHạn sử dụng tự động đặt là 7 ngày.",
+      "addToStock": "Thêm vào kho ({{count}})",
+      "clearChecked": "Xóa đã chọn",
+      "movedToStock": "Đã thêm vào kho!"
+    },
+    "healthAdvisor": {
+      "title": "Lời khuyên sức khỏe",
+      "about": "Về \"{{productName}}\"",
+      "category": "📊 Danh mục: {{category}}",
+      "alternatives": "Lựa chọn thay thế lành mạnh hơn",
+      "aiAnalysis": "Phân tích bằng AI",
+      "aiAnalyzing": "Đang phân tích...",
+      "continueAnyway": "Vẫn thêm",
+      "cancel": "Hủy"
+    }
+  },
+  "goalsSummary": {
+    "noGoals": "Chưa đặt mục tiêu",
+    "suggestion": "Đặt mục tiêu để bắt đầu lối sống lành mạnh",
+    "createGoal": "Tạo mục tiêu",
+    "progress": "Tiến độ mục tiêu",
+    "activeGoals": "mục tiêu đang hoạt động",
+    "viewAll": "Xem tất cả"
+  },
+  "meals": {
+    "form": {
+      "title": "Ghi lại bữa ăn",
+      "dishName": "Tên món ăn",
+      "dishNamePlaceholder": "Ví dụ: Cơm cà ri",
+      "dishNameHint": "Nhập tên để đo lượng calo",
+      "scanCalories": "Quét calo bằng camera",
+      "submit": "Ghi lại",
+      "recorded": "Đã ghi lại bữa ăn!",
+      "recordFailed": "Ghi lại thất bại",
+      "template": {
+        "tab": "Bộ của tôi",
+        "manualTab": "Thủ công",
+        "add": "Thêm vào Bộ của tôi",
+        "addSuccess": "Đã thêm vào Bộ của tôi!",
+        "deleteConfirm": "Xóa bộ này?",
+        "empty": "Không có bộ nào",
+        "use": "Sử dụng",
+        "name": "Tên bộ",
+        "calories": "Calo",
+        "price": "Giá"
+      }
+    },
+    "screen": {
+      "title": "Ghi chép bữa ăn"
+    },
+    "list": {
+      "title": "Ghi chép hôm nay",
+      "empty": "Chưa có ghi chép",
+      "deleteConfirm": "Xóa ghi chép này?",
+      "totalCalories": "Tổng calo: {{calories}} kcal",
+      "totalPrice": "Tổng giá: ¥{{price}}"
+    }
+  },
+  "stock": {
+    "form": {
+      "title": "Thêm thủ công",
+      "item": "Mặt hàng",
+      "itemPlaceholder": "Ví dụ: Sữa",
+      "category": "Danh mục",
+      "expiryDate": "Hạn sử dụng",
+      "quantity": "SL",
+      "submit": "Thêm vào kho",
+      "itemRequired": "Nhập tên mặt hàng",
+      "success": "Đã thêm vào kho!"
+    },
+    "categories": {
+      "staple": "Lương thực chính",
+      "protein": "Chất đạm",
+      "vegetable": "Rau củ",
+      "fruit": "Trái cây",
+      "dairy": "Sản phẩm từ sữa",
+      "seasoning": "Gia vị",
+      "other": "Khác"
+    },
+    "screen": {
+      "title": "Quản lý kho"
+    },
+    "list": {
+      "title": "Danh sách kho ({{count}})",
+      "searchPlaceholder": "Tìm kiếm kho...",
+      "category": "Danh mục",
+      "sortOrder": "Sắp xếp",
+      "allCategories": "Tất cả",
+      "sortOptions": {
+        "expiry": "Hạn sử dụng",
+        "name": "Tên",
+        "category": "Danh mục"
+      },
+      "empty": "Kho trống",
+      "noResults": "Không có kết quả",
+      "deleteConfirm": "Xóa mục này?",
+      "deleteWhenZero": "Số lượng là 0. Xóa mục?",
+      "consume": "Tiêu thụ & Ghi lại",
+      "consumeConfirm": "Tiêu thụ {{name}} và thêm vào ghi chép bữa ăn?",
+      "consumed": "Đã tiêu thụ \"{{name}}\" và ghi lại!",
+      "addToShoppingList": "Đã thêm \"{{name}}\" vào danh sách mua sắm!",
+      "addToShoppingListTitle": "Thêm vào danh sách mua sắm",
+      "deleteTitle": "Xóa",
+      "expiryStatus": {
+        "expired": "Đã hết hạn!",
+        "tomorrow": "Hết hạn ngày mai",
+        "remaining": "Còn {{days}} ngày"
+      }
+    },
+    "expiringAlert": {
+      "today": "🚨 Dùng hôm nay",
+      "tomorrow": "⏰ Hết hạn ngày mai",
+      "addToShoppingList": "Thêm hàng sắp hết hạn vào danh sách mua sắm",
+      "addConfirm": "Thêm {{count}} hàng sắp hết hạn vào danh sách mua sắm?",
+      "addSuccess": "Đã thêm {{count}} mục vào danh sách mua sắm!"
+    },
+    "stats": {
+      "title": "Thống kê kho",
+      "totalStock": "Tổng kho",
+      "items": "mục",
+      "types": "loại",
+      "byCategory": "Theo danh mục",
+      "byExpiry": "Theo hạn sử dụng",
+      "expired": "⚠️ Đã hết hạn",
+      "today": "🔔 Hôm nay",
+      "tomorrow": "📅 Ngày mai",
+      "soon": "⏰ Trong 3 ngày",
+      "safe": "✅ An toàn"
+    }
+  },
+  "recipe": {
+    "generator": {
+      "title": "Tạo công thức",
+      "ingredients": "Nguyên liệu",
+      "ingredientsPlaceholder": "Ví dụ: Thịt gà, Hành tây, Cà rốt",
+      "difficulty": "Độ khó",
+      "dietaryRestriction": "Hạn chế ăn uống",
+      "customRequest": "Yêu cầu tùy chỉnh (Tùy chọn)",
+      "customRequestPlaceholder": "Ví dụ: Lành mạnh, Nhanh chóng",
+      "generate": "Tạo công thức",
+      "generateFromStock": "Tạo từ kho",
+      "selectIngredients": "Chọn nguyên liệu",
+      "selectAll": "Chọn tất cả",
+      "addSelected": "Thêm đã chọn",
+      "noStock": "Không tìm thấy nguyên liệu khả dụng",
+      "ingredientsRequired": "Vui lòng nhập nguyên liệu",
+      "selectIngredientsRequired": "Vui lòng chọn nguyên liệu",
+      "difficultyOptions": {
+        "none": "Bất kỳ",
+        "super_easy": "Siêu dễ",
+        "under_5min": "Dưới 5 phút",
+        "under_10min": "Dưới 10 phút",
+        "no_fire": "Không dùng lửa"
+      },
+      "dietaryOptions": {
+        "none": "Không",
+        "vegetarian": "Chay",
+        "vegan": "Thuần chay"
+      },
+      "defaultTitle": "Công thức từ kho",
+      "defaultCustomRequest": "Gợi ý tự động từ kho",
+      "error": {
+        "generateFromStockFailed": "Tạo từ kho thất bại.",
+        "generateFailed": "Tạo công thức thất bại.",
+        "apiKey": {
+          "title": "[Giải pháp]",
+          "step1": "1. Kiểm tra khóa API trong cài đặt",
+          "step2": "2. Xác minh khóa API chính xác",
+          "step3": "3. Xác minh khóa API hợp lệ trong Google AI Studio"
+        },
+        "rateLimit": {
+          "title": "[Giải pháp]",
+          "step1": "1. Vui lòng đợi một lát và thử lại",
+          "step2": "2. Kiểm tra giới hạn sử dụng API"
+        },
+        "network": {
+          "title": "[Giải pháp]",
+          "step1": "1. Kiểm tra kết nối internet",
+          "step2": "2. Kiểm tra tường lửa hoặc cài đặt proxy"
+        },
+        "request": {
+          "title": "[Giải pháp]",
+          "step1": "1. Kiểm tra dữ liệu kho",
+          "step2": "2. Vui lòng đợi một lát và thử lại"
+        }
+      },
+      "recipeTitle": "Công thức sử dụng {{ingredients}}",
+      "selectedCount": "Đã chọn {{count}}",
+      "noStockInModal": "Không tìm thấy nguyên liệu khả dụng",
+      "quantity": "SL: {{count}}",
+      "expiryDays": "Hết hạn: {{days}} ngày"
     }
   }
 }
-

@@ -383,7 +383,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              placeholder="例: 30"
+              placeholder={t('auth.registerFlow.step4.agePlaceholder')}
               min="1"
               max="150"
             />
@@ -397,7 +397,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="number"
               value={height}
               onChange={(e) => setHeight(e.target.value)}
-              placeholder="例: 170"
+              placeholder={t('auth.registerFlow.step4.heightPlaceholder')}
               min="1"
               max="300"
             />
@@ -411,7 +411,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="number"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              placeholder="例: 65"
+              placeholder={t('auth.registerFlow.step4.weightPlaceholder')}
               min="1"
               max="500"
               step="0.1"
@@ -426,7 +426,7 @@ export const RegisterFlow: React.FC<RegisterFlowProps> = ({ onBack }) => {
               type="number"
               value={savings}
               onChange={(e) => setSavings(e.target.value)}
-              placeholder="例: 1000000"
+              placeholder={t('auth.registerFlow.step4.savingsPlaceholder')}
               min="0"
               step="1000"
             />

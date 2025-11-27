@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useTransition, Suspense, useMemo, useDeferredValue } from 'react';
 import { MdArrowBack, MdEdit, MdLink, MdCalendarToday } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile } from '../../utils/profile';
 import { getUserPosts, getUserMediaPosts, getUserLikedPosts, getUserReplies, getPost } from '../../utils/post';
@@ -29,6 +30,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
   onPostClick,
   onUserClick,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -155,76 +157,76 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-        <div style={{ fontSize: '16px', color: 'var(--text)', marginBottom: '16px' }}>{error || 'プロフィールが見つかりません'}</div>
-        <button onClick={onBack} style={{ padding: '10px 20px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>戻る</button>
+        <div style={{ fontSize: '16px', color: 'var(--text)', marginBottom: '16px' }}>{error || t('social.profile.notFound')}</div>
+        <button onClick={onBack} style={{ padding: '10px 20px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>{t('common.back')}</button>
       </div>
     );
   }
 
   return (
     <div style={{ paddingBottom: '80px', background: 'var(--card)' }}>
-      <div 
+      <div
         className="profile-header-modern"
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          padding: '16px 20px', 
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
           background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.02) 100%)',
           backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(59, 130, 246, 0.1)', 
-          position: 'sticky', 
-          top: 0, 
-          zIndex: 10 
+          borderBottom: '1px solid rgba(59, 130, 246, 0.1)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10
         }}
       >
-        <button 
-          onClick={onBack} 
+        <button
+          onClick={onBack}
           className="back-button-modern"
-          style={{ 
-            background: 'rgba(59, 130, 246, 0.1)', 
-            border: 'none', 
-            cursor: 'pointer', 
-            padding: '10px', 
-            borderRadius: '12px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: 'var(--primary)', 
+          style={{
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '10px',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--primary)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }} 
-          onMouseEnter={(e) => { 
+          }}
+          onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
             e.currentTarget.style.transform = 'translateX(-2px)';
-          }} 
-          onMouseLeave={(e) => { 
+          }}
+          onMouseLeave={(e) => {
             e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
             e.currentTarget.style.transform = 'translateX(0)';
           }}
         >
           <MdArrowBack size={24} />
         </button>
-        <h2 style={{ 
-          fontSize: '20px', 
-          fontWeight: 700, 
+        <h2 style={{
+          fontSize: '20px',
+          fontWeight: 700,
           background: 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-          margin: 0 
+          margin: 0
         }}>
           {profile.displayName}
         </h2>
         <div style={{ width: '40px' }} />
       </div>
 
-      <div 
+      <div
         className="profile-cover-modern"
-        style={{ 
-          width: '100%', 
-          height: '180px', 
-          background: profile.coverUrl 
-            ? `url(${profile.coverUrl}) center/cover` 
+        style={{
+          width: '100%',
+          height: '180px',
+          background: profile.coverUrl
+            ? `url(${profile.coverUrl}) center/cover`
             : 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
           position: 'relative',
           overflow: 'hidden',
@@ -276,7 +278,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
               }}
             >
               <MdEdit size={18} />
-              プロフィールを編集
+              {t('social.profile.edit')}
             </button>
           )}
         </div>
@@ -296,13 +298,13 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--text-secondary)' }}><MdCalendarToday size={16} />{formatJoinDate(profile.createdAt)}</div>
         </div>
 
-        <div 
+        <div
           className="profile-stats-modern"
-          style={{ 
-            display: 'flex', 
-            gap: '24px', 
-            padding: '20px 0', 
-            borderBottom: '1px solid var(--border)' 
+          style={{
+            display: 'flex',
+            gap: '24px',
+            padding: '20px 0',
+            borderBottom: '1px solid var(--border)'
           }}
         >
           <div style={{
@@ -315,21 +317,21 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
               {formatCount(profile.stats.postCount)}
             </span>
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              投稿
+              {t('social.profile.posts')}
             </span>
           </div>
         </div>
       </div>
 
-      <div 
+      <div
         className="profile-tabs-modern"
-        style={{ 
-          display: 'flex', 
-          background: 'var(--card)', 
-          borderBottom: '1px solid var(--border)', 
-          position: 'sticky', 
-          top: '69px', 
-          zIndex: 9 
+        style={{
+          display: 'flex',
+          background: 'var(--card)',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: '69px',
+          zIndex: 9
         }}
       >
         {(['posts', 'replies', 'media', 'likes'] as ProfileTab[]).map((tab) => (
@@ -363,10 +365,10 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
               }
             }}
           >
-            {tab === 'posts' && '投稿'}
-            {tab === 'replies' && '返信'}
-            {tab === 'media' && 'メディア'}
-            {tab === 'likes' && 'いいね'}
+            {tab === 'posts' && t('social.profile.posts')}
+            {tab === 'replies' && t('social.profile.replies')}
+            {tab === 'media' && t('social.profile.media')}
+            {tab === 'likes' && t('social.profile.likes')}
           </button>
         ))}
       </div>
@@ -380,20 +382,20 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
             </div>
           </Suspense>
         ) : memoizedPosts.length === 0 ? (
-          <div 
+          <div
             className="empty-posts-modern"
-            style={{ 
-              textAlign: 'center', 
-              padding: '60px 20px', 
-              color: 'var(--text-secondary)' 
+            style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: 'var(--text-secondary)'
             }}
           >
             <div style={{ fontSize: '64px', marginBottom: '16px', animation: 'fadeInUp 0.5s ease' }}>
               {activeTab === 'media' ? '📷' : activeTab === 'likes' ? '❤️' : activeTab === 'replies' ? '💬' : '📝'}
             </div>
             <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)' }}>
-              {activeTab === 'posts' && (isOwnProfile ? 'まだ投稿がありません' : 'このユーザーはまだ投稿していません')}
-              {activeTab === 'replies' && (isOwnProfile ? '返信はまだありません' : 'このユーザーはまだ返信していません')}
+              {activeTab === 'posts' && (isOwnProfile ? t('social.profile.noPosts') : t('social.profile.userNoPosts'))}
+              {activeTab === 'replies' && (isOwnProfile ? t('social.profile.noReplies') : t('social.profile.userNoReplies'))}
               {activeTab === 'media' && (isOwnProfile ? '画像付き投稿はまだありません' : 'このユーザーはまだ画像を投稿していません')}
               {activeTab === 'likes' && (isOwnProfile ? 'まだいいねした投稿がありません' : 'このユーザーのいいねは非公開です')}
             </div>
@@ -403,13 +405,13 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
             <div>
               {activeTab === 'posts' && pinnedPost && (
                 <div style={{ animation: 'fadeInUp 0.5s ease' }}>
-                  <PostCard 
-                    key={pinnedPost.id} 
-                    post={pinnedPost} 
-                    onPostClick={onPostClick} 
-                    onUserClick={onUserClick} 
-                    showPinButton={!!isOwnProfile} 
-                    onPinToggle={handlePinToggle} 
+                  <PostCard
+                    key={pinnedPost.id}
+                    post={pinnedPost}
+                    onPostClick={onPostClick}
+                    onUserClick={onUserClick}
+                    showPinButton={!!isOwnProfile}
+                    onPinToggle={handlePinToggle}
                   />
                 </div>
               )}
@@ -420,12 +422,12 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
                     animation: `fadeInUp 0.5s ease ${index * 0.1}s both`,
                   }}
                 >
-                  <PostCard 
-                    post={post} 
-                    onPostClick={onPostClick} 
-                    onUserClick={onUserClick} 
-                    showPinButton={!!isOwnProfile && activeTab === 'posts'} 
-                    onPinToggle={handlePinToggle} 
+                  <PostCard
+                    post={post}
+                    onPostClick={onPostClick}
+                    onUserClick={onUserClick}
+                    showPinButton={!!isOwnProfile && activeTab === 'posts'}
+                    onPinToggle={handlePinToggle}
                   />
                 </div>
               ))}

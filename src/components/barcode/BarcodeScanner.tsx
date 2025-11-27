@@ -94,6 +94,23 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               if (product) {
                 onProductFound(product);
                 stopScanning();
+
+                // バーコードスキャン回数を更新
+                import('../../config/firebase').then(({ auth }) => {
+                  if (auth.currentUser) {
+                    import('../../utils/profile').then(({ getUserProfile, updateUserStats }) => {
+                      getUserProfile(auth.currentUser!.uid).then((profile) => {
+                        if (profile) {
+                          const currentCount = profile.stats.barcodeScanCount || 0;
+                          updateUserStats(auth.currentUser!.uid, {
+                            barcodeScanCount: currentCount + 1
+                          }).catch(err => console.error('Stats update failed:', err));
+                        }
+                      });
+                    });
+                  }
+                });
+
               } else {
                 setError(t('barcode.productNotFound', { code }));
                 setIsProcessing(false);

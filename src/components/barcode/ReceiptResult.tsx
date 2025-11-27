@@ -267,7 +267,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       >
         {result.storeName && (
           <div style={{ marginBottom: '4px' }}>
-            <strong>{t('receipt.store')}</strong> {result.storeName}
+            <strong>{t('receipt.store')}</strong> {result.storeName} {result.branchName && <span style={{ marginLeft: '8px' }}>{result.branchName}</span>}
           </div>
         )}
         {result.date && (

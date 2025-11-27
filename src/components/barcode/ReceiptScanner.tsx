@@ -42,6 +42,22 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
     try {
       const result = await scanReceipt(file);
       onReceiptScanned(result);
+
+      // バーコードスキャン回数を更新（レシートスキャンもカウントに含める）
+      import('../../config/firebase').then(({ auth }) => {
+        if (auth.currentUser) {
+          import('../../utils/profile').then(({ getUserProfile, updateUserStats }) => {
+            getUserProfile(auth.currentUser!.uid).then((profile) => {
+              if (profile) {
+                const currentCount = profile.stats.barcodeScanCount || 0;
+                updateUserStats(auth.currentUser!.uid, {
+                  barcodeScanCount: currentCount + 1
+                }).catch(err => console.error('Stats update failed:', err));
+              }
+            });
+          });
+        }
+      });
     } catch (err: any) {
       console.error('OCRエラー:', err);
       setError(err.message || t('barcode.receiptScanner.ocrError'));

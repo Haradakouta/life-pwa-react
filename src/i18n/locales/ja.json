@@ -30,14 +30,56 @@
       "thu": "木",
       "fri": "金",
       "sat": "土"
+    },
+    "errorBoundary": {
+      "title": "エラーが発生しました",
+      "description": "申し訳ございません。予期しないエラーが発生しました。",
+      "details": "エラー詳細",
+      "retry": "再試行"
+    },
+    "titleUnlocked": {
+      "title": "称号を獲得しました！",
+      "description": "{{count}}個の新しい称号を獲得しました",
+      "close": "閉じる"
     }
   },
   "settings": {
     "title": "設定",
     "profile": {
       "title": "プロフィール",
-      "edit": "プロフィールを編集",
-      "description": "アイコン、名前、自己紹介などを編集"
+      "edit": "プロフィール編集",
+      "description": "アイコンや名前、自己紹介などを編集します",
+      "loadError": "プロフィールの読み込みに失敗しました",
+      "loginRequired": "ログインが必要です",
+      "avatarUploaded": "アイコン画像をアップロードしました",
+      "avatarUploadError": "アイコン画像のアップロードに失敗しました",
+      "coverUploaded": "カバー画像をアップロードしました",
+      "coverUploadError": "カバー画像のアップロードに失敗しました",
+      "displayNameRequired": "表示名を入力してください",
+      "usernameTaken": "このユーザー名は既に使用されています",
+      "updateSuccess": "プロフィールを更新しました！",
+      "updateError": "プロフィールの更新に失敗しました",
+      "editTitle": "プロフィール編集",
+      "changeCover": "カバー画像を変更",
+      "uploading": "アップロード中...",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "山田太郎",
+      "username": "ユーザー名",
+      "usernameHint": "英数字とアンダースコア（_）のみ使用可能",
+      "bio": "自己紹介",
+      "bioPlaceholder": "あなたについて教えてください...",
+      "website": "WebサイトURL",
+      "publicProfile": "プロフィールを公開する",
+      "publicDescription": "誰でもあなたのプロフィールを閲覧できます",
+      "privateDescription": "フォロワーのみプロフィールを閲覧できます"
+    },
+    "googleFit": {
+      "title": "Google Fit連携",
+      "description": "体重データを自動で同期します",
+      "connected": "連携済み",
+      "syncNow": "今すぐ同期",
+      "lastSync": "最終同期: {{date}}",
+      "connect": "Google Fitと連携する (準備中)"
     },
     "cosmetic": {
       "title": "装飾",
@@ -356,9 +398,23 @@
     "goals": "目標",
     "settings": "設定"
   },
+  "social": {
+    "profile": {
+      "notFound": "プロフィールが見つかりません",
+      "edit": "プロフィールを編集",
+      "posts": "投稿",
+      "replies": "返信",
+      "media": "メディア",
+      "likes": "いいね",
+      "noPosts": "まだ投稿がありません",
+      "noReplies": "返信はまだありません",
+      "userNoPosts": "このユーザーはまだ投稿していません",
+      "userNoReplies": "このユーザーはまだ返信していません"
+    }
+  },
   "auth": {
-    "appName": "健康家計アプリ",
-    "appDescription": "AIが健康をサポートする生活管理アプリ",
+    "appName": "けんすけ",
+    "appDescription": "AIが健康をサポートする生活管理アプリ「けんすけ」",
     "email": "メールアドレス",
     "password": "パスワード",
     "passwordPlaceholder": "6文字以上",
@@ -414,6 +470,10 @@
         "height": "身長 (cm)",
         "weight": "体重 (kg)",
         "savings": "貯金額 (円)",
+        "savingsPlaceholder": "例: 1000000",
+        "agePlaceholder": "例: 30",
+        "heightPlaceholder": "例: 170",
+        "weightPlaceholder": "例: 65",
         "optional": "（任意）",
         "next": "次へ",
         "skip": "スキップして次へ"
@@ -860,7 +920,7 @@
       "guide": "レシートを枠内に収めてください",
       "cameraError": "カメラにアクセスできません。ファイル選択をお試しください。",
       "ocrError": "読み取りに失敗しました",
-      "processing": "読み取り中...",
+      "processing": "読み込み中です",
       "album": "アルバム"
     }
   }

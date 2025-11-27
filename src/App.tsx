@@ -11,6 +11,7 @@ import { WeightInputModal } from './components/settings/WeightInputModal';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { checkAndGrantTitles } from './utils/title';
 import { shouldShowWeightReminder, markWeightReminderShown } from './utils/weightReminder';
+import { checkAndUpdateMissions } from './utils/mission';
 import {
   useSettingsStore,
   useIntakeStore,
@@ -67,6 +68,21 @@ function App() {
   const recipeStore = useRecipeStore();
   const settingsStore = useSettingsStore();
   const badgeStore = useBadgeStore();
+
+  // ミッションの定期チェック（日付変更時のリセット用）
+  useEffect(() => {
+    if (!user) return;
+
+    // 初回チェック
+    checkAndUpdateMissions(user.uid);
+
+    // 1分ごとにチェック
+    const intervalId = setInterval(() => {
+      checkAndUpdateMissions(user.uid);
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   // ダークモードの初期化
   useEffect(() => {
@@ -154,58 +170,64 @@ function App() {
       const { stocks } = stockStore;
       const { recipeHistory } = recipeStore;
 
-      // TODO: バーコードスキャン回数を追跡する仕組みを追加
-      const barcodesScanned = 0; // 仮の値
-
-      // 連続記録日数を計算
-      const consecutiveDays = calculateConsecutiveDays(intakes.map(i => i.date));
-
-      // 総カロリーを計算
-      const totalCalories = intakes.reduce((sum, i) => sum + i.calories, 0);
-
-      // 月次予算達成を確認（毎月1日に先月分を判定）
-      const now = new Date();
-      const currentDay = now.getDate();
-
-      // 先月の年月を計算
-      let lastMonth = now.getMonth(); // 0-11
-      let lastYear = now.getFullYear();
-      if (lastMonth === 0) {
-        lastMonth = 11; // 12月
-        lastYear -= 1;
-      } else {
-        lastMonth -= 1;
-      }
-
-      // 先月の支出を集計
-      const lastMonthExpenses = expenses.filter(e => {
-        const date = new Date(e.date);
-        return date.getMonth() === lastMonth && date.getFullYear() === lastYear;
-      });
-      const totalLastMonthExpenses = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-
-      // 1日のみバッジ判定を実行（先月の実績が予算内ならバッジ付与）
-      const budgetAchieved = currentDay === 1 && totalLastMonthExpenses <= settings.monthlyBudget && totalLastMonthExpenses > 0;
-
-      const badgeData: BadgeCheckData = {
-        intakesCount: intakes.length,
-        expensesCount: expenses.length,
-        stocksCount: stocks.length,
-        consecutiveDays,
-        totalCalories,
-        budgetAchieved,
-        recipesGenerated: recipeHistory.length,
-        barcodesScanned,
-      };
-
-      // バッジをチェック
-      badgeStore.checkAndUnlockBadges(badgeData);
-
-      // 称号チェック（定期的に実行）
+      // バーコードスキャン回数を取得（プロフィールから）
+      let barcodesScanned = 0;
       if (user) {
-        // 称号チェックを実行（エラーを無視）
-        checkAndGrantTitles(user.uid).catch((error) => {
-          console.debug('称号チェックエラー:', error);
+        import('./utils/profile').then(({ getUserProfile }) => {
+          getUserProfile(user.uid).then((profile) => {
+            if (profile) {
+              barcodesScanned = profile.stats.barcodeScanCount || 0;
+
+              // 連続記録日数を計算
+              const consecutiveDays = calculateConsecutiveDays(intakes.map(i => i.date));
+
+              // 総カロリーを計算
+              const totalCalories = intakes.reduce((sum, i) => sum + i.calories, 0);
+
+              // 月次予算達成を確認（毎月1日に先月分を判定）
+              const now = new Date();
+              const currentDay = now.getDate();
+
+              // 先月の年月を計算
+              let lastMonth = now.getMonth(); // 0-11
+              let lastYear = now.getFullYear();
+              if (lastMonth === 0) {
+                lastMonth = 11; // 12月
+                lastYear -= 1;
+              } else {
+                lastMonth -= 1;
+              }
+
+              // 先月の支出を集計
+              const lastMonthExpenses = expenses.filter(e => {
+                const date = new Date(e.date);
+                return date.getMonth() === lastMonth && date.getFullYear() === lastYear;
+              });
+              const totalLastMonthExpenses = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+              // 1日のみバッジ判定を実行（先月の実績が予算内ならバッジ付与）
+              const budgetAchieved = currentDay === 1 && totalLastMonthExpenses <= settings.monthlyBudget && totalLastMonthExpenses > 0;
+
+              const badgeData: BadgeCheckData = {
+                intakesCount: intakes.length,
+                expensesCount: expenses.length,
+                stocksCount: stocks.length,
+                consecutiveDays,
+                totalCalories,
+                budgetAchieved,
+                recipesGenerated: recipeHistory.length,
+                barcodesScanned,
+              };
+
+              // バッジをチェック
+              badgeStore.checkAndUnlockBadges(badgeData);
+
+              // 称号チェック（定期的に実行）
+              checkAndGrantTitles(user.uid).catch((error) => {
+                console.debug('称号チェックエラー:', error);
+              });
+            }
+          });
         });
       }
     }, 500); // 500msのデバウンス

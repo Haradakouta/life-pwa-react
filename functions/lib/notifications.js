@@ -1,0 +1,187 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.scheduleInactivityReminder = exports.scheduleWeeklyWeightReminder = exports.sendCommentNotification = exports.sendLikeNotification = void 0;
+const admin = require("firebase-admin");
+const firestore_1 = require("firebase-functions/v2/firestore");
+const scheduler_1 = require("firebase-functions/v2/scheduler");
+const db = admin.firestore();
+const messaging = admin.messaging();
+// 通知を送信するヘルパー関数
+const sendPushNotification = async (userId, title, body, data = {}) => {
+    try {
+        // ユーザーのFCMトークンを取得
+        const tokensSnapshot = await db.collection('users').doc(userId).collection('fcmTokens').get();
+        if (tokensSnapshot.empty) {
+            console.log(`No FCM tokens found for user ${userId}`);
+            return;
+        }
+        const tokens = tokensSnapshot.docs.map(doc => doc.data().token);
+        // 重複排除
+        const uniqueTokens = [...new Set(tokens)];
+        const message = {
+            tokens: uniqueTokens,
+            notification: {
+                title,
+                body,
+            },
+            data: Object.assign(Object.assign({}, data), { click_action: '/' }),
+            webpush: {
+                fcmOptions: {
+                    link: '/',
+                },
+            },
+        };
+        const response = await messaging.sendMulticast(message);
+        console.log(`Notifications sent to user ${userId}: ${response.successCount} success, ${response.failureCount} failure`);
+        // 無効なトークンを削除
+        if (response.failureCount > 0) {
+            const failedTokens = [];
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success) {
+                    failedTokens.push(uniqueTokens[idx]);
+                }
+            });
+            // Firestoreから削除（バッチ処理）
+            const batch = db.batch();
+            for (const token of failedTokens) {
+                const tokenRef = db.collection('users').doc(userId).collection('fcmTokens').doc(token);
+                batch.delete(tokenRef);
+            }
+            await batch.commit();
+            console.log(`Deleted ${failedTokens.length} invalid tokens`);
+        }
+    }
+    catch (error) {
+        console.error(`Error sending push notification to user ${userId}:`, error);
+    }
+};
+// 1. ソーシャル通知: いいね
+exports.sendLikeNotification = (0, firestore_1.onDocumentCreated)('posts/{postId}/likes/{userId}', async (event) => {
+    var _a;
+    const { postId, userId } = event.params;
+    try {
+        // 投稿データを取得して投稿主を特定
+        const postDoc = await db.collection('posts').doc(postId).get();
+        if (!postDoc.exists)
+            return;
+        const postData = postDoc.data();
+        const postOwnerId = postData === null || postData === void 0 ? void 0 : postData.userId;
+        // 自分自身のいいねは通知しない
+        if (postOwnerId === userId)
+            return;
+        // いいねしたユーザーの情報を取得
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.data();
+        const userName = ((_a = userData === null || userData === void 0 ? void 0 : userData.profile) === null || _a === void 0 ? void 0 : _a.displayName) || '誰か';
+        await sendPushNotification(postOwnerId, 'いいねされました！', `${userName}さんがあなたの投稿にいいねしました`, { type: 'like', postId });
+    }
+    catch (error) {
+        console.error('Error in sendLikeNotification:', error);
+    }
+});
+// 1. ソーシャル通知: コメント
+exports.sendCommentNotification = (0, firestore_1.onDocumentCreated)('posts/{postId}/comments/{commentId}', async (event) => {
+    var _a, _b;
+    const { postId } = event.params;
+    const commentData = (_a = event.data) === null || _a === void 0 ? void 0 : _a.data();
+    if (!commentData)
+        return;
+    const commentUserId = commentData.userId;
+    try {
+        // 投稿データを取得して投稿主を特定
+        const postDoc = await db.collection('posts').doc(postId).get();
+        if (!postDoc.exists)
+            return;
+        const postData = postDoc.data();
+        const postOwnerId = postData === null || postData === void 0 ? void 0 : postData.userId;
+        // 自分自身のコメントは通知しない
+        if (postOwnerId === commentUserId)
+            return;
+        // コメントしたユーザーの情報を取得
+        const userDoc = await db.collection('users').doc(commentUserId).get();
+        const userData = userDoc.data();
+        const userName = ((_b = userData === null || userData === void 0 ? void 0 : userData.profile) === null || _b === void 0 ? void 0 : _b.displayName) || '誰か';
+        await sendPushNotification(postOwnerId, 'コメントが届きました！', `${userName}さんがあなたの投稿にコメントしました: "${commentData.content}"`, { type: 'comment', postId });
+    }
+    catch (error) {
+        console.error('Error in sendCommentNotification:', error);
+    }
+});
+// 2. 体重記録リマインダー (毎週月曜 朝6:00 JST)
+exports.scheduleWeeklyWeightReminder = (0, scheduler_1.onSchedule)({
+    schedule: '0 6 * * 1',
+    timeZone: 'Asia/Tokyo',
+    region: 'us-central1',
+}, async (event) => {
+    console.log('Running weekly weight reminder');
+    try {
+        // 全ユーザーを取得（バッチ処理が必要だが、簡易実装として全件取得）
+        const usersSnapshot = await db.collection('users').get();
+        for (const doc of usersSnapshot.docs) {
+            const userId = doc.id;
+            await sendPushNotification(userId, '週初めの体重チェック！', 'おはようございます！今週のスタートに体重を記録して、健康管理を始めましょう。', { type: 'weight_reminder' });
+        }
+    }
+    catch (error) {
+        console.error('Error in scheduleWeeklyWeightReminder:', error);
+    }
+});
+// 3. 未利用リマインダー (毎日 10:00 JST)
+exports.scheduleInactivityReminder = (0, scheduler_1.onSchedule)({
+    schedule: '0 10 * * *',
+    timeZone: 'Asia/Tokyo',
+    region: 'us-central1',
+}, async (event) => {
+    console.log('Running inactivity reminder');
+    try {
+        const now = new Date();
+        const usersSnapshot = await db.collection('users').get();
+        for (const doc of usersSnapshot.docs) {
+            const userId = doc.id;
+            const userData = doc.data();
+            const lastLoginAt = userData.lastLoginAt ? userData.lastLoginAt.toDate() : null;
+            if (!lastLoginAt)
+                continue;
+            // 最終ログインからの経過日数
+            const diffTime = Math.abs(now.getTime() - lastLoginAt.getTime());
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            let title = '';
+            let body = '';
+            if (diffDays === 1) {
+                title = '昨日の記録は？';
+                body = '昨日はアプリを開きませんでしたね。今日の記録をしましょう！';
+            }
+            else if (diffDays === 2) {
+                title = '継続は力なり';
+                body = '2日間記録がありません。継続は力なりですよ！';
+            }
+            else if (diffDays === 3) {
+                title = 'お久しぶりです';
+                body = '3日目です。そろそろ戻ってきませんか？';
+            }
+            else if (diffDays === 4) {
+                title = '目標を思い出して';
+                body = '4日空いています。目標を思い出して！';
+            }
+            else if (diffDays === 5) {
+                title = '警告';
+                body = '5日経過。このままだと習慣が途切れてしまいます！';
+            }
+            else if (diffDays === 6) {
+                title = '最終警告';
+                body = '6日目。本当に諦めるんですか？まだ間に合います！';
+            }
+            else if (diffDays === 7) {
+                title = '激怒😡';
+                body = '1週間放置されています！今すぐアプリを開いてください！😡';
+            }
+            if (title && body) {
+                await sendPushNotification(userId, title, body, { type: 'inactivity_reminder', diffDays });
+            }
+        }
+    }
+    catch (error) {
+        console.error('Error in scheduleInactivityReminder:', error);
+    }
+});
+//# sourceMappingURL=notifications.js.map

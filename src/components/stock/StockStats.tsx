@@ -128,7 +128,7 @@ export const StockStats: React.FC = () => {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     {getCategoryLabel(category)}
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{count}個</div>
+                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{count}{t('stock.stats.items')}</div>
                 </div>
               </div>
             );

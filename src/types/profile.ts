@@ -24,6 +24,7 @@ export interface UserStats {
   friendCount: number; // フレンド数
   recipeCount: number; // レシピ投稿数
   likeCount: number; // いいね獲得数
+  barcodeScanCount?: number; // バーコードスキャン回数
 }
 
 export interface ProfileFormData {

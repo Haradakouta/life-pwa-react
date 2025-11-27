@@ -1,6 +1,6 @@
 {
-  "name": "健康家計アプリ",
-  "short_name": "健康家計",
+  "name": "けんすけ",
+  "short_name": "けんすけ",
   "description": "食事記録、カロリー管理、家計簿、在庫管理を統合したPWAアプリ",
   "start_url": "/",
   "display": "standalone",
@@ -21,7 +21,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["health", "finance", "productivity"],
+  "categories": [
+    "health",
+    "finance",
+    "productivity"
+  ],
   "shortcuts": [
     {
       "name": "食事記録",

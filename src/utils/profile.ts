@@ -28,6 +28,7 @@ export const createUserProfile = async (uid: string, email: string, displayName:
         friendCount: 0,
         recipeCount: 0,
         likeCount: 0,
+        barcodeScanCount: 0,
       },
     };
 

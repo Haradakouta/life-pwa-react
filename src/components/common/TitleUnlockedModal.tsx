@@ -6,9 +6,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { getUserTitles, getTitleById } from '../../utils/title';
 import { TitleBadge } from './TitleBadge';
 import { MdClose } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
 
 export const TitleUnlockedModal: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [newlyGranted, setNewlyGranted] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
 
@@ -22,15 +24,15 @@ export const TitleUnlockedModal: React.FC = () => {
     const checkForNewTitles = async () => {
       // モーダルが表示されている間はチェックしない
       if (showModal) return;
-      
+
       try {
         const lastCheckedTitleIds = JSON.parse(localStorage.getItem(lastCheckedKey) || '[]');
         const userTitles = await getUserTitles(user.uid);
         const currentTitleIds = userTitles.map(t => t.titleId);
-        
+
         // 新しく獲得した称号を検出
         const newlyEarned = currentTitleIds.filter(id => !lastCheckedTitleIds.includes(id));
-        
+
         if (newlyEarned.length > 0) {
           setNewlyGranted(newlyEarned);
           setShowModal(true);
@@ -47,7 +49,7 @@ export const TitleUnlockedModal: React.FC = () => {
 
     // 定期的にチェック（30秒ごと）- モーダルが表示されていない間のみ
     const interval = setInterval(checkForNewTitles, 30000);
-    
+
     return () => clearInterval(interval);
   }, [user, showModal]);
 
@@ -111,10 +113,10 @@ export const TitleUnlockedModal: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
           <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-            称号を獲得しました！
+            {t('common.titleUnlocked.title')}
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-            {newlyGranted.length}個の新しい称号を獲得しました
+            {t('common.titleUnlocked.description', { count: newlyGranted.length })}
           </p>
         </div>
 
@@ -165,7 +167,7 @@ export const TitleUnlockedModal: React.FC = () => {
             e.currentTarget.style.background = 'var(--primary)';
           }}
         >
-          閉じる
+          {t('common.titleUnlocked.close')}
         </button>
       </div>
     </div>

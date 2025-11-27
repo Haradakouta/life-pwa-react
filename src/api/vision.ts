@@ -13,6 +13,7 @@ export interface ReceiptOCRResult {
   items: ReceiptItem[];
   total?: number;
   storeName?: string;
+  branchName?: string;
   date?: string;
   rawText: string;
   error?: string;

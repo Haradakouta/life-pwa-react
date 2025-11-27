@@ -4,8 +4,10 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { MdErrorOutline } from 'react-icons/md';
+import { withTranslation } from 'react-i18next';
+import type { WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -16,7 +18,7 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryBase extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -65,6 +67,8 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    const { t } = this.props;
+
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -83,10 +87,10 @@ export class ErrorBoundary extends Component<Props, State> {
         }}>
           <MdErrorOutline size={64} color="#ef4444" style={{ marginBottom: '16px' }} />
           <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px' }}>
-            エラーが発生しました
+            {t('common.errorBoundary.title')}
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-            申し訳ございません。予期しないエラーが発生しました。
+            {t('common.errorBoundary.description')}
           </p>
           {this.state.error && (
             <details style={{
@@ -100,7 +104,7 @@ export class ErrorBoundary extends Component<Props, State> {
               textAlign: 'left',
             }}>
               <summary style={{ cursor: 'pointer', marginBottom: '8px', fontSize: '13px' }}>
-                エラー詳細
+                {t('common.errorBoundary.details')}
               </summary>
               <pre style={{
                 fontSize: '12px',
@@ -133,7 +137,7 @@ export class ErrorBoundary extends Component<Props, State> {
               e.currentTarget.style.background = 'var(--primary)';
             }}
           >
-            再試行
+            {t('common.errorBoundary.retry')}
           </button>
         </div>
       );
@@ -142,5 +146,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryBase);
 
 

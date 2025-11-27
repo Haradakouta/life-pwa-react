@@ -143,9 +143,9 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                             <MdHealthAndSafety size={24} />
                         </div>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Google Fit連携</h3>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>{t('settings.googleFit.title')}</h3>
                             <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                                体重データを自動で同期します
+                                {t('settings.googleFit.description')}
                             </p>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                                     marginBottom: '12px',
                                 }}>
                                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2e7d32' }} />
-                                    連携済み
+                                    {t('settings.googleFit.connected')}
                                 </div>
                                 <button
                                     onClick={() => useSettingsStore.getState().syncGoogleFitData()}
@@ -183,11 +183,11 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    今すぐ同期
+                                    {t('settings.googleFit.syncNow')}
                                 </button>
                                 {settings.lastSyncTime && (
                                     <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-                                        最終同期: {new Date(settings.lastSyncTime).toLocaleString()}
+                                        {t('settings.googleFit.lastSync', { date: new Date(settings.lastSyncTime).toLocaleString() })}
                                     </p>
                                 )}
                             </div>
@@ -210,7 +210,7 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                                     gap: '8px',
                                 }}
                             >
-                                Google Fitと連携する (準備中)
+                                {t('settings.googleFit.connect')}
                             </button>
                         )}
                     </div>
@@ -223,7 +223,7 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                         type="number"
                         value={age}
                         onChange={(e) => setAge(e.target.value)}
-                        placeholder="例: 30"
+                        placeholder={t('auth.registerFlow.step4.agePlaceholder')}
                         min="1"
                         max="150"
                     />
@@ -233,7 +233,7 @@ export const HealthSettingScreen: React.FC<HealthSettingScreenProps> = ({ onBack
                         type="number"
                         value={height}
                         onChange={(e) => setHeight(e.target.value)}
-                        placeholder="例: 170"
+                        placeholder={t('auth.registerFlow.step4.heightPlaceholder')}
                         min="1"
                         max="300"
                     />

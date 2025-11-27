@@ -13,15 +13,15 @@
     "confirm": "Konfirmasi",
     "yes": "Ya",
     "no": "Tidak",
-    "year": "tahun",
-    "month": "bulan",
-    "days": "hari",
+    "year": "Tahun",
+    "month": "Bulan",
+    "days": "Hari",
     "selectDate": "Pilih Tanggal",
     "selectMonth": "Pilih Bulan",
-    "selectMonthYear": "Ketuk untuk memilih tahun dan bulan",
+    "selectMonthYear": "Pilih Tahun dan Bulan",
     "select": "Silakan pilih",
-    "next": "Selanjutnya",
-    "skipAndNext": "Lewati dan lanjutkan",
+    "next": "Lanjut",
+    "skipAndNext": "Lewati dan Lanjut",
     "weekday": {
       "sun": "Min",
       "mon": "Sen",
@@ -37,12 +37,43 @@
     "profile": {
       "title": "Profil",
       "edit": "Edit Profil",
-      "description": "Edit ikon, nama, bio, dll"
+      "description": "Edit ikon, nama, bio, dll.",
+      "loadError": "Gagal memuat profil",
+      "loginRequired": "Login diperlukan",
+      "avatarUploaded": "Avatar diunggah",
+      "avatarUploadError": "Gagal mengunggah avatar",
+      "coverUploaded": "Gambar sampul diunggah",
+      "coverUploadError": "Gagal mengunggah gambar sampul",
+      "displayNameRequired": "Silakan masukkan nama tampilan",
+      "usernameTaken": "Nama pengguna ini sudah digunakan",
+      "updateSuccess": "Profil diperbarui!",
+      "updateError": "Gagal memperbarui profil",
+      "editTitle": "Edit Profil",
+      "changeCover": "Ubah Sampul",
+      "uploading": "Mengunggah...",
+      "displayName": "Nama Tampilan",
+      "displayNamePlaceholder": "Budi Santoso",
+      "username": "Nama Pengguna",
+      "usernameHint": "Hanya alfanumerik dan garis bawah (_)",
+      "bio": "Bio",
+      "bioPlaceholder": "Ceritakan tentang diri Anda...",
+      "website": "URL Situs Web",
+      "publicProfile": "Profil Publik",
+      "publicDescription": "Siapa saja dapat melihat profil Anda",
+      "privateDescription": "Hanya pengikut yang dapat melihat profil Anda"
+    },
+    "googleFit": {
+      "title": "Integrasi Google Fit",
+      "description": "Sinkronisasi data berat badan secara otomatis",
+      "connected": "Terhubung",
+      "syncNow": "Sinkronkan Sekarang",
+      "lastSync": "Sinkronisasi Terakhir: {{date}}",
+      "connect": "Hubungkan Google Fit (Segera Hadir)"
     },
     "cosmetic": {
       "title": "Kosmetik",
       "change": "Ubah Kosmetik",
-      "description": "Dapat mengubah dan membeli kosmetik"
+      "description": "Ubah dan beli kosmetik"
     },
     "mission": {
       "title": "Misi & Hadiah",
@@ -63,45 +94,105 @@
       "enabled": "Anda akan menerima notifikasi baru",
       "disabled": "Notifikasi push dinonaktifkan"
     },
-    "export": {
-      "title": "Ekspor Data",
-      "csv": "CSV",
-      "json": "JSON"
+    "prefecture": {
+      "title": "Pengaturan Prefektur",
+      "description": "Atur prefektur tempat tinggal Anda.",
+      "currentStatus": "Pengaturan Saat Ini",
+      "label": "Prefektur",
+      "change": "Ubah",
+      "set": "Atur",
+      "daysRemaining": "Tidak dapat diubah selama {{days}} hari",
+      "changeLimit": "※ Prefektur hanya dapat diubah sekali setiap 30 hari",
+      "select": "Silakan pilih",
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan...",
+      "success": "Prefektur diperbarui",
+      "error": "Gagal memperbarui prefektur",
+      "loadError": "Gagal memuat profil"
     },
     "health": {
       "title": "Informasi Kesehatan",
+      "description": "Digunakan untuk perhitungan BMI dan manajemen kesehatan",
       "set": "Atur Informasi Kesehatan",
       "age": "Usia",
-      "height": "Tinggi",
-      "weight": "Berat",
-      "bmi": "BMI",
-      "savings": "Tabungan",
-      "notSet": "Informasi pribadi belum diatur",
       "years": "tahun",
+      "height": "Tinggi",
       "cm": "cm",
-      "kg": "kg"
+      "weight": "Berat",
+      "kg": "kg",
+      "bmi": "BMI",
+      "savings": "Tabungan Saat Ini",
+      "notSet": "Informasi kesehatan belum diatur",
+      "save": "Simpan",
+      "saved": "Informasi kesehatan disimpan",
+      "placeholder": "misalnya, 100000",
+      "about": "Tentang Aplikasi",
+      "aboutDescription": "Aplikasi ini adalah PWA yang mengintegrasikan manajemen kesehatan dan keuangan rumah tangga.",
+      "aboutList": {
+        "bmi": "Kalkulator BMI",
+        "shopping": "Manajemen Daftar Belanja",
+        "meal": "Catatan Makan",
+        "weight": "Manajemen Berat Badan"
+      },
+      "weeklyRecordTitle": "Catatan Berat Badan Mingguan",
+      "weeklyRecordDescription": "Saatnya mencatat berat badan mingguan. Silakan masukkan berat badan Anda saat ini untuk manajemen kesehatan.",
+      "weightLabel": "Berat Badan Saat Ini (kg)",
+      "weightRequired": "Silakan masukkan berat badan",
+      "weightRecorded": "Berat badan dicatat",
+      "weightSaveFailed": "Gagal menyimpan berat badan"
+    },
+    "honorific": {
+      "title": "Gelar",
+      "check": "Cek",
+      "newTitlesGranted": "🎉 Anda mendapatkan {{count}} gelar baru!",
+      "noNewTitles": "Tidak ada gelar baru",
+      "checkFailed": "Gagal memeriksa gelar",
+      "equipFailed": "Gagal memakai gelar",
+      "equipped": "Dipakai",
+      "equip": "Pakai",
+      "notEarned": "Belum Didapat",
+      "categories": {
+        "all": "Semua",
+        "beginner": "Pemula",
+        "poster": "Poster",
+        "social": "Sosial",
+        "recipe": "Resep",
+        "achievement": "Prestasi",
+        "prefecture": "Prefektur",
+        "special": "Spesial"
+      }
     },
     "ai": {
-      "title": "Pengaturan AI (Gemini API)",
-      "description": "Untuk menggunakan fitur AI (generasi resep, OCR struk, pengukuran kalori, dll.), Anda memerlukan kunci API Google Gemini.",
+      "title": "Pengaturan AI",
+      "description": "Atur kunci API Gemini untuk mengaktifkan fitur AI",
       "getKey": "Dapatkan Kunci API",
       "placeholder": "AIzaSy...",
-      "save": "Simpan Kunci API",
-      "saved": "✓ Kunci API telah diatur"
+      "save": "Simpan",
+      "saved": "Kunci API disimpan"
     },
     "stats": {
-      "title": "Statistik Data",
-      "intakes": "Catatan Makanan",
-      "expenses": "Catatan Pengeluaran",
-      "stocks": "Item Stok",
-      "items": "item"
+      "title": "Statistik",
+      "intakes": "Catatan Makan",
+      "items": "item",
+      "expenses": "Pengeluaran",
+      "stocks": "Stok"
     },
     "account": {
       "title": "Akun",
-      "login": "Masuk",
-      "logout": "Keluar",
-      "logoutConfirm": "Apakah Anda ingin keluar?",
-      "logoutError": "Gagal keluar"
+      "login": "Login",
+      "logout": "Logout",
+      "logoutConfirm": "Apakah Anda yakin ingin logout?",
+      "logoutError": "Gagal logout"
+    },
+    "export": {
+      "title": "Ekspor Data",
+      "csv": "Ekspor CSV",
+      "json": "Ekspor JSON",
+      "csvHeader": "Tipe,Nama,Kalori,Harga,Tanggal",
+      "mealRecord": "Catatan Makan",
+      "csvFilename": "life-pwa-data-",
+      "jsonFilename": "life-pwa-backup-"
     },
     "language": {
       "title": "Bahasa",
@@ -114,30 +205,28 @@
       "vietnamese": "Tiếng Việt",
       "russian": "Русский",
       "indonesian": "Bahasa Indonesia"
-    }
-  },
-  "dashboard": {
-    "title": "Beranda",
-    "subtitle": "Kelola kesehatan dan keuangan"
-  },
-  "screens": {
-    "home": "Aplikasi Kesehatan & Keuangan",
-    "meals": "Catatan Makanan",
-    "barcode": "Pindai Barcode",
-    "report": "Laporan",
+    },
     "social": "Sosial",
-    "settings": "Pengaturan",
     "stock": "Manajemen Stok",
     "shopping": "Daftar Belanja",
     "recipe": "Resep AI",
     "expense": "Buku Pengeluaran",
-    "badges": "Pencapaian",
+    "badges": "Prestasi",
     "admin": "Panel Admin",
     "goals": "Manajemen Tujuan",
     "exercise": "Catatan Olahraga"
   },
+  "bottomNav": {
+    "home": "Beranda",
+    "meals": "Makan",
+    "scan": "Pindai",
+    "report": "Laporan",
+    "social": "Sosial",
+    "settings": "Pengaturan",
+    "mainNavigation": "Navigasi Utama"
+  },
   "bmi": {
-    "underweight": "Kurang berat",
+    "underweight": "Kurang Berat Badan",
     "normal": "Normal",
     "obese1": "Obesitas Tingkat 1",
     "obese2": "Obesitas Tingkat 2",
@@ -146,27 +235,27 @@
   },
   "exercise": {
     "title": "Catatan Olahraga",
-    "subtitle": "Catat latihan Anda dan raih tujuan",
+    "subtitle": "Catat olahraga untuk mencapai tujuan",
     "form": {
-      "title": "Catat Latihan",
-      "name": "Nama Latihan",
-      "namePlaceholder": "Contoh: Lari, Angkat Beban, Jalan Kaki",
-      "duration": "Durasi（menit）",
-      "durationPlaceholder": "Contoh: 30",
-      "calories": "Kalori Terbakar（opsional）",
-      "caloriesPlaceholder": "Contoh: 200",
+      "title": "Catat Olahraga",
+      "name": "Nama Olahraga",
+      "namePlaceholder": "misalnya, Lari, Angkat Beban, Jalan Kaki",
+      "duration": "Durasi (menit)",
+      "durationPlaceholder": "misalnya, 30",
+      "calories": "Kalori Terbakar (opsional)",
+      "caloriesPlaceholder": "misalnya, 200",
       "submit": "Catat",
-      "nameRequired": "Silakan masukkan nama latihan",
+      "nameRequired": "Silakan masukkan nama olahraga",
       "durationRequired": "Silakan masukkan durasi",
-      "recorded": "Latihan telah dicatat！",
-      "recordFailed": "Gagal mencatat latihan"
+      "recorded": "Olahraga dicatat!",
+      "recordFailed": "Gagal mencatat olahraga"
     },
     "list": {
       "title": "Catatan Hari Ini",
       "empty": "Belum ada catatan",
       "total": "Total",
       "minutes": "menit",
-      "deleteConfirm": "Hapus catatan ini？"
+      "deleteConfirm": "Hapus catatan ini?"
     }
   },
   "goals": {
@@ -184,9 +273,101 @@
       "completed": "Tidak ada tujuan yang selesai",
       "active": "Tidak ada tujuan aktif",
       "all": "Tidak ada tujuan",
-      "suggestion": "Mari kita tetapkan tujuan pertama Anda！"
+      "suggestion": "Ayo atur tujuan pertama Anda!"
     },
-    "deleteFailed": "Gagal menghapus tujuan"
+    "deleteFailed": "Gagal menghapus tujuan",
+    "setting": {
+      "title": "Pengaturan Tujuan",
+      "editTitle": "Edit Tujuan",
+      "newTitle": "Tujuan Baru",
+      "type": "Tipe Tujuan",
+      "calorie": {
+        "label": "Tujuan Kalori",
+        "unit": "kkal",
+        "description": "Atur tujuan kalori harian"
+      },
+      "budget": {
+        "label": "Tujuan Anggaran",
+        "unit": "yen",
+        "description": "Atur anggaran bulanan atau mingguan"
+      },
+      "weight": {
+        "label": "Tujuan Berat Badan",
+        "unit": "kg",
+        "description": "Atur berat badan target"
+      },
+      "exercise": {
+        "label": "Tujuan Olahraga",
+        "unit": "menit",
+        "description": "Atur waktu olahraga harian"
+      },
+      "titleLabel": "Judul",
+      "descriptionLabel": "Deskripsi (opsional)",
+      "targetValueLabel": "Nilai Target",
+      "periodLabel": "Periode",
+      "required": "Silakan masukkan judul dan nilai target",
+      "saveFailed": "Gagal menyimpan tujuan"
+    },
+    "progress": {
+      "achieved": "Tercapai!",
+      "budgetExceeded": "Melebihi Anggaran",
+      "budgetLow": "Anggaran Menipis",
+      "onTrack": "Sesuai Jalur",
+      "inProgress": "Sedang Berlangsung",
+      "paceUp": "Tingkatkan Kecepatan",
+      "needEffort": "Perlu Usaha",
+      "deleteConfirm": "Hapus tujuan ini?",
+      "current": "Saat Ini",
+      "target": "Target",
+      "exceeded": "Terlampaui",
+      "remaining": "Sisa",
+      "daysRemaining": "Hari Tersisa",
+      "dailyAverage": "Rata-rata Harian",
+      "estimatedDate": "Perkiraan Tanggal Selesai",
+      "period": {
+        "day": "1 Hari",
+        "week": "1 Minggu",
+        "month": "1 Bulan",
+        "daysRemaining": " hari",
+        "custom": "Kustom"
+      }
+    },
+    "progressCard": {
+      "current": "Saat Ini:",
+      "target": "Target:",
+      "exceeded": "Terlampaui:",
+      "remaining": "Sisa:",
+      "daysRemaining": "Hari Tersisa",
+      "dailyAverage": "Rata-rata Harian",
+      "predictedDate": "Perkiraan Tanggal"
+    },
+    "settingScreen": {
+      "startDate": "Tanggal Mulai",
+      "endDate": "Tanggal Selesai",
+      "select": "Silakan pilih",
+      "update": "Perbarui",
+      "create": "Buat Tujuan"
+    }
+  },
+  "dashboard": {
+    "title": "Beranda",
+    "subtitle": "Kelola kesehatan dan keuangan"
+  },
+  "screens": {
+    "home": "Beranda",
+    "meals": "Makan",
+    "barcode": "Pindai",
+    "report": "Laporan",
+    "social": "Sosial",
+    "settings": "Pengaturan",
+    "stock": "Stok",
+    "shopping": "Belanja",
+    "recipe": "Resep",
+    "expense": "Pengeluaran",
+    "badges": "Lencana",
+    "admin": "Admin",
+    "goals": "Tujuan",
+    "exercise": "Olahraga"
   },
   "summary": {
     "todayCalories": "Kalori Hari Ini",
@@ -194,12 +375,12 @@
     "bmi": "BMI"
   },
   "quickActions": {
-    "meals": "Catatan Makanan",
-    "exercise": "Catatan Olahraga",
+    "meals": "Makan",
+    "exercise": "Olahraga",
     "scan": "Pindai",
-    "expense": "Buku Pengeluaran",
-    "stock": "Manajemen Stok",
-    "recipe": "Resep AI",
+    "expense": "Pengeluaran",
+    "stock": "Stok",
+    "recipe": "Resep",
     "shopping": "Belanja",
     "report": "Laporan",
     "badges": "Lencana",
@@ -207,57 +388,178 @@
     "settings": "Pengaturan"
   },
   "auth": {
-    "appName": "Aplikasi Keuangan Kesehatan",
-    "appDescription": "Aplikasi manajemen kehidupan yang didukung AI untuk kesehatan",
+    "appName": "Kensuke",
+    "appDescription": "Aplikasi manajemen hidup bertenaga AI \"Kensuke\"",
     "email": "Alamat Email",
     "password": "Kata Sandi",
     "passwordPlaceholder": "6 karakter atau lebih",
-    "login": "Masuk",
+    "login": "Login",
     "processing": "Memproses...",
     "forgotPassword": "Lupa kata sandi?",
-    "noAccount": "Tidak punya akun? Klik di sini",
+    "noAccount": "Belum punya akun?",
     "or": "atau",
-    "googleLogin": "Masuk dengan Google",
+    "googleLogin": "Login dengan Google",
     "register": "Daftar",
     "passwordReset": "Reset Kata Sandi",
     "authError": "Terjadi kesalahan autentikasi",
-    "securityNote": "※ Autentikasi aman menggunakan Firebase Authentication",
-    "dataNote": "Data disimpan dengan aman di Firestore"
+    "securityNote": "※ Autentikasi aman via Firebase",
+    "dataNote": "Data disimpan dengan aman di Firestore",
+    "next": "Lanjut",
+    "nextProcessing": "Lanjut...",
+    "skipAndNext": "Lewati dan Lanjut",
+    "complete": "Selesai",
+    "usernamePlaceholder": "Budi Santoso",
+    "passwordConfirmPlaceholder": "Masukkan ulang kata sandi",
+    "registerFlow": {
+      "step1": {
+        "title": "Masukkan Email",
+        "description": "Kami akan mengirimkan kode verifikasi",
+        "sendCode": "Kirim Kode",
+        "sending": "Mengirim...",
+        "sendFailed": "Gagal mengirim kode"
+      },
+      "step2": {
+        "title": "Masukkan Kode",
+        "description": "Masukkan kode 6 digit yang dikirim ke {{email}}",
+        "verify": "Verifikasi",
+        "verifying": "Memverifikasi...",
+        "resend": "Kirim Ulang Kode",
+        "resendSuccess": "Kode dikirim ulang!",
+        "resendFailed": "Gagal mengirim ulang",
+        "invalidCode": "Kode tidak valid",
+        "verifyFailed": "Verifikasi gagal"
+      },
+      "step3": {
+        "title": "Info Pengguna",
+        "username": "Nama Pengguna",
+        "password": "Kata Sandi",
+        "passwordConfirm": "Konfirmasi Kata Sandi",
+        "passwordMismatch": "Kata sandi tidak cocok",
+        "passwordTooShort": "Kata sandi harus minimal 6 karakter",
+        "usernameRequired": "Silakan masukkan nama pengguna"
+      },
+      "step4": {
+        "title": "Info Kesehatan",
+        "description": "Masukkan info pribadi (opsional)",
+        "age": "Usia",
+        "height": "Tinggi (cm)",
+        "weight": "Berat (kg)",
+        "savings": "Tabungan (yen)",
+        "optional": "(Opsional)",
+        "next": "Lanjut",
+        "skip": "Lewati"
+      },
+      "step5": {
+        "title": "Pilih Prefektur",
+        "description": "Pilih prefektur Anda (Dapat diubah sekali setiap 30 hari)",
+        "label": "Prefektur",
+        "prefectureRequired": "Silakan pilih prefektur",
+        "createAccount": "Buat Akun",
+        "creating": "Membuat...",
+        "complete": "Selesai",
+        "createFailed": "Gagal membuat akun",
+        "profileCreateFailed": "Gagal membuat profil: {{error}}"
+      },
+      "back": "Kembali"
+    },
+    "passwordResetFlow": {
+      "step1": {
+        "title": "Masukkan Email",
+        "description": "Kami akan mengirimkan kode untuk reset kata sandi",
+        "sendCode": "Kirim Kode",
+        "sending": "Mengirim...",
+        "sendFailed": "Gagal mengirim kode"
+      },
+      "step2": {
+        "title": "Masukkan Kode",
+        "description": "Masukkan kode 6 digit yang dikirim ke {{email}}",
+        "verify": "Verifikasi",
+        "verifying": "Memverifikasi...",
+        "resend": "Kirim Ulang Kode",
+        "resendSuccess": "Kode dikirim ulang!",
+        "resendFailed": "Gagal mengirim ulang",
+        "invalidCode": "Kode tidak valid",
+        "verifyFailed": "Verifikasi gagal"
+      },
+      "step3": {
+        "title": "Atur Kata Sandi Baru",
+        "description": "Masukkan kata sandi baru Anda",
+        "newPassword": "Kata Sandi Baru",
+        "confirmPassword": "Konfirmasi Kata Sandi",
+        "passwordMismatch": "Kata sandi tidak cocok",
+        "passwordTooShort": "Kata sandi harus minimal 6 karakter",
+        "update": "Perbarui Kata Sandi",
+        "updating": "Memperbarui...",
+        "updateFailed": "Gagal memperbarui kata sandi",
+        "updateSuccess": "Reset kata sandi selesai! Silakan login dengan kata sandi baru."
+      },
+      "back": "Kembali"
+    }
   },
   "product": {
-    "productInfo": "Informasi produk diambil",
+    "productInfo": "Info produk diambil",
     "productName": "Nama Produk",
-    "manufacturer": "Pabrikan",
+    "manufacturer": "Produsen",
     "barcode": "Barcode",
-    "price": "Harga (referensi)",
+    "price": "Harga (Ref)",
     "source": {
       "rakutenIchiba": "Rakuten Ichiba",
-      "rakutenProduct": "Pencarian Produk Rakuten",
-      "jancodeLookup": "JAN Code Lookup",
+      "rakutenProduct": "Rakuten Product",
+      "jancodeLookup": "Pencarian Kode JAN",
       "openfoodfacts": "Open Food Facts",
       "mock": "Data Mock"
     },
     "addToMeals": {
-      "title": "Tambahkan ke Catatan Makanan",
-      "calories": "Kalori (kcal)",
-      "caloriesPlaceholder": "contoh: 200",
+      "title": "Tambahkan ke Makanan",
+      "calories": "Kalori (kkal)",
+      "caloriesPlaceholder": "misalnya, 200",
       "price": "Harga (yen)",
-      "pricePlaceholder": "contoh: 150",
-      "button": "Tambahkan ke Catatan Makanan",
+      "pricePlaceholder": "misalnya, 150",
+      "button": "Tambahkan ke Makanan",
       "caloriesRequired": "Silakan masukkan kalori",
       "priceRequired": "Silakan masukkan harga",
-      "success": "Ditambahkan ke catatan makanan！"
+      "success": "Ditambahkan ke makanan!"
     },
     "addToStock": {
-      "title": "Tambahkan ke Manajemen Stok",
+      "title": "Tambahkan ke Stok",
       "expiryDays": "Hari hingga kedaluwarsa",
-      "expiryDaysPlaceholder": "contoh: 7",
-      "button": "Tambahkan ke Manajemen Stok",
-      "buttonWithNavigate": "Tambahkan ke Stok dan Navigasi",
+      "expiryDaysPlaceholder": "misalnya, 7",
+      "button": "Tambahkan ke Stok",
+      "buttonWithNavigate": "Tambah & Ke Stok",
       "expiryDaysRequired": "Silakan masukkan hari hingga kedaluwarsa",
-      "success": "Ditambahkan ke manajemen stok！"
+      "success": "Ditambahkan ke stok!"
     },
     "cancel": "Batal"
+  },
+  "receipt": {
+    "title": "Isi Struk",
+    "selectAll": "Pilih Semua",
+    "deselectAll": "Hapus Semua Pilihan",
+    "add": "Tambah",
+    "store": "Toko:",
+    "date": "Tanggal:",
+    "noItems": "Tidak ada item ditemukan. Silakan tambah secara manual.",
+    "productName": "Nama Produk",
+    "price": "Harga",
+    "quantity": "Jml: {{count}}",
+    "total": "Total",
+    "addToStock": "Tambahkan ke Stok ({{count}})",
+    "addToShoppingList": "Tambahkan ke Daftar Belanja",
+    "addToExpenses": "Tambahkan ke Pengeluaran",
+    "cancel": "Batal",
+    "showRawText": "Tampilkan Teks Mentah",
+    "deleteConfirm": "Hapus item ini?",
+    "productNamePrompt": "Masukkan nama produk",
+    "pricePrompt": "Masukkan harga",
+    "invalidPrice": "Harga tidak valid",
+    "noItemsError": "Tidak ada item",
+    "addToExpensesConfirm": "Tambahkan {{count}} item ke pengeluaran?\nTotal: ¥{{total}}",
+    "addToExpensesSuccess": "Ditambahkan ke pengeluaran!",
+    "addToShoppingListConfirm": "Tambahkan {{count}} item ke daftar belanja?",
+    "addToShoppingListSuccess": "Ditambahkan ke daftar belanja!",
+    "selectItemsRequired": "Silakan pilih item",
+    "addToStockConfirm": "Tambahkan {{count}} item ke stok?",
+    "addToStockSuccess": "Ditambahkan {{count}} item ke stok!\nKedaluwarsa diatur ke {{date}} ({{days}} hari lagi)."
   },
   "expense": {
     "categories": {
@@ -271,37 +573,89 @@
       "bonus": "Bonus"
     },
     "form": {
-      "type": "Jenis",
+      "type": "Tipe",
       "expense": "Pengeluaran",
-      "income": "Pendapatan",
+      "income": "Pemasukan",
       "date": "Tanggal",
       "category": "Kategori",
-      "customCategory": "Nama Kategori Kustom",
-      "customCategoryPlaceholder": "contoh: Hobi, Hewan Peliharaan, Buku",
+      "customCategory": "Kategori Kustom",
+      "customCategoryPlaceholder": "misalnya, Hobi, Hewan Peliharaan",
       "amount": "Jumlah (yen)",
       "memo": "Memo (opsional)",
-      "memoPlaceholder": "contoh: Makan Siang",
-      "submit": "Rekam",
-      "amountRequired": "Silakan masukkan jumlah yang valid",
-      "customCategoryRequired": "Silakan masukkan nama kategori kustom",
-      "expenseRecorded": "Pengeluaran dicatat！",
-      "incomeRecorded": "Pendapatan dicatat！"
+      "memoPlaceholder": "misalnya, Makan Siang",
+      "submit": "Catat",
+      "amountRequired": "Jumlah tidak valid",
+      "customCategoryRequired": "Masukkan kategori kustom",
+      "expenseRecorded": "Pengeluaran dicatat!",
+      "incomeRecorded": "Pemasukan dicatat!"
     },
-    "dateFormat": "{{year}}年{{month}}月{{day}}日"
+    "dateFormat": "{{year}}/{{month}}/{{day}}",
+    "list": {
+      "deleteConfirm": "Hapus pengeluaran ini?",
+      "noData": "Tidak ada data untuk bulan ini"
+    },
+    "screen": {
+      "title": "Buku Pengeluaran",
+      "history": "Riwayat"
+    },
+    "summary": {
+      "title": "Ringkasan Kategori",
+      "noData": "Tidak ada data untuk bulan ini",
+      "totalExpense": "Total Pengeluaran"
+    },
+    "budget": {
+      "title": "Anggaran Bulanan",
+      "editPrompt": "Masukkan anggaran bulanan baru",
+      "invalidAmount": "Jumlah tidak valid",
+      "remaining": "Sisa ¥{{amount}}",
+      "exceeded": "Terlampaui ¥{{amount}}",
+      "expense": "Pengeluaran",
+      "budget": "Anggaran",
+      "status": {
+        "exceeded": "Terlampaui",
+        "low": "Rendah",
+        "onTrack": "Sesuai Jalur"
+      }
+    }
   },
   "shopping": {
+    "screen": {
+      "title": "Daftar Belanja"
+    },
     "form": {
-      "title": "Tambahkan Secara Manual",
+      "title": "Tambah Manual",
       "productName": "Nama Produk",
-      "productNamePlaceholder": "contoh: Susu",
-      "quantity": "Jumlah",
-      "submit": "Tambahkan ke Daftar",
-      "productNameRequired": "Silakan masukkan nama produk"
+      "productNamePlaceholder": "misalnya, Susu",
+      "quantity": "Jml",
+      "submit": "Tambah",
+      "productNameRequired": "Masukkan nama produk"
+    },
+    "list": {
+      "title": "Daftar Belanja",
+      "empty": "Daftar kosong",
+      "clearConfirm": "Hapus semua item yang dicentang?",
+      "noCheckedItems": "Tidak ada item yang dicentang",
+      "moveToStockConfirm": "Tambahkan {{count}} item yang dicentang ke stok?\n(Kedaluwarsa diatur ke 7 hari lagi)",
+      "afterShopping": "Setelah belanja!",
+      "moveToStockDescription": "Tambahkan item yang dicentang ke stok sekaligus.\nKedaluwarsa otomatis diatur ke 7 hari.",
+      "addToStock": "Tambahkan ke Stok ({{count}})",
+      "clearChecked": "Hapus yang Dicentang",
+      "movedToStock": "Ditambahkan ke stok!"
+    },
+    "healthAdvisor": {
+      "title": "Saran Kesehatan",
+      "about": "Tentang \"{{productName}}\"",
+      "category": "📊 Kategori: {{category}}",
+      "alternatives": "Alternatif Lebih Sehat",
+      "aiAnalysis": "Analisis dengan AI",
+      "aiAnalyzing": "Menganalisis...",
+      "continueAnyway": "Tetap Tambahkan",
+      "cancel": "Batal"
     }
   },
   "goalsSummary": {
-    "noGoals": "Tidak ada tujuan yang ditetapkan",
-    "suggestion": "Tetapkan tujuan untuk memulai gaya hidup sehat",
+    "noGoals": "Tidak ada tujuan yang diatur",
+    "suggestion": "Atur tujuan untuk memulai gaya hidup sehat",
     "createGoal": "Buat Tujuan",
     "progress": "Kemajuan Tujuan",
     "activeGoals": "tujuan aktif",
@@ -311,26 +665,47 @@
     "form": {
       "title": "Catat Makanan",
       "dishName": "Nama Hidangan",
-      "dishNamePlaceholder": "contoh: Nasi Kari",
-      "dishNameHint": "Masukkan nama hidangan untuk menampilkan layar pengukuran kalori",
-      "recorded": "Makanan dicatat！",
-      "recordFailed": "Gagal mencatat makanan"
+      "dishNamePlaceholder": "misalnya, Nasi Kari",
+      "dishNameHint": "Masukkan nama untuk mengukur kalori",
+      "scanCalories": "Pindai Kalori dengan Kamera",
+      "submit": "Catat",
+      "recorded": "Makanan dicatat!",
+      "recordFailed": "Gagal mencatat",
+      "template": {
+        "tab": "Set Saya",
+        "manualTab": "Manual",
+        "add": "Tambahkan ke Set Saya",
+        "addSuccess": "Ditambahkan ke Set Saya!",
+        "deleteConfirm": "Hapus set ini?",
+        "empty": "Tidak ada set",
+        "use": "Gunakan",
+        "name": "Nama Set",
+        "calories": "Kalori",
+        "price": "Harga"
+      }
     },
     "screen": {
-      "title": "Catatan Makanan"
+      "title": "Catatan Makan"
+    },
+    "list": {
+      "title": "Catatan Hari Ini",
+      "empty": "Belum ada catatan",
+      "deleteConfirm": "Hapus catatan ini?",
+      "totalCalories": "Total Kalori: {{calories}} kkal",
+      "totalPrice": "Total Harga: ¥{{price}}"
     }
   },
   "stock": {
     "form": {
-      "title": "Tambahkan Secara Manual",
+      "title": "Tambah Manual",
       "item": "Item",
-      "itemPlaceholder": "contoh: Susu",
+      "itemPlaceholder": "misalnya, Susu",
       "category": "Kategori",
       "expiryDate": "Tanggal Kedaluwarsa",
-      "quantity": "Jumlah",
-      "submit": "Daftarkan ke Stok",
-      "itemRequired": "Silakan masukkan nama item",
-      "success": "Ditambahkan ke stok！"
+      "quantity": "Jml",
+      "submit": "Tambahkan ke Stok",
+      "itemRequired": "Masukkan nama item",
+      "success": "Ditambahkan ke stok!"
     },
     "categories": {
       "staple": "Makanan Pokok",
@@ -343,117 +718,116 @@
     },
     "screen": {
       "title": "Manajemen Stok"
-    }
-  },
-  "expense": {
+    },
     "list": {
-      "deleteConfirm": "Hapus pengeluaran ini?",
-      "noData": "Belum ada data pendapatan/pengeluaran untuk bulan ini"
-    },
-    "screen": {
-      "title": "Buku Pengeluaran",
-      "history": "Riwayat Pengeluaran"
-    },
-    "summary": {
-      "title": "Ringkasan Kategori",
-      "noData": "Tidak ada data pengeluaran untuk bulan ini",
-      "totalExpense": "Total Pengeluaran"
-    },
-    "budget": {
-      "title": "Anggaran Bulanan",
-      "remaining": "Tersisa ¥{{amount}}",
-      "exceeded": "Melebihi ¥{{amount}}",
-      "expense": "Pengeluaran",
-      "budget": "Anggaran",
-      "status": {
-        "exceeded": "Anggaran Melebihi",
-        "low": "Anggaran Hampir Habis",
-        "onTrack": "Di Jalur"
+      "title": "Daftar Stok ({{count}})",
+      "searchPlaceholder": "Cari stok...",
+      "category": "Kategori",
+      "sortOrder": "Urutkan",
+      "allCategories": "Semua",
+      "sortOptions": {
+        "expiry": "Kedaluwarsa",
+        "name": "Nama",
+        "category": "Kategori"
+      },
+      "empty": "Tidak ada stok",
+      "noResults": "Tidak ada hasil",
+      "deleteConfirm": "Hapus item ini?",
+      "deleteWhenZero": "Jumlah 0. Hapus item?",
+      "consume": "Konsumsi & Catat",
+      "consumeConfirm": "Konsumsi {{name}} dan tambahkan ke catatan makan?",
+      "consumed": "Mengonsumsi \"{{name}}\" dan dicatat!",
+      "addToShoppingList": "Menambahkan \"{{name}}\" ke daftar belanja!",
+      "addToShoppingListTitle": "Tambahkan ke Daftar Belanja",
+      "deleteTitle": "Hapus",
+      "expiryStatus": {
+        "expired": "Kedaluwarsa!",
+        "tomorrow": "Kedaluwarsa Besok",
+        "remaining": "{{days}} hari lagi"
       }
-    }
-  },
-  "shopping": {
-    "screen": {
-      "title": "Daftar Belanja"
-    }
-  },
-  "goals": {
-    "setting": {
-      "title": "Pengaturan Tujuan",
-      "editTitle": "Edit Tujuan",
-      "newTitle": "Tujuan Baru",
-      "type": "Jenis Tujuan",
-      "calorie": {
-        "label": "Tujuan Kalori",
-        "unit": "kcal",
-        "description": "Tetapkan tujuan kalori harian"
-      },
-      "budget": {
-        "label": "Tujuan Anggaran",
-        "unit": "yen",
-        "description": "Tetapkan anggaran bulanan atau mingguan"
-      },
-      "weight": {
-        "label": "Tujuan Berat Badan",
-        "unit": "kg",
-        "description": "Tetapkan berat badan target"
-      },
-      "exercise": {
-        "label": "Tujuan Olahraga",
-        "unit": "menit",
-        "description": "Tetapkan waktu olahraga harian"
-      },
-      "titleLabel": "Judul",
-      "descriptionLabel": "Deskripsi（opsional）",
-      "targetValueLabel": "Nilai Target",
-      "periodLabel": "Periode",
-      "required": "Silakan masukkan judul dan nilai target",
-      "saveFailed": "Gagal menyimpan tujuan"
     },
-    "progress": {
-      "achieved": "Dicapai！",
-      "budgetExceeded": "Anggaran Melebihi",
-      "budgetLow": "Anggaran Hampir Habis",
-      "onTrack": "Di Jalur",
-      "inProgress": "Sedang Berlangsung",
-      "paceUp": "Tingkatkan Kecepatan",
-      "needEffort": "Perlu Usaha",
-      "deleteConfirm": "Hapus tujuan ini?",
-      "current": "Saat Ini",
-      "target": "Tujuan",
-      "exceeded": "Melebihi",
-      "remaining": "Tersisa",
-      "daysRemaining": "Hari Tersisa",
-      "dailyAverage": "Rata-rata Harian",
-      "estimatedDate": "Tanggal Penyelesaian Perkiraan",
-      "period": {
-        "day": "1 Hari",
-        "week": "1 Minggu",
-        "month": "1 Bulan",
-        "daysRemaining": " hari",
-        "custom": "Kustom"
-      }
+    "expiringAlert": {
+      "today": "🚨 Gunakan Hari Ini",
+      "tomorrow": "⏰ Kedaluwarsa Besok",
+      "addToShoppingList": "Tambahkan item kedaluwarsa ke daftar belanja",
+      "addConfirm": "Tambahkan {{count}} item kedaluwarsa ke daftar belanja?",
+      "addSuccess": "Ditambahkan {{count}} item ke daftar belanja!"
+    },
+    "stats": {
+      "title": "Statistik Stok",
+      "totalStock": "Total Stok",
+      "items": "item",
+      "types": "jenis",
+      "byCategory": "Berdasarkan Kategori",
+      "byExpiry": "Berdasarkan Kedaluwarsa",
+      "expired": "⚠️ Kedaluwarsa",
+      "today": "🔔 Hari Ini",
+      "tomorrow": "📅 Besok",
+      "soon": "⏰ Dalam 3 hari",
+      "safe": "✅ Aman"
     }
   },
-  "bottomNav": {
-    "home": "Beranda",
-    "meals": "Makanan",
-    "scan": "Pindai",
-    "report": "Laporan",
-    "social": "Sosial",
-    "settings": "Pengaturan",
-    "mainNavigation": "Navigasi Utama"
-  },
-  "settings": {
-    "prefecture": {
-      "title": "Prefektur"
-    },
-    "export": {
-      "csvHeader": "Jenis,Nama,Kalori,Jumlah,Tanggal",
-      "csvFilename": "AplikasiKeuanganKesehatan_",
-      "jsonFilename": "AplikasiKeuanganKesehatan_",
-      "mealRecord": "Catatan Makanan"
+  "recipe": {
+    "generator": {
+      "title": "Pembuat Resep",
+      "ingredients": "Bahan",
+      "ingredientsPlaceholder": "misalnya, Ayam, Bawang, Wortel",
+      "difficulty": "Tingkat Kesulitan",
+      "dietaryRestriction": "Pembatasan Diet",
+      "customRequest": "Permintaan Kustom (Opsional)",
+      "customRequestPlaceholder": "misalnya, Sehat, Cepat",
+      "generate": "Buat Resep",
+      "generateFromStock": "Buat dari Stok",
+      "selectIngredients": "Pilih Bahan",
+      "selectAll": "Pilih Semua",
+      "addSelected": "Tambahkan yang Dipilih",
+      "noStock": "Tidak ada stok yang dapat digunakan ditemukan",
+      "ingredientsRequired": "Silakan masukkan bahan",
+      "selectIngredientsRequired": "Silakan pilih bahan",
+      "difficultyOptions": {
+        "none": "Apa saja",
+        "super_easy": "Sangat Mudah",
+        "under_5min": "Di bawah 5 menit",
+        "under_10min": "Di bawah 10 menit",
+        "no_fire": "Tanpa Api"
+      },
+      "dietaryOptions": {
+        "none": "Tidak ada",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan"
+      },
+      "defaultTitle": "Resep dari Stok",
+      "defaultCustomRequest": "Saran otomatis dari stok",
+      "error": {
+        "generateFromStockFailed": "Gagal membuat dari stok.",
+        "generateFailed": "Gagal membuat resep.",
+        "apiKey": {
+          "title": "[Solusi]",
+          "step1": "1. Periksa kunci API di pengaturan",
+          "step2": "2. Verifikasi kunci API benar",
+          "step3": "3. Verifikasi kunci API valid di Google AI Studio"
+        },
+        "rateLimit": {
+          "title": "[Solusi]",
+          "step1": "1. Silakan tunggu sebentar dan coba lagi",
+          "step2": "2. Periksa batas penggunaan API"
+        },
+        "network": {
+          "title": "[Solusi]",
+          "step1": "1. Periksa koneksi internet",
+          "step2": "2. Periksa pengaturan firewall atau proxy"
+        },
+        "request": {
+          "title": "[Solusi]",
+          "step1": "1. Periksa data stok",
+          "step2": "2. Silakan tunggu sebentar dan coba lagi"
+        }
+      },
+      "recipeTitle": "Resep menggunakan {{ingredients}}",
+      "selectedCount": "{{count}} dipilih",
+      "noStockInModal": "Tidak ada stok yang dapat digunakan ditemukan",
+      "quantity": "Jml: {{count}}",
+      "expiryDays": "Kedaluwarsa dalam: {{days}} hari"
     }
   }
 }
-

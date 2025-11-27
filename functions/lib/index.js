@@ -55,9 +55,9 @@ const sendVerificationEmailApp = async (req, res) => {
         },
     });
     const mailOptions = {
-        from: '"健康家計アプリ" <noreply@life-pwa.app>',
+        from: '"けんすけ" <noreply@life-pwa.app>',
         to: email,
-        subject: '【健康家計アプリ】メールアドレスの確認',
+        subject: '【けんすけ】メールアドレスの確認',
         html: `
 <!DOCTYPE html>
 <html lang="ja">
@@ -126,12 +126,12 @@ const sendVerificationEmailApp = async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>🥗💰 健康家計アプリ</h1>
+      <h1>🥗💰 けんすけ</h1>
       <p>メールアドレス確認</p>
     </div>
 
     <p>こんにちは！</p>
-    <p>健康家計アプリへのご登録ありがとうございます。</p>
+    <p>けんすけへのご登録ありがとうございます。</p>
     <p>以下の確認コードを入力して、メールアドレスの確認を完了してください：</p>
 
     <div class="code-box">
@@ -149,7 +149,7 @@ const sendVerificationEmailApp = async (req, res) => {
     </div>
 
     <div class="footer">
-      <p>© 2025 健康家計アプリ</p>
+      <p>© 2025 けんすけ</p>
       <p><a href="https://healthfinanse.jp" style="color: #4caf50; text-decoration: none;">https://healthfinanse.jp</a></p>
       <p>このメールは自動送信されています。返信はできません。</p>
     </div>
@@ -158,11 +158,11 @@ const sendVerificationEmailApp = async (req, res) => {
 </html>
     `,
         text: `
-健康家計アプリ - メールアドレス確認
+けんすけ - メールアドレス確認
 
 こんにちは！
 
-健康家計アプリへのご登録ありがとうございます。
+けんすけへのご登録ありがとうございます。
 
 以下の確認コードを入力して、メールアドレスの確認を完了してください：
 
@@ -172,7 +172,7 @@ const sendVerificationEmailApp = async (req, res) => {
 ※ このメールに心当たりがない場合は、無視していただいて構いません。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
-健康家計アプリについて
+けんすけについて
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 AIが健康をサポートする生活管理アプリです。
@@ -187,7 +187,7 @@ AIが健康をサポートする生活管理アプリです。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-© 2025 健康家計アプリ
+© 2025 けんすけ
 https://healthfinanse.jp
     `,
     };
@@ -227,9 +227,9 @@ exports.sendPasswordResetEmail = functions.https.onCall({
         },
     });
     const mailOptions = {
-        from: '"健康家計アプリ" <noreply@life-pwa.app>',
+        from: '"けんすけ" <noreply@life-pwa.app>',
         to: email,
-        subject: '【健康家計アプリ】パスワードリセット',
+        subject: '【けんすけ】パスワードリセット',
         html: `
 <!DOCTYPE html>
 <html lang="ja">
@@ -298,7 +298,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
 <body>
   <div class="container">
     <div class="header">
-      <h1>🥗💰 健康家計アプリ</h1>
+      <h1>🥗💰 けんすけ</h1>
       <p>パスワードリセット</p>
     </div>
 
@@ -321,7 +321,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
     </div>
 
     <div class="footer">
-      <p>© 2025 健康家計アプリ</p>
+      <p>© 2025 けんすけ</p>
       <p><a href="https://healthfinanse.jp" style="color: #4caf50; text-decoration: none;">https://healthfinanse.jp</a></p>
       <p>このメールは自動送信されています。返信はできません。</p>
     </div>
@@ -330,7 +330,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
 </html>
       `,
         text: `
-健康家計アプリ - パスワードリセット
+けんすけ - パスワードリセット
 
 こんにちは！
 
@@ -345,7 +345,7 @@ exports.sendPasswordResetEmail = functions.https.onCall({
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-© 2025 健康家計アプリ
+© 2025 けんすけ
 https://healthfinanse.jp
       `,
     };
@@ -510,4 +510,5 @@ exports.getFewShotExamples = functions.https.onCall({ region: 'us-central1' }, a
     }
 });
 __exportStar(require("./vision"), exports);
+__exportStar(require("./notifications"), exports);
 //# sourceMappingURL=index.js.map

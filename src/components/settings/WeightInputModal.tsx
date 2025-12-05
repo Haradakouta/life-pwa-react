@@ -68,8 +68,27 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }}>
+    <div className="modal-overlay" style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    }}>
+      <div className="modal-content" style={{
+        maxWidth: '400px',
+        width: '90%',
+        backgroundColor: 'var(--card)',
+        borderRadius: '16px',
+        padding: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        animation: 'scaleIn 0.2s ease-out'
+      }}>
         <div
           style={{
             display: 'flex',
@@ -167,7 +186,7 @@ export const WeightInputModal: React.FC<WeightInputModalProps> = ({ onClose }) =
             }}
           >
             <MdSave size={18} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-            {saving ? t('common.saving') : t('common.save')}
+            {saving ? t('common.saving') : '確定'}
           </button>
         </div>
       </div>

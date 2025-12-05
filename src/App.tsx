@@ -76,12 +76,24 @@ function App() {
     // 初回チェック
     checkAndUpdateMissions(user.uid);
 
+    // アプリがアクティブになったときにチェック
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAndUpdateMissions(user.uid);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     // 1分ごとにチェック
     const intervalId = setInterval(() => {
       checkAndUpdateMissions(user.uid);
     }, 60000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [user]);
 
   // ダークモードの初期化

@@ -13,6 +13,7 @@ import { PrefectureSettingScreen } from './PrefectureSettingScreen';
 import { DailyMissionScreen } from '../mission/DailyMissionScreen';
 import { CosmeticShopScreen } from '../cosmetic/CosmeticShopScreen';
 import { HealthSettingScreen } from './HealthSettingScreen';
+import { UpgradeButton } from '../subscription/UpgradeButton';
 
 /**
  * BMIを計算する関数
@@ -152,6 +153,16 @@ export const SettingsScreen: React.FC = () => {
   return (
     <section className="screen active">
       <h2>{t('settings.title')}</h2>
+
+      <div className="card" style={{ background: 'linear-gradient(135deg, #fffbec 0%, #fff 100%)', border: '1px solid #fcd34d' }}>
+        <h3 style={{ color: '#d97706', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdEmojiEvents /> プレミアムプラン
+        </h3>
+        <p style={{ fontSize: '0.9rem', color: '#b45309', marginBottom: '12px' }}>
+          AI機能（レシート認識、食事アドバイス）を制限なく利用できます。
+        </p>
+        <UpgradeButton />
+      </div>
 
       <div className="card">
         <h3>{t('settings.profile.title')}</h3>

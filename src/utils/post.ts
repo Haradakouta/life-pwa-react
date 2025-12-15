@@ -417,8 +417,8 @@ export const getUserPosts = async (
           batchHasUserReposted(postIds, currentUserId),
         ]);
 
-        // 投稿にユーザー状態を追加（型拡張のためanyを使用）
-        posts.forEach((post: any) => {
+        // 投稿にユーザー状態を追加
+        posts.forEach((post) => {
           post.userLiked = likedMap[post.id] || false;
           post.userBookmarked = bookmarkedMap[post.id] || false;
           post.userReposted = repostedMap[post.id] || false;

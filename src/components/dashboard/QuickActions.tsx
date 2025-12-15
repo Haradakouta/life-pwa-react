@@ -15,7 +15,8 @@ import {
   MdBarChart,
   MdSettings,
   MdEmojiEvents,
-  MdTrendingUp
+  MdTrendingUp,
+  MdAssignment
 } from 'react-icons/md';
 
 interface QuickActionsProps {
@@ -97,6 +98,12 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
       color: '#6366f1',
     },
     {
+      screen: 'mission' as Screen,
+      icon: <MdAssignment size={32} />,
+      label: t('quickActions.mission', 'ミッション'),
+      color: '#f59e0b',
+    },
+    {
       screen: 'settings',
       icon: <MdSettings size={32} />,
       label: t('quickActions.settings'),
@@ -104,7 +111,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
     },
   ], [t, i18n.language]);
 
-        const handleClick = useCallback((card: FunctionCard) => {
+  const handleClick = useCallback((card: FunctionCard) => {
     startTransition(() => {
       if (card.onClick) {
         card.onClick();
@@ -122,18 +129,18 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
           <button
             key={index}
             className={`function-card-modern ${isHovered ? 'hovered' : ''}`}
-            style={{ 
+            style={{
               '--card-color': card.color,
               '--card-index': index,
             } as React.CSSProperties & { '--card-index': number }}
-                  onClick={() => handleClick(card)}
+            onClick={() => handleClick(card)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             aria-label={card.label}
           >
-            <div 
-              className="function-icon-modern" 
-              style={{ 
+            <div
+              className="function-icon-modern"
+              style={{
                 color: card.color,
                 transform: isHovered ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
                 transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -141,7 +148,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
             >
               {card.icon}
             </div>
-            <div 
+            <div
               className="function-label-modern"
               style={{
                 transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
@@ -151,7 +158,7 @@ export const QuickActions: React.FC<QuickActionsProps> = React.memo(({ onNavigat
               {card.label}
             </div>
             {isHovered && (
-              <div 
+              <div
                 className="function-ripple"
                 style={{
                   position: 'absolute',

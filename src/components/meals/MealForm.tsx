@@ -5,25 +5,30 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useIntakeStore, useMealTemplateStore } from '../../store';
 import { CalorieScanner } from './CalorieScanner';
+import { ProGate } from '../subscription/ProGate';
 import { MdAdd, MdDelete, MdCameraAlt } from 'react-icons/md';
 import type { MealTemplate } from '../../types';
+import { addExperience } from '../../utils/mission';
+import { useAuth } from '../../hooks/useAuth';
 
 export const MealForm: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { addIntake } = useIntakeStore();
-  const { 
-    templates, 
-    addTemplate, 
-    deleteTemplate, 
-    subscribeToFirestore, 
+  const {
+    templates,
+    addTemplate,
+    deleteTemplate,
+    subscribeToFirestore,
     unsubscribeFromFirestore,
     initialized,
     syncWithFirestore
   } = useMealTemplateStore();
-  
+
   const [name, setName] = useState('');
   const [calories, setCalories] = useState('');
   const [price, setPrice] = useState('');
+  const [memo, setMemo] = useState('');
   const [showCalorieScanner, setShowCalorieScanner] = useState(false);
   const [activeTab, setActiveTab] = useState<'manual' | 'template'>('manual');
 
@@ -54,9 +59,8 @@ export const MealForm: React.FC = () => {
 
   const handleCalorieScanned = async (scannedCalories: number, reasoning: string) => {
     setCalories(scannedCalories.toString());
+    setMemo(reasoning);
     setShowCalorieScanner(false);
-    // reasoning（根拠）は現状保存する場所がないため、コンソールに出力のみ
-    console.log('Calorie reasoning:', reasoning);
   };
 
   const handleCancelScanner = () => {
@@ -75,12 +79,19 @@ export const MealForm: React.FC = () => {
         calories: Number(calories) || 0,
         price: Number(price) || 0,
         source: 'manual',
+        memo: memo,
       });
+
+      // 経験値を付与 (食事記録: 100XP)
+      if (user) {
+        await addExperience(user.uid, 100);
+      }
 
       // フォームをリセット
       setName('');
       setCalories('');
       setPrice('');
+      setMemo('');
       alert(t('meals.form.recorded'));
     } catch (error) {
       console.error('食事記録エラー:', error);
@@ -90,7 +101,7 @@ export const MealForm: React.FC = () => {
 
   const handleAddToTemplate = async () => {
     if (!name.trim()) return;
-    
+
     try {
       await addTemplate({
         name: name.trim(),
@@ -111,6 +122,12 @@ export const MealForm: React.FC = () => {
         price: template.price,
         source: 'manual',
       });
+
+      // 経験値を付与 (食事記録: 100XP)
+      if (user) {
+        await addExperience(user.uid, 100);
+      }
+
       alert(t('meals.form.recorded'));
     } catch (error) {
       console.error('食事記録エラー:', error);
@@ -168,7 +185,7 @@ export const MealForm: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               placeholder={t('meals.form.dishNamePlaceholder')}
             />
-            
+
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label>{t('meals.form.template.calories')} (kcal)</label>
@@ -190,31 +207,37 @@ export const MealForm: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowCalorieScanner(true)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'var(--card)',
-                border: '1px solid var(--primary)',
-                color: 'var(--primary)',
-                borderRadius: '8px',
-                marginTop: '16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                fontWeight: 'bold',
-              }}
+            <ProGate
+              featureName={t('meals.form.scanCalories', '写真を撮ってカロリー計測')}
+              description="写真からの自動カロリー計測機能はプレミアムプラン限定です。"
+              lockType="replace"
             >
-              <MdCameraAlt size={20} />
-              {t('meals.form.scanCalories', '写真を撮ってカロリー計測')}
-            </button>
+              <button
+                onClick={() => setShowCalorieScanner(true)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'var(--card)',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  borderRadius: '8px',
+                  marginTop: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: 'bold',
+                }}
+              >
+                <MdCameraAlt size={20} />
+                {t('meals.form.scanCalories', '写真を撮ってカロリー計測')}
+              </button>
+            </ProGate>
 
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-              <button 
-                className="submit" 
+              <button
+                className="submit"
                 onClick={handleSubmit}
                 style={{ flex: 2 }}
               >
@@ -313,4 +336,3 @@ export const MealForm: React.FC = () => {
     </>
   );
 };
-

@@ -5,8 +5,12 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExerciseStore } from '../../store';
 
+import { addExperience } from '../../utils/mission';
+import { useAuth } from '../../hooks/useAuth';
+
 export const ExerciseForm: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { addExercise } = useExerciseStore();
   const [name, setName] = useState('');
   const [duration, setDuration] = useState('');
@@ -14,12 +18,12 @@ export const ExerciseForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       alert(t('exercise.form.nameRequired'));
       return;
     }
-    
+
     if (!duration || Number(duration) <= 0) {
       alert(t('exercise.form.durationRequired'));
       return;
@@ -31,6 +35,11 @@ export const ExerciseForm: React.FC = () => {
         duration: Number(duration),
         calories: calories ? Number(calories) : undefined,
       });
+
+      // 経験値を付与 (運動記録: 100XP)
+      if (user) {
+        await addExperience(user.uid, 100);
+      }
 
       // フォームをリセット
       setName('');
@@ -75,7 +84,7 @@ export const ExerciseForm: React.FC = () => {
             autoFocus
           />
         </div>
-        
+
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
             {t('exercise.form.duration')}

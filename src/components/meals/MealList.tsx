@@ -54,6 +54,20 @@ export const MealList: React.FC = () => {
                   <div style={{ fontSize: '0.9rem', color: '#666' }}>
                     {intake.calories} kcal · ¥{intake.price}
                   </div>
+                  {intake.memo && (
+                    <div style={{
+                      fontSize: '0.8rem',
+                      color: '#2e7d32',
+                      background: '#e8f5e9',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      marginTop: '4px',
+                      whiteSpace: 'pre-wrap',
+                      lineHeight: '1.4'
+                    }}>
+                      AI分析: {intake.memo}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => handleDelete(intake.id)}

@@ -10,6 +10,7 @@ import type { Title } from '../../types/title';
 import { TitleBadge } from '../common/TitleBadge';
 import { MdFavorite, MdFavoriteBorder, MdComment, MdRepeat, MdShare, MdBookmark, MdBookmarkBorder, MdFormatQuote, MdPushPin, MdMoreVert } from 'react-icons/md';
 import { AvatarWithFrame } from '../common/AvatarWithFrame';
+import { NameWithColor } from '../common/NameWithColor';
 import { ImageModal } from '../common/ImageModal';
 
 interface PostCardProps {
@@ -299,18 +300,17 @@ const PostCardComponent: React.FC<PostCardProps> = React.memo(({ post, onPostCli
         <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginBottom: '2px' }}>
-            <div
+            <NameWithColor
+              userId={post.authorId}
+              name={post.authorName}
               style={{
                 fontWeight: 700,
-                color: 'var(--text)',
                 fontSize: '15px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
-            >
-              {post.authorName}
-            </div>
+            />
             <div
               style={{
                 color: 'var(--text-secondary)',

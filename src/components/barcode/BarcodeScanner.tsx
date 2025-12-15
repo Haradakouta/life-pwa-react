@@ -1,12 +1,176 @@
 /**
  * バーコードスキャナーコンポーネント
  * ZXing (Zebra Crossing) ライブラリを使用
+ * Enhanced Design & UX (2025-12-10)
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { BrowserMultiFormatReader } from '@zxing/library';
 import { useTranslation } from 'react-i18next';
 import { searchProductByJAN } from '../../api/rakuten';
 import type { ProductInfo } from '../../types';
+import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+import { MdClose, MdQrCodeScanner } from 'react-icons/md';
+
+// --- Styled Components & Animations ---
+
+const scanAnimation = keyframes`
+  0% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(150px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.5; }
+`;
+
+const pulseAnimation = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+`;
+
+const Container = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const Header = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+`;
+
+const CloseButton = styled.button`
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+const CameraView = styled.div`
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+
+
+const ScanFrame = styled.div`
+  position: absolute;
+  width: 80vw;
+  max-width: 320px;
+  height: 200px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); // 周りを暗くする簡単な方法
+  z-index: 10;
+  overflow: hidden;
+
+  // コーナーのアクセント
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: #22c55e;
+    border-style: solid;
+    transition: all 0.3s;
+  }
+
+  &::before {
+    top: -2px;
+    left: -2px;
+    border-width: 4px 0 0 4px;
+    border-top-left-radius: 16px;
+  }
+
+  &::after {
+    bottom: -2px;
+    right: -2px;
+    border-width: 0 4px 4px 0;
+    border-bottom-right-radius: 16px;
+  }
+`;
+
+const ScanLine = styled.div`
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e;
+  animation: ${scanAnimation} 2s infinite ease-in-out;
+`;
+
+const StatusBadge = styled.div<{ isError?: boolean }>`
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: ${props => props.isError ? 'rgba(239, 68, 68, 0.9)' : 'rgba(34, 199, 94, 0.9)'};
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 20;
+  animation: ${pulseAnimation} 2s infinite;
+`;
+
+const GuideText = styled.div`
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  z-index: 20;
+  padding: 0 20px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+`;
 
 interface BarcodeScannerProps {
   onProductFound: (product: ProductInfo) => void;
@@ -31,30 +195,28 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     };
   }, []);
 
+  const triggerHaptic = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
   const startScanning = async () => {
     try {
       setError(null);
-
       const codeReader = new BrowserMultiFormatReader();
       codeReaderRef.current = codeReader;
 
-      // カメラデバイスを取得
       const videoInputDevices = await codeReader.listVideoInputDevices();
+
 
       if (videoInputDevices.length === 0) {
         throw new Error(t('barcode.cameraNotFound'));
       }
 
-      // 外部カメラ（背面カメラ）を強制的に使用
-      // スマホの場合、内蔵カメラ（フロントカメラ）ではなく、
-      // 背面カメラを優先的に選択することでバーコードスキャンの精度を向上
+      // Select back camera
       const backCamera = videoInputDevices.find((device) => {
         const label = device.label.toLowerCase();
-        // 複数のキーワードで背面カメラを検出
-        // 'back': 英語の一般的な表記
-        // 'rear': 背面カメラの別表記
-        // 'environment': facingModeの標準値
-        // 'camera 0': 一部のデバイスでの背面カメラの表記
         return (
           label.includes('back') ||
           label.includes('rear') ||
@@ -63,39 +225,42 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         );
       });
 
-      // 背面カメラが見つかった場合はそれを使用、
-      // 見つからない場合は最後のカメラを使用（多くの場合、最後が背面カメラ）
       const selectedDeviceId = backCamera
         ? backCamera.deviceId
         : videoInputDevices[videoInputDevices.length - 1].deviceId;
 
-      console.log('使用するカメラ:', backCamera ? backCamera.label : videoInputDevices[videoInputDevices.length - 1].label);
+      const constraints = {
+        video: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          width: { min: 1280, ideal: 1920, max: 2560 },
+          height: { min: 720, ideal: 1080, max: 1440 },
+          facingMode: 'environment'
+        }
+      };
 
-      // スキャン開始
-      codeReader.decodeFromVideoDevice(
-        selectedDeviceId,
+      await codeReader.decodeFromConstraints(
+        constraints,
         videoRef.current!,
-        async (result, error) => {
+        async (result) => {
           if (result && !isProcessing) {
             const code = result.getText();
 
-            // 同じコードを連続してスキャンしないようにする
-            if (code === lastScannedCode) {
-              return;
-            }
+            if (code === lastScannedCode) return;
 
+            triggerHaptic();
             setLastScannedCode(code);
             setIsProcessing(true);
 
             try {
-              // 商品情報を取得
               const product = await searchProductByJAN(code);
 
               if (product) {
+                // Success Haptic
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 onProductFound(product);
                 stopScanning();
 
-                // バーコードスキャン回数を更新
+                // Update stats
                 import('../../config/firebase').then(({ auth }) => {
                   if (auth.currentUser) {
                     import('../../utils/profile').then(({ getUserProfile, updateUserStats }) => {
@@ -104,7 +269,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                           const currentCount = profile.stats.barcodeScanCount || 0;
                           updateUserStats(auth.currentUser!.uid, {
                             barcodeScanCount: currentCount + 1
-                          }).catch(err => console.error('Stats update failed:', err));
+                          }).catch(e => console.error(e));
                         }
                       });
                     });
@@ -112,16 +277,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 });
 
               } else {
+                if (navigator.vibrate) navigator.vibrate(200);
                 setError(t('barcode.productNotFound', { code }));
                 setIsProcessing(false);
-                // 3秒後にエラーをクリアして再スキャン可能にする
                 setTimeout(() => {
                   setError(null);
                   setLastScannedCode(null);
                 }, 3000);
               }
-            } catch (err) {
-              console.error('商品情報取得エラー:', err);
+            } catch (apiErr) {
+              console.error('API Error:', apiErr);
               setError(t('barcode.fetchFailed'));
               setIsProcessing(false);
               setTimeout(() => {
@@ -130,17 +295,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               }, 3000);
             }
           }
-
-          if (error && !(error instanceof NotFoundException)) {
-            console.error('スキャンエラー:', error);
-          }
         }
       );
     } catch (err) {
-      console.error('カメラ起動エラー:', err);
-      setError(
-        err instanceof Error ? err.message : t('barcode.cameraStartFailed')
-      );
+      console.error('Camera Error:', err);
+      setError(err instanceof Error ? err.message : t('barcode.cameraStartFailed'));
     }
   };
 
@@ -157,137 +316,59 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: '#000',
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* ヘッダー */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: '#fff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>
-          {t('barcode.title')}
-        </h2>
-        <button
-          onClick={handleClose}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#fff',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: '4px',
-          }}
-        >
-          ✕
-        </button>
-      </div>
+    <Container>
+      <Header>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdQrCodeScanner size={24} />
+          <span style={{ fontWeight: 600 }}>{t('barcode.title')}</span>
+        </div>
+        <CloseButton onClick={handleClose}>
+          <MdClose size={24} />
+        </CloseButton>
+      </Header>
 
-      {/* カメラビュー */}
-      <div
-        style={{
-          flex: 1,
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <video
-          ref={videoRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
+      <CameraView>
+        <video ref={videoRef} autoPlay muted playsInline />
 
-        {/* スキャンガイド */}
-        <div
-          style={{
+        {/* スキャン枠 */}
+        <ScanFrame>
+          <ScanLine />
+          {/* 角の装飾（反対側） */}
+          <div style={{
             position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '80%',
-            maxWidth: '300px',
-            height: '150px',
-            border: '2px solid #22c55e',
-            borderRadius: '8px',
-            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-          }}
-        />
+            top: -2, right: -2,
+            width: 20, height: 20,
+            borderTop: '4px solid #22c55e',
+            borderRight: '4px solid #22c55e',
+            borderTopRightRadius: 16
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: -2, left: -2,
+            width: 20, height: 20,
+            borderBottom: '4px solid #22c55e',
+            borderLeft: '4px solid #22c55e',
+            borderBottomLeftRadius: 16
+          }} />
+        </ScanFrame>
 
-        {/* ステータス表示 */}
         {isProcessing && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: '#fff',
-              padding: '20px 32px',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: 600,
-            }}
-          >
+          <StatusBadge>
+            <div className="loading-spinner" style={{ width: 16, height: 16, border: '2px solid white', borderTopColor: 'transparent' }} />
             {t('barcode.processing')}
-          </div>
+          </StatusBadge>
         )}
 
         {error && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(239, 68, 68, 0.95)',
-              color: '#fff',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              maxWidth: '90%',
-              textAlign: 'center',
-            }}
-          >
+          <StatusBadge isError>
             {error}
-          </div>
+          </StatusBadge>
         )}
-      </div>
 
-      {/* フッター */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: '#fff',
-          textAlign: 'center',
-        }}
-      >
-        <p style={{ margin: 0, fontSize: '0.9rem', color: '#999' }}>
+        <GuideText>
           {t('barcode.guide')}
-        </p>
-      </div>
-    </div>
+        </GuideText>
+      </CameraView>
+    </Container>
   );
 };

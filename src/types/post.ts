@@ -21,6 +21,9 @@ export interface Post {
   isPinned?: boolean; // プロフィールに固定されているか（Twitter機能）
   createdAt: string;
   updatedAt?: string;
+  userLiked?: boolean; // 自分がいいねしたか
+  userBookmarked?: boolean; // 自分がブックマークしたか
+  userReposted?: boolean; // 自分がリポストしたか
 }
 
 // 投稿に含まれるレシピデータ（簡略版）

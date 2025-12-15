@@ -7,9 +7,12 @@ import { useExpenseStore } from '../../store';
 import type { ExpenseCategory } from '../../types';
 import { MdAdd, MdCalendarToday } from 'react-icons/md';
 import { DatePickerModal } from '../common/DatePickerModal';
+import { addExperience } from '../../utils/mission';
+import { useAuth } from '../../hooks/useAuth';
 
 export const ExpenseForm: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { addExpense } = useExpenseStore();
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [category, setCategory] = useState<ExpenseCategory>('food');
@@ -36,7 +39,7 @@ export const ExpenseForm: React.FC = () => {
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!amount || Number(amount) <= 0) {
       alert(t('expense.form.amountRequired'));
       return;
@@ -55,6 +58,11 @@ export const ExpenseForm: React.FC = () => {
       memo: memo || undefined,
       date: selectedDate.toISOString(),
     });
+
+    // 経験値を付与 (支出記録: 100XP)
+    if (user) {
+      await addExperience(user.uid, 100);
+    }
 
     // フォームをリセット
     setAmount('');

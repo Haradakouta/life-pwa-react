@@ -10,6 +10,7 @@ import { generateUUID } from '../../utils/uuid';
 import { MdRestaurantMenu, MdInventory, MdAutoAwesome, MdClose, MdCheckBox, MdCheckBoxOutlineBlank, MdSmartToy } from 'react-icons/md';
 import { FiSmile, FiZap, FiClock } from 'react-icons/fi';
 import { BsSnow } from 'react-icons/bs';
+import { ProGate } from '../subscription/ProGate';
 
 interface RecipeGeneratorProps {
   onRecipeGenerated: (recipe: Recipe) => void;
@@ -100,10 +101,10 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
       .split(/[,、]/)
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
-    
+
     const newIngredients = [...new Set([...existingIngredients, ...stockNames])];
     setIngredients(newIngredients.join(', '));
-    
+
     setShowStockModal(false);
     setSelectedStockIds(new Set());
   };
@@ -159,8 +160,8 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
       }
 
       // 材料が抽出できなかった場合は、在庫から主要なものを使用
-      const finalIngredients = extractedIngredients.length > 0 
-        ? extractedIngredients 
+      const finalIngredients = extractedIngredients.length > 0
+        ? extractedIngredients
         : ingredientStocks.slice(0, 5).map(s => s.name);
 
       const newRecipe: Recipe = {
@@ -177,6 +178,18 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
       addToHistory(newRecipe);
       onRecipeGenerated(newRecipe);
+
+      // ミッション進捗を更新
+      import('../../utils/mission').then(() => {
+        import('../../config/firebase').then(({ auth }) => {
+          if (auth.currentUser) {
+            // レシピ作成ミッションを直接更新
+            import('../../utils/mission').then(({ updateMissionProgress }) => {
+              updateMissionProgress(auth.currentUser!.uid, 'mission_recipe', 1);
+            });
+          }
+        });
+      });
     } catch (error) {
       console.error('在庫からレシピ生成エラー:', error);
       interface ErrorWithStatus extends Error {
@@ -197,7 +210,7 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
       let errorMessage = t('recipe.generator.error.generateFromStockFailed');
       if (error instanceof Error) {
         errorMessage += `\n\n${error.message}`;
-        
+
         if (error.message.includes('403') || error.message.includes('無効') || error.message.includes('権限')) {
           errorMessage += `\n\n${t('recipe.generator.error.apiKey.title')}\n${t('recipe.generator.error.apiKey.step1')}\n${t('recipe.generator.error.apiKey.step2')}\n${t('recipe.generator.error.apiKey.step3')}`;
         } else if (error.message.includes('429') || error.message.includes('制限')) {
@@ -244,6 +257,20 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
 
       addToHistory(newRecipe);
       onRecipeGenerated(newRecipe);
+
+      // ミッション進捗を更新
+      import('../../utils/mission').then(() => {
+        // useAuthフックはこのコンポーネント内では使えないため、localStorageなどからIDを取得するか、
+        // 親コンポーネントからIDを受け取る必要がありますが、ここではfirebase/authから直接取得します
+        import('../../config/firebase').then(({ auth }) => {
+          if (auth.currentUser) {
+            // レシピ作成ミッションを直接更新
+            import('../../utils/mission').then(({ updateMissionProgress }) => {
+              updateMissionProgress(auth.currentUser!.uid, 'mission_recipe', 1);
+            });
+          }
+        });
+      });
     } catch (error) {
       console.error('レシピ生成エラー:', error);
       interface ErrorWithStatus extends Error {
@@ -283,288 +310,293 @@ export const RecipeGenerator: React.FC<RecipeGeneratorProps> = ({
   };
 
   return (
-    <div className="card">
-      <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <MdRestaurantMenu size={20} />
-        {t('recipe.generator.title')}
-      </h3>
+    <ProGate
+      featureName={t('recipe.generator.title')}
+      description="AIによるレシピ生成（食材からの提案含む）はプレミアムプラン限定機能です。"
+    >
+      <div className="card">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdRestaurantMenu size={20} />
+          {t('recipe.generator.title')}
+        </h3>
 
-      <label>{t('recipe.generator.ingredients')}</label>
-      <input
-        value={ingredients}
-        onChange={(e) => setIngredients(e.target.value)}
-        placeholder={t('recipe.generator.ingredientsPlaceholder')}
-        disabled={isLoading}
-      />
+        <label>{t('recipe.generator.ingredients')}</label>
+        <input
+          value={ingredients}
+          onChange={(e) => setIngredients(e.target.value)}
+          placeholder={t('recipe.generator.ingredientsPlaceholder')}
+          disabled={isLoading}
+        />
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <button
-          onClick={handleOpenStockModal}
-          style={{
-            background: '#10b981',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            flex: 1,
-            minWidth: '150px',
-          }}
-          disabled={isLoading || ingredientStocks.length === 0}
-        >
-          <MdInventory size={18} />
-          {t('recipe.generator.selectIngredients')} ({ingredientStocks.length}件)
-        </button>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleOpenStockModal}
+            style={{
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flex: 1,
+              minWidth: '150px',
+            }}
+            disabled={isLoading || ingredientStocks.length === 0}
+          >
+            <MdInventory size={18} />
+            {t('recipe.generator.selectIngredients')} ({ingredientStocks.length}件)
+          </button>
 
-        <button
-          onClick={handleGenerateFromStock}
-          style={{
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            flex: 1,
-            minWidth: '150px',
-            fontWeight: 600,
-            boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
-          }}
-          disabled={isLoading || ingredientStocks.length === 0}
-        >
-          <MdSmartToy size={18} />
-          {t('recipe.generator.generateFromStock')}
-        </button>
-      </div>
+          <button
+            onClick={handleGenerateFromStock}
+            style={{
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flex: 1,
+              minWidth: '150px',
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+            }}
+            disabled={isLoading || ingredientStocks.length === 0}
+          >
+            <MdSmartToy size={18} />
+            {t('recipe.generator.generateFromStock')}
+          </button>
+        </div>
 
-      {/* 在庫選択モーダル */}
-      {showStockModal && (
-        <div
-          className="modal active"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowStockModal(false);
-            }
-          }}
-        >
-          <div className="modal-content" style={{ maxWidth: '500px', maxHeight: '80vh' }}>
-            <div className="modal-header">
-              <h3 className="modal-title">{t('recipe.generator.selectIngredients')}</h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowStockModal(false)}
-                aria-label={t('common.cancel')}
-              >
-                <MdClose size={24} />
-              </button>
-            </div>
+        {/* 在庫選択モーダル */}
+        {showStockModal && (
+          <div
+            className="modal active"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowStockModal(false);
+              }
+            }}
+          >
+            <div className="modal-content" style={{ maxWidth: '500px', maxHeight: '80vh' }}>
+              <div className="modal-header">
+                <h3 className="modal-title">{t('recipe.generator.selectIngredients')}</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setShowStockModal(false)}
+                  aria-label={t('common.cancel')}
+                >
+                  <MdClose size={24} />
+                </button>
+              </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <button
-                onClick={handleSelectAllStocks}
+              <div style={{ marginBottom: '16px' }}>
+                <button
+                  onClick={handleSelectAllStocks}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {selectedStockIds.size === ingredientStocks.length ? t('receipt.deselectAll') : t('recipe.generator.selectAll')}
+                </button>
+                <span style={{ marginLeft: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  {t('recipe.generator.selectedCount', { count: selectedStockIds.size })}
+                </span>
+              </div>
+
+              <div
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
                   border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
+                  borderRadius: '8px',
+                  padding: '8px',
                 }}
               >
-                {selectedStockIds.size === ingredientStocks.length ? t('receipt.deselectAll') : t('recipe.generator.selectAll')}
-              </button>
-              <span style={{ marginLeft: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                {t('recipe.generator.selectedCount', { count: selectedStockIds.size })}
-              </span>
-            </div>
-
-            <div
-              style={{
-                maxHeight: '400px',
-                overflowY: 'auto',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '8px',
-              }}
-            >
-              {ingredientStocks.length === 0 ? (
-                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  {t('recipe.generator.noStockInModal')}
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {ingredientStocks.map((stock) => {
-                    const isSelected = selectedStockIds.has(stock.id);
-                    return (
-                      <div
-                        key={stock.id}
-                        onClick={() => handleToggleStock(stock.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px',
-                          borderRadius: '8px',
-                          background: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'var(--card)',
-                          border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.background = 'var(--background)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.background = 'var(--card)';
-                          }
-                        }}
-                      >
-                        {isSelected ? (
-                          <MdCheckBox size={24} color="var(--primary)" />
-                        ) : (
-                          <MdCheckBoxOutlineBlank size={24} color="var(--text-secondary)" />
-                        )}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text)' }}>{stock.name}</div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                            {t('recipe.generator.quantity', { count: stock.quantity })}
-                            {stock.daysRemaining !== undefined && (
-                              <>
-                                {' '}・ {t('recipe.generator.expiryDays', { days: stock.daysRemaining })}
-                                {stock.daysRemaining <= 3 && (
-                                  <span style={{ color: '#ef4444', marginLeft: '4px' }}>⚠️</span>
-                                )}
-                              </>
-                            )}
-                            {stock.category && (
-                              <span style={{ marginLeft: '8px', fontSize: '0.75rem', opacity: 0.7 }}>
-                                ({t(`stock.categories.${stock.category}`)})
-                              </span>
-                            )}
+                {ingredientStocks.length === 0 ? (
+                  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    {t('recipe.generator.noStockInModal')}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {ingredientStocks.map((stock) => {
+                      const isSelected = selectedStockIds.has(stock.id);
+                      return (
+                        <div
+                          key={stock.id}
+                          onClick={() => handleToggleStock(stock.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            background: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'var(--card)',
+                            border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.background = 'var(--background)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.background = 'var(--card)';
+                            }
+                          }}
+                        >
+                          {isSelected ? (
+                            <MdCheckBox size={24} color="var(--primary)" />
+                          ) : (
+                            <MdCheckBoxOutlineBlank size={24} color="var(--text-secondary)" />
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text)' }}>{stock.name}</div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                              {t('recipe.generator.quantity', { count: stock.quantity })}
+                              {stock.daysRemaining !== undefined && (
+                                <>
+                                  {' '}・ {t('recipe.generator.expiryDays', { days: stock.daysRemaining })}
+                                  {stock.daysRemaining <= 3 && (
+                                    <span style={{ color: '#ef4444', marginLeft: '4px' }}>⚠️</span>
+                                  )}
+                                </>
+                              )}
+                              {stock.category && (
+                                <span style={{ marginLeft: '8px', fontSize: '0.75rem', opacity: 0.7 }}>
+                                  ({t(`stock.categories.${stock.category}`)})
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setShowStockModal(false)}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                }}
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleAddSelectedStocks}
-                disabled={selectedStockIds.size === 0}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: selectedStockIds.size > 0 ? 'var(--primary)' : 'var(--border)',
-                  color: selectedStockIds.size > 0 ? 'white' : 'var(--text-secondary)',
-                  cursor: selectedStockIds.size > 0 ? 'pointer' : 'not-allowed',
-                  fontWeight: 600,
-                }}
-              >
-                {t('recipe.generator.addSelected')} ({selectedStockIds.size}件)
-              </button>
+              <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowStockModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleAddSelectedStocks}
+                  disabled={selectedStockIds.size === 0}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: selectedStockIds.size > 0 ? 'var(--primary)' : 'var(--border)',
+                    color: selectedStockIds.size > 0 ? 'white' : 'var(--text-secondary)',
+                    cursor: selectedStockIds.size > 0 ? 'pointer' : 'not-allowed',
+                    fontWeight: 600,
+                  }}
+                >
+                  {t('recipe.generator.addSelected')} ({selectedStockIds.size}件)
+                </button>
+              </div>
             </div>
           </div>
+        )}
+
+        <label>{t('recipe.generator.difficulty')}</label>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {difficultyOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setDifficulty(option.value)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: `2px solid ${difficulty === option.value ? 'var(--primary)' : 'var(--border)'}`,
+                background: difficulty === option.value ? 'var(--primary)' : 'var(--card)',
+                color: difficulty === option.value ? 'white' : 'var(--text)',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: difficulty === option.value ? 600 : 400,
+              }}
+              disabled={isLoading}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{option.icon} {option.label}</span>
+            </button>
+          ))}
         </div>
-      )}
 
-      <label>{t('recipe.generator.difficulty')}</label>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-        {difficultyOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setDifficulty(option.value)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              border: `2px solid ${difficulty === option.value ? 'var(--primary)' : 'var(--border)'}`,
-              background: difficulty === option.value ? 'var(--primary)' : 'var(--card)',
-              color: difficulty === option.value ? 'white' : 'var(--text)',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: difficulty === option.value ? 600 : 400,
-            }}
-            disabled={isLoading}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{option.icon} {option.label}</span>
-          </button>
-        ))}
+        <label>{t('recipe.generator.dietaryRestriction')}</label>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {dietaryOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setDietaryRestriction(option.value)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: `2px solid ${dietaryRestriction === option.value ? 'var(--primary)' : 'var(--border)'}`,
+                background: dietaryRestriction === option.value ? 'var(--primary)' : 'var(--card)',
+                color: dietaryRestriction === option.value ? 'white' : 'var(--text)',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: dietaryRestriction === option.value ? 600 : 400,
+              }}
+              disabled={isLoading}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{option.icon} {option.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <label>{t('recipe.generator.customRequest')}</label>
+        <textarea
+          value={customRequest}
+          onChange={(e) => setCustomRequest(e.target.value)}
+          placeholder={t('recipe.generator.customRequestPlaceholder')}
+          rows={3}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+            background: 'var(--card)',
+            color: 'var(--text)',
+            fontSize: '1rem',
+            fontFamily: 'inherit',
+            resize: 'vertical',
+          }}
+          disabled={isLoading}
+        />
+
+        <button className="submit" onClick={handleGenerate} disabled={isLoading}>
+          <MdAutoAwesome size={18} style={{ marginRight: '8px' }} />
+          {t('recipe.generator.generate')}
+        </button>
       </div>
-
-      <label>{t('recipe.generator.dietaryRestriction')}</label>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-        {dietaryOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setDietaryRestriction(option.value)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              border: `2px solid ${dietaryRestriction === option.value ? 'var(--primary)' : 'var(--border)'}`,
-              background: dietaryRestriction === option.value ? 'var(--primary)' : 'var(--card)',
-              color: dietaryRestriction === option.value ? 'white' : 'var(--text)',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: dietaryRestriction === option.value ? 600 : 400,
-            }}
-            disabled={isLoading}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{option.icon} {option.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <label>{t('recipe.generator.customRequest')}</label>
-      <textarea
-        value={customRequest}
-        onChange={(e) => setCustomRequest(e.target.value)}
-        placeholder={t('recipe.generator.customRequestPlaceholder')}
-        rows={3}
-        style={{
-          width: '100%',
-          padding: '12px',
-          borderRadius: '8px',
-          border: '1px solid var(--border)',
-          background: 'var(--card)',
-          color: 'var(--text)',
-          fontSize: '1rem',
-          fontFamily: 'inherit',
-          resize: 'vertical',
-        }}
-        disabled={isLoading}
-      />
-
-      <button className="submit" onClick={handleGenerate} disabled={isLoading}>
-        <MdAutoAwesome size={18} style={{ marginRight: '8px' }} />
-        {t('recipe.generator.generate')}
-      </button>
-    </div>
+    </ProGate>
   );
 };

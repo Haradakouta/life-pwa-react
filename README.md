@@ -1,314 +1,86 @@
-# 健康家計アプリ (React版) 🥗💰
+# 健康家計アプリ (Health & Finance PWA) 🥗💰
 
-**AIが健康をサポートする、シームレスな生活管理アプリ**
+**AIがあなたの健康と家計をサポートする、オールインワン生活管理アプリ**
 
-[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-blue)](https://haradakouta.github.io/life-pwa-react/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite)](https://vitejs.dev/)
+[![Access App](https://img.shields.io/badge/Access-Web%20App-4CAF50?style=for-the-badge&logo=pwa)](https://oshi-para.web.app/)
 
----
-
-## 🌟 特徴
-
-### 🔗 シームレスな機能連携
-- **バーコードスキャン → 在庫管理** - スキャンしたら自動で在庫画面へ
-- **買い物リスト → 在庫管理** - チェックした商品を一括で在庫に追加
-- **在庫管理 → 買い物リスト** - 各アイテムからワンタップで買い物リストへ
-- **期限切れ間近 → 買い物リスト** - 期限切れ間近の商品を一括追加
-
-### 🤖 AI健康アドバイザー
-- **自動健康チェック** - 不健康な商品を12カテゴリ・80以上のキーワードで検出
-- **代替案の提案** - より健康的な選択肢を3〜4個提案
-- **Gemini API統合** - 詳細なパーソナライズ分析（オプション）
-- **押し付けない設計** - ユーザーが自分で選択できる
-
-### 📱 モダンなUI/UX
-- **X（Twitter）風のSNS機能** - シンプルで直感的なタイムライン
-- **React Icons** - 統一されたアイコンシステム
-- **カードシャドウ** - 奥行きのあるデザイン
-- **ホバーエフェクト** - スムーズなアニメーション
-- **ダークモード** - 目に優しい夜間モード
-- **レスポンシブ** - スマホ・タブレット対応
-- **多言語対応** - 8言語対応（日本語、英語、中国語簡体字・繁体字、韓国語、ベトナム語、ロシア語、インドネシア語）
-
-### 🔧 全17画面の完全機能
-1. **ダッシュボード** - 今日のカロリー・今月の支出・BMI表示・目標進捗サマリー
-2. **食事記録** - カロリー・支出管理・AIカロリー計測（Gemini API）
-3. **在庫管理** - 賞味期限カレンダー表示・期限切れアラート
-4. **買い物リスト** - チェック機能付き・健康目標に基づくAI提案
-5. **AIレシピ** - Gemini APIでレシピ生成
-6. **バーコードスキャン** - ZXingで商品情報取得＋レシートOCR（ネイティブカメラ対応・Vision API最適化）
-7. **レポート** - グラフで可視化＋月次レポート＋AI改善提案
-8. **バッジ** - アチーブメントシステム（14種類のバッジ）
-9. **設定** - トグルスイッチUI＋通知設定＋健康情報設定（身長・体重・年齢）
-10. **家計簿** - 収入・支出管理・予算管理・カテゴリ別集計
-11. **目標管理** - カロリー・予算・体重・運動の4種類の目標設定と進捗追跡
-12. **運動記録** - 運動名・時間・消費カロリーの記録と運動目標への自動反映
-13. **PWA対応** - オフライン動作
-14. **SNSタイムライン** - X（Twitter）風のソーシャル機能
-15. **投稿作成・編集** - 画像投稿、ハッシュタグ、メンション対応
-16. **プロフィール** - フォロー/アンフォロー機能、投稿一覧、プロフィール編集
-17. **通知・DM** - いいね・コメント・フォロー・引用・リプライ・DM通知（リアルタイム・未読バッジ）
-
-### 🔐 Firebase統合
-- **Firebase Authentication** - ユーザー認証（メール/パスワード、Google）
-- **Firestore Database** - クラウドデータ保存（ユーザーデータ、投稿、通知）
-- **Firebase Storage** - 画像アップロード（プロフィール画像、投稿画像）
-- **リアルタイム同期** - 複数デバイス間でデータ同期
-- **3ステップ登録** - メール確認コード方式の新規登録フロー（個人情報入力含む）
-- **Cloud Functions** - Nodemailer + Gmail SMTPでメール送信（v2, Secret Manager）
-
-### 🎮 継続利用を促進する仕組み
-- **🔔 通知機能** - 朝・昼・夕の食事記録リマインダー（Web Notification API）+ SNS通知・DM通知
-- **🏆 バッジシステム** - 14種類のアチーブメント（連続記録、マイルストーン、目標達成、機能活用）
-- **📊 月次レポート** - サマリー、先月比較、Gemini APIによるAI改善提案
-- **📱 SNS機能** - X（Twitter）風のタイムライン、フォロー機能、リアルタイム通知、DM機能
-- **🎨 コスメティック** - フレーム、名前色、スキン（称号獲得で解放）
-- **💪 健康管理** - 身長・体重・年齢設定、BMI自動計算、週次体重入力リマインダー（毎週月曜日）
-- **🎯 目標管理** - カロリー・予算・体重・運動の4種類の目標設定、進捗追跡、達成通知、バッジ獲得
-- **🏃 運動記録** - 運動名・時間・消費カロリーの記録、運動目標への自動反映、日次集計
-- **🛒 健康買い物リスト** - BMI・健康目標に基づく食材提案、栄養不足補完提案
+> **📱 今すぐ使う:** [https://oshi-para.web.app/](https://oshi-para.web.app/)
+>
+> **💡 ヒント:** iOS(Safari)またはAndroid(Chrome)で「ホーム画面に追加」することで、アプリとしてインストールできます。
 
 ---
 
-## 🚀 デモ
+## 🌟 なぜこのアプリ？
 
-**GitHub Pages:** https://haradakouta.github.io/life-pwa-react/
-
----
-
-## 📸 スクリーンショット
-
-### X風のSNS機能
-- シンプルで直感的なタイムライン
-- ホバーエフェクト付きのアクションボタン
-- スレッド風の投稿詳細表示
-
-### 健康管理
-- ダッシュボードにBMI表示
-- 賞味期限カレンダー表示
-- 健康情報の可視化
+「健康管理」と「家計管理」を別々のアプリで行うのは面倒ではありませんか？
+このアプリは、日々の**食事記録**がそのまま**食費管理**になり、**買い物リスト**が**在庫管理**に連動します。
+さらに、Googleの最新AI（Gemini）があなたの専属アドバイザーとして、食事内容や買い物の傾向から健康的なアドバイスを提供します。
 
 ---
 
-## 🛠️ 技術スタック
+## ✨ 主な機能
 
-### フロントエンド
-- **React 19** - 最新のReact
-- **TypeScript 5** - 型安全性
-- **Vite 7** - 高速ビルドツール
-- **Zustand** - 軽量な状態管理
-- **Recharts** - データ可視化
-- **React Icons** - アイコンライブラリ
+### 1. 📸 撮るだけ管理
+- **バーコードスキャン:** 商品バーコードを読み取るだけで、カロリーと商品情報を自動取得。そのまま在庫や食事記録に追加できます。
+- **レシートスキャン:** レシートを撮影するだけで、品目と価格を自動で家計簿に登録。
+- **料理写真分析:** 手料理の写真を撮ると、AIがカロリーと栄養素を自動推定します。
 
-### 外部API
-- **Google Gemini API** - AIレシピ生成・健康分析・レシートOCR・カロリー計測・買い物リスト最適化
-  - `gemini-2.5-flash-lite` - すべてのAI機能で使用（レシピ生成・健康アドバイザー・レシートOCR・カロリー計測・買い物リスト提案）
-  - **無料プラン対応** - 1日1,000リクエストまで利用可能
-  - **自動リトライ機能** - 429エラー時に自動的に再試行
-  - **ユーザーAPIキー設定** - 設定画面で各自のAPIキーを設定可能
-- **楽天市場商品検索API** - バーコードスキャン
-- **楽天商品検索API** - バーコードスキャン
-- **JAN Code Lookup API** - バーコードスキャン
-- **Open Food Facts API** - バーコードスキャン
+### 2. 🤖 AIアドバイザー
+- **健康チェック:** 買い物リストや食事内容から、「糖質の摂りすぎ」「野菜不足」などをAIが分析。
+- **代替案の提案:** 「ポテトチップス」の代わりに「ナッツ」を提案するなど、無理のない改善案を提示します。
+- **レシピ生成:** 冷蔵庫の余り物（在庫）を選択するだけで、AIが最適なレシピを考案します。
 
-### PWA
-- **Service Worker** - オフライン動作
-- **Web App Manifest** - ホーム画面追加
+### 3. ⚔️ ゲーミフィケーション
+- **レイドバトル:** 全ユーザーで協力して「ジャンクフードゴーレム」と戦おう！あなたの「運動」と「健康的な食事」がダメージになります。
+- **ミッション＆バッジ:** 日々の記録で経験値を獲得。レベルアップして新しいフレームや称号をゲット。
+- **SNS機能:** 頑張りをタイムラインで共有。いいねやコメントで励まし合えます。
 
-### その他
-- **@zxing/library** - バーコードスキャン
-- **localStorage** - データ永続化
-
-### バックエンド
-- **Firebase Authentication** - ユーザー認証
-- **Firestore Database** - NoSQLクラウドデータベース
-- **Firebase Storage** - 画像アップロード
-- **Cloud Functions (v2)** - メール送信（Nodemailer + Gmail SMTP）、BigQueryログ記録
-- **BigQuery** - AIインタラクションログの分析・蓄積
-- **Secret Manager** - 環境変数管理
+### 4. 🏠 家計＆生活サポート
+- **在庫管理:** 賞味期限切れをアラートでお知らせ。買い忘れ・買いすぎを防ぎます。
+- **買い物リスト:** AIがあなたの健康状態に合わせて、買うべき食材を提案。
+- **家計簿:** 食費だけでなく、日々の収支をグラフで可視化。
 
 ---
 
-## 📦 セットアップ
+## 📲 始め方
 
-### 1. クローン
+1. **アプリにアクセス**
+   [https://oshi-para.web.app/](https://oshi-para.web.app/) をブラウザで開きます。
 
-```bash
-git clone https://github.com/Haradakouta/life-pwa-react.git
-cd life-pwa-react
-```
+2. **インストール（推奨）**
+   - **iPhone (Safari):** 「共有」ボタン → 「ホーム画面に追加」
+   - **Android (Chrome):** メニュー「︙」 → 「アプリをインストール」
 
-### 2. 依存関係のインストール
-
-```bash
-npm install
-```
-
-### 3. 環境変数の設定
-
-`.env.example`をコピーして`.env`を作成：
-
-```bash
-cp .env.example .env
-```
-
-`.env`を編集：
-
-```env
-# Gemini API（AIレシピ生成）
-VITE_GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
-
-# 楽天API（商品検索）
-VITE_RAKUTEN_APP_ID=YOUR_RAKUTEN_APP_ID_HERE
-
-# JAN Code Lookup API（商品検索）
-VITE_JANCODE_APP_ID=YOUR_JANCODE_APP_ID_HERE
-
-# Firebase
-VITE_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY_HERE
-VITE_FIREBASE_AUTH_DOMAIN=YOUR_FIREBASE_AUTH_DOMAIN_HERE
-VITE_FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID_HERE
-VITE_FIREBASE_STORAGE_BUCKET=YOUR_FIREBASE_STORAGE_BUCKET_HERE
-VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_FIREBASE_MESSAGING_SENDER_ID_HERE
-VITE_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID_HERE
-```
-
-### 4. Firebase Cloud Functions の設定（メール送信用）
-
-詳細は[README_EMAIL_SETUP.md](./README_EMAIL_SETUP.md)を参照してください。
-
-#### 簡単な手順:
-1. Gmailアプリパスワードを取得
-2. Firebase Functionsにシークレットとして設定:
-   ```bash
-   firebase functions:secrets:set GMAIL_EMAIL
-   firebase functions:secrets:set GMAIL_APP_PASSWORD
-   ```
-3. Cloud Functionsをデプロイ:
-   ```bash
-   cd functions
-   npm install
-   npm run build
-   cd ..
-   firebase deploy --only functions
-   ```
-
-### 6. 開発サーバー起動
-
-```bash
-npm run dev
-```
-
-→ http://localhost:5173
+3. **アカウント作成**
+   Googleアカウントまたはメールアドレスで登録。すぐに利用開始できます。
 
 ---
 
-## 🏗️ ビルド
+## 🛠️ 開発者向け情報 (For Developers)
 
-### プロダクションビルド
+このプロジェクトはReact + TypeScript + Firebaseで構築されたPWAです。
+詳細な仕様や開発ログについては、リポジトリ内の `AGENT.md` を参照してください。
 
-```bash
-npm run build
-```
-
-### プレビュー
-
-```bash
-npm run preview
-```
-
-→ http://localhost:4173
-
-### GitHub Pages デプロイ
-
-```bash
-npm run deploy
-```
-
-または、GitHub Actionsで自動デプロイされます（mainブランチへのpush時に自動実行）。
+### 技術スタック
+- **Frontend:** React 19, TypeScript, Vite, Zustand
+- **Backend:** Firebase (Auth, Firestore, Functions, Storage)
+- **AI:** Google Gemini API (Flash Lite)
 
 ---
 
 ## 📂 プロジェクト構成
 
+詳細なディレクトリ構造やファイルの説明は `AGENT.md` を参照してください。
+
 ```
 life-pwa-react/
-├── public/
-│   ├── icon-192.png           # PWAアイコン
-│   ├── icon-512.png
-│   ├── manifest.webmanifest   # PWAマニフェスト
-│   ├── sw.js                   # Service Worker
-│   └── frames/                 # フレーム画像
-│
-├── src/
-│   ├── api/
-│   │   ├── gemini.ts          # Gemini API
-│   │   ├── rakuten.ts         # 商品検索API
-│   │   └── vision.ts           # 画像認識API
-│   │
-│   ├── components/
-│   │   ├── layout/            # レイアウト
-│   │   ├── auth/              # 認証（ログイン・登録）
-│   │   ├── dashboard/         # ダッシュボード
-│   │   ├── meals/             # 食事記録
-│   │   ├── settings/          # 設定
-│   │   ├── stock/              # 在庫管理
-│   │   ├── shopping/           # 買い物リスト
-│   │   ├── recipe/             # AIレシピ
-│   │   ├── barcode/            # バーコードスキャン
-│   │   ├── expense/            # 家計簿
-│   │   ├── report/             # レポート
-│   │   ├── badges/             # バッジ
-│   │   ├── goals/              # 目標管理
-│   │   ├── exercise/           # 運動記録
-│   │   ├── social/             # SNS機能
-│   │   ├── mission/            # 日次ミッション
-│   │   ├── cosmetic/           # コスメティック
-│   │   └── common/              # 共通コンポーネント
-│   │
-│   ├── store/
-│   │   ├── useIntakeStore.ts   # 食事記録ストア
-│   │   ├── useExpenseStore.ts  # 家計簿ストア
-│   │   ├── useStockStore.ts    # 在庫ストア
-│   │   ├── useShoppingStore.ts # 買い物リストストア
-│   │   ├── useRecipeStore.ts   # レシピストア
-│   │   ├── useSettingsStore.ts # 設定ストア
-│   │   ├── useGoalStore.ts     # 目標ストア
-│   │   ├── useExerciseStore.ts # 運動記録ストア
-│   │   └── useBadgeStore.ts    # バッジストア
-│   │
-│   ├── config/
-│   │   └── firebase.ts         # Firebase設定
-│   │
-│   ├── types/                  # TypeScript型定義
-│   ├── utils/                   # ユーティリティ関数
-│   ├── data/                    # データ定義
-│   ├── styles/
-│   │   └── global.css          # グローバルスタイル
-│   │
-│   ├── App.tsx
-│   └── main.tsx
-│
-├── functions/                  # Cloud Functions
-│   ├── src/
-│   │   └── index.ts            # メール送信Function
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── vite.config.ts
-├── firebase.json               # Firebase設定
-├── .firebaserc                 # Firebaseプロジェクト
-├── firestore.rules             # Firestoreルール
-├── storage.rules               # Storageルール
-├── package.json
-├── README.md                   # このファイル
-├── README_EMAIL_SETUP.md       # メール設定手順
-├── cursor.md                   # 開発用メモ（AIコーディング用）
-└── .github/workflows/
-    └── deploy.yml              # GitHub Actions デプロイワークフロー
+├── src/            # ソースコード
+├── functions/      # Cloud Functions
+├── public/         # 静的アセット
+└── AGENT.md        # 開発者用ドキュメント（詳細仕様・開発ログ）
 ```
+
+---
 
 ---
 

@@ -16,6 +16,7 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
   const { user } = useAuth();
   const [userCosmetics, setUserCosmetics] = useState<UserCosmetic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'shop' | 'inventory'>('shop');
   const [selectedType, setSelectedType] = useState<'frame' | 'nameColor' | 'skin' | 'all'>('all');
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
 
   const fetchUserCosmetics = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const data = await getUserCosmetics(user.uid);
@@ -40,7 +41,7 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
 
   const handlePurchase = async (cosmeticId: string) => {
     if (!user) return;
-    
+
     try {
       const success = await purchaseCosmetic(user.uid, cosmeticId);
       if (success) {
@@ -57,7 +58,7 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
 
   const handleEquip = async (cosmeticId: string, type: 'frame' | 'nameColor' | 'skin') => {
     if (!user) return;
-    
+
     try {
       await equipCosmetic(user.uid, cosmeticId, type);
       await fetchUserCosmetics();
@@ -84,20 +85,6 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
     );
   }
 
-  const filteredCosmetics = selectedType === 'all'
-    ? cosmetics
-    : cosmetics.filter(c => c.type === selectedType);
-
-  const getRarityColor = (rarity: Cosmetic['rarity']): string => {
-    switch (rarity) {
-      case 'common': return '#9e9e9e';
-      case 'rare': return '#2196f3';
-      case 'epic': return '#9c27b0';
-      case 'legendary': return '#ffc107';
-      default: return '#9e9e9e';
-    }
-  };
-
   const isOwned = (cosmeticId: string): boolean => {
     return userCosmetics?.ownedCosmetics.includes(cosmeticId) || false;
   };
@@ -110,10 +97,36 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
     return false;
   };
 
+  const filteredCosmetics = cosmetics.filter(c => {
+    // カテゴリフィルタ
+    if (selectedType !== 'all' && c.type !== selectedType) return false;
+
+    // タブフィルタ
+    if (activeTab === 'inventory') {
+      return isOwned(c.id);
+    } else {
+      // Shopタブ: 未所持のみ表示、または全表示？
+      // ここでは「未所持」を表示し、所持済みはInventoryへ誘導する形にするか、
+      // 単に全表示して「所持済み」バッジを出すか。
+      // ユーザー体験的には「全表示」で「所持済み」がわかる方が良い。
+      return true;
+    }
+  });
+
+  const getRarityColor = (rarity: Cosmetic['rarity']): string => {
+    switch (rarity) {
+      case 'common': return '#9e9e9e';
+      case 'rare': return '#2196f3';
+      case 'epic': return '#9c27b0';
+      case 'legendary': return '#ffc107';
+      default: return '#9e9e9e';
+    }
+  };
+
   return (
-    <div style={{ padding: '16px' }}>
+    <div style={{ padding: '16px', paddingBottom: '80px' }}>
       {/* ヘッダー */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onBack && (
             <button
@@ -127,19 +140,12 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--background)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'none';
               }}
             >
               <MdArrowBack size={24} color="var(--text)" />
             </button>
           )}
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)' }}>装飾ショップ</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>装飾ショップ</h2>
         </div>
       </div>
 
@@ -153,6 +159,7 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
       }}>
         <MdEmojiEvents size={32} />
         <div>
@@ -163,13 +170,49 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
         </div>
       </div>
 
+      {/* タブ切り替え */}
+      <div style={{ display: 'flex', marginBottom: '24px', background: 'var(--card)', borderRadius: '12px', padding: '4px' }}>
+        <button
+          onClick={() => setActiveTab('shop')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            borderRadius: '8px',
+            background: activeTab === 'shop' ? 'var(--primary)' : 'transparent',
+            color: activeTab === 'shop' ? 'white' : 'var(--text-secondary)',
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          ショップ
+        </button>
+        <button
+          onClick={() => setActiveTab('inventory')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            borderRadius: '8px',
+            background: activeTab === 'inventory' ? 'var(--primary)' : 'transparent',
+            color: activeTab === 'inventory' ? 'white' : 'var(--text-secondary)',
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          持ち物
+        </button>
+      </div>
+
       {/* カテゴリフィルター */}
       <div style={{
         display: 'flex',
         gap: '8px',
         overflowX: 'auto',
         paddingBottom: '8px',
-        marginBottom: '24px',
+        marginBottom: '16px',
       }}>
         {[
           { id: 'all', name: 'すべて', icon: '📋' },
@@ -186,11 +229,12 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
               color: selectedType === cat.id ? 'white' : 'var(--text)',
               border: `1px solid ${selectedType === cat.id ? 'var(--primary)' : 'var(--border)'}`,
               borderRadius: '20px',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               transition: 'all 0.2s',
+              boxShadow: selectedType === cat.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
             }}
           >
             <span style={{ marginRight: '6px' }}>{cat.icon}</span>
@@ -201,28 +245,61 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
 
       {/* 装飾一覧 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {filteredCosmetics.map(cosmetic => {
-          const owned = isOwned(cosmetic.id);
-          const equipped = isEquipped(cosmetic.id, cosmetic.type);
-          const canAfford = (userCosmetics?.totalPoints || 0) >= cosmetic.price;
+        {filteredCosmetics.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+            {activeTab === 'inventory' ? 'アイテムを持っていません' : 'アイテムがありません'}
+          </div>
+        ) : (
+          filteredCosmetics.map(cosmetic => {
+            const owned = isOwned(cosmetic.id);
+            const equipped = isEquipped(cosmetic.id, cosmetic.type);
+            const canAfford = (userCosmetics?.totalPoints || 0) >= cosmetic.price;
 
-          return (
-            <div
-              key={cosmetic.id}
-              style={{
-                padding: '16px',
-                background: owned ? 'var(--card)' : 'var(--background)',
-                border: `2px solid ${equipped ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: '12px',
-                opacity: owned ? 1 : 0.9,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '24px' }}>{cosmetic.icon}</span>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)' }}>
+            return (
+              <div
+                key={cosmetic.id}
+                style={{
+                  padding: '16px',
+                  background: 'var(--card)',
+                  border: `2px solid ${equipped ? 'var(--primary)' : 'transparent'}`,
+                  borderRadius: '16px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {equipped && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    background: 'var(--primary)',
+                    color: 'white',
+                    padding: '4px 12px',
+                    borderBottomLeftRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 600
+                  }}>
+                    装備中
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '12px' }}>
+                  <div style={{
+                    fontSize: '32px',
+                    background: 'var(--background)',
+                    width: '64px',
+                    height: '64px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '12px'
+                  }}>
+                    {cosmetic.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
                         {cosmetic.name}
                       </div>
                       <span style={{
@@ -230,127 +307,141 @@ export const CosmeticShopScreen: React.FC<CosmeticShopScreenProps> = ({ onBack }
                         background: getRarityColor(cosmetic.rarity),
                         color: 'white',
                         borderRadius: '4px',
-                        fontSize: '11px',
+                        fontSize: '10px',
                         fontWeight: 600,
                       }}>
-                        {cosmetic.rarity}
+                        {cosmetic.rarity.toUpperCase()}
                       </span>
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                       {cosmetic.description}
                     </div>
                   </div>
                 </div>
-                {equipped && (
+
+                {/* プレビュー */}
+                {(cosmetic.type === 'nameColor' || cosmetic.type === 'frame') && (
                   <div style={{
-                    padding: '4px 8px',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: 600,
+                    padding: '12px',
+                    background: 'var(--background)',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    textAlign: 'center',
                   }}>
-                    装備中
+                    {cosmetic.type === 'nameColor' && (
+                      <span style={{
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        background: cosmetic.data.gradient,
+                        color: cosmetic.data.color || 'inherit',
+                        WebkitBackgroundClip: cosmetic.data.gradient ? 'text' : undefined,
+                        WebkitTextFillColor: cosmetic.data.gradient ? 'transparent' : undefined,
+                      }}>
+                        User Name
+                      </span>
+                    )}
+                    {cosmetic.type === 'frame' && (
+                      <div style={{ display: 'inline-block', position: 'relative', width: '48px', height: '48px' }}>
+                        {/* フレームプレビュー（簡易的） */}
+                        <div style={{
+                          position: 'absolute',
+                          top: -4, left: -4, right: -4, bottom: -4,
+                          border: '2px solid gold', // 実際のフレーム画像があればそれを使う
+                          borderRadius: '50%',
+                          pointerEvents: 'none'
+                        }} />
+                        <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#ccc' }} />
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
 
-              {/* プレビュー */}
-              {cosmetic.type === 'nameColor' && cosmetic.data.color && (
-                <div style={{
-                  padding: '8px',
-                  background: cosmetic.data.color,
-                  borderRadius: '6px',
-                  marginBottom: '12px',
-                  textAlign: 'center',
-                  color: 'white',
-                  fontWeight: 600,
-                }}>
-                  名前の色プレビュー
-                </div>
-              )}
-              {cosmetic.type === 'nameColor' && cosmetic.data.gradient && (
-                <div style={{
-                  padding: '8px',
-                  background: cosmetic.data.gradient,
-                  borderRadius: '6px',
-                  marginBottom: '12px',
-                  textAlign: 'center',
-                  color: 'white',
-                  fontWeight: 600,
-                }}>
-                  名前の色プレビュー
-                </div>
-              )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: canAfford || owned ? 'var(--primary)' : '#ef4444',
+                  }}>
+                    {cosmetic.price === 0 ? 'FREE' : `${cosmetic.price.toLocaleString()} P`}
+                  </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{
-                  padding: '6px 12px',
-                  background: 'var(--background)',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: canAfford || owned ? 'var(--text)' : '#dc2626',
-                }}>
-                  {cosmetic.price === 0 ? '無料' : `${cosmetic.price}P`}
-                </div>
-                
-                {owned ? (
-                  <button
-                    onClick={() => handleEquip(cosmetic.id, cosmetic.type)}
-                    style={{
-                      padding: '8px 16px',
-                      background: equipped ? 'var(--primary)' : 'var(--background)',
-                      color: equipped ? 'white' : 'var(--text)',
-                      border: `1px solid ${equipped ? 'var(--primary)' : 'var(--border)'}`,
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    {equipped ? (
-                      <>
-                        <MdCheckCircle size={18} />
-                        装備中
-                      </>
+                  {activeTab === 'shop' ? (
+                    owned ? (
+                      <button
+                        onClick={() => setActiveTab('inventory')}
+                        style={{
+                          padding: '8px 16px',
+                          background: 'var(--background)',
+                          color: 'var(--text-secondary)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        持ち物へ
+                      </button>
                     ) : (
-                      <>
-                        <MdRadioButtonUnchecked size={18} />
-                        装備
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handlePurchase(cosmetic.id)}
-                    disabled={!canAfford}
-                    style={{
-                      padding: '8px 16px',
-                      background: canAfford ? 'var(--primary)' : 'var(--border)',
-                      color: canAfford ? 'white' : 'var(--text-secondary)',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: canAfford ? 'pointer' : 'not-allowed',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      opacity: canAfford ? 1 : 0.6,
-                    }}
-                  >
-                    <MdShoppingCart size={18} />
-                    購入
-                  </button>
-                )}
+                      <button
+                        onClick={() => handlePurchase(cosmetic.id)}
+                        disabled={!canAfford}
+                        style={{
+                          padding: '8px 20px',
+                          background: canAfford ? 'var(--primary)' : 'var(--border)',
+                          color: canAfford ? 'white' : 'var(--text-secondary)',
+                          border: 'none',
+                          borderRadius: '20px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: canAfford ? 'pointer' : 'not-allowed',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: canAfford ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none'
+                        }}
+                      >
+                        <MdShoppingCart size={18} />
+                        購入する
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      onClick={() => handleEquip(cosmetic.id, cosmetic.type)}
+                      disabled={equipped}
+                      style={{
+                        padding: '8px 20px',
+                        background: equipped ? 'var(--background)' : 'var(--primary)',
+                        color: equipped ? 'var(--text-secondary)' : 'white',
+                        border: equipped ? '1px solid var(--border)' : 'none',
+                        borderRadius: '20px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        cursor: equipped ? 'default' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        opacity: equipped ? 0.7 : 1
+                      }}
+                    >
+                      {equipped ? (
+                        <>
+                          <MdCheckCircle size={18} />
+                          装備中
+                        </>
+                      ) : (
+                        <>
+                          <MdRadioButtonUnchecked size={18} />
+                          装備する
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

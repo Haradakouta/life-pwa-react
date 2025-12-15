@@ -1,7 +1,7 @@
 /**
  * デイリーミッションの型定義
  */
-export type MissionType = 
+export type MissionType =
   | 'post'           // 投稿
   | 'like'           // いいね
   | 'comment'        // コメント
@@ -30,6 +30,8 @@ export interface MissionProgress {
   completed: boolean; // 完了済みか
   completedAt?: string; // 完了日時（ISO string）
   date: string; // 日付（YYYY-MM-DD形式）
+  baseCount?: number; // ミッション開始時のカウント値
+  needsBaseCountReset?: boolean; // 次回更新時にbaseCountをリセットするかフラグ
 }
 
 export interface UserMissionData {
@@ -37,7 +39,7 @@ export interface UserMissionData {
   date: string; // YYYY-MM-DD
   missions: MissionProgress[];
   totalPoints: number; // 累計ポイント
-  lastResetDate: string; // 最後にリセットした日付
+  lastResetDate: string; // 最後にリセットした日付 (廃止予定だが互換性のため残す)
+  missionLevel: number; // 現在のミッションレベル
+  currentExp?: number;
 }
-
-

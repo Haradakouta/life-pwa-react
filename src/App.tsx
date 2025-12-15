@@ -345,9 +345,17 @@ function App() {
         // ミッション進捗をチェック（ログイン時）
         try {
           const { checkAndUpdateMissions } = await import('./utils/mission');
+
+          // 今日の日付を取得 (YYYY-MM-DD)
+          const today = new Date().toISOString().split('T')[0];
+
+          // 今日の記録のみをカウント
+          const todaysIntakes = intakeStore.intakes.filter(i => i.date.startsWith(today));
+          const todaysExpenses = expenseStore.expenses.filter(e => e.date.startsWith(today));
+
           await checkAndUpdateMissions(user.uid, {
-            intakeCount: intakeStore.intakes.length,
-            expenseCount: expenseStore.expenses.length,
+            intakeCount: todaysIntakes.length,
+            expenseCount: todaysExpenses.length,
           });
         } catch (error) {
           console.error('ミッション進捗チェックエラー:', error);

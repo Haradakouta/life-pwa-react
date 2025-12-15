@@ -11,3 +11,4 @@ export * from './product';
 export * from './badge';
 export * from './goal';
 export * from './exercise';
+export * from './subscription';

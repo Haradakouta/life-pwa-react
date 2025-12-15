@@ -7,6 +7,7 @@ import type { Post, Comment } from '../../types/post';
 import type { UserProfile } from '../../types/profile';
 import { PostCard } from './PostCard';
 import { AvatarWithFrame } from '../common/AvatarWithFrame';
+import { NameWithColor } from '../common/NameWithColor';
 
 interface PostDetailScreenProps {
   postId: string;
@@ -61,7 +62,7 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
           // コメント一覧を取得
           const fetchedComments = await getPostComments(postId);
           setComments(fetchedComments);
-          
+
           // リプライ投稿一覧を取得
           const fetchedReplies = await getPostReplies(postId);
           setReplies(fetchedReplies);
@@ -282,9 +283,11 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
         >
           <AvatarWithFrame userId={post.authorId} avatarUrl={post.authorAvatar} size="small" style={{ marginRight: '12px', flexShrink: 0 }} />
           <div>
-            <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: '15px' }}>
-              {post.authorName}
-            </div>
+            <NameWithColor
+              userId={post.authorId}
+              name={post.authorName}
+              style={{ fontWeight: 700, fontSize: '15px' }}
+            />
             <div style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
               {getRelativeTime(post.createdAt)}
             </div>
@@ -492,8 +495,8 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                 post.images.length === 1
                   ? '1fr'
                   : post.images.length === 2
-                  ? 'repeat(2, 1fr)'
-                  : 'repeat(2, 1fr)',
+                    ? 'repeat(2, 1fr)'
+                    : 'repeat(2, 1fr)',
               gap: '2px',
               marginBottom: '24px',
               marginLeft: '52px', // アバターの幅 + マージンに合わせる
@@ -701,9 +704,11 @@ export const PostDetailScreen: React.FC<PostDetailScreenProps> = ({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <div>
-                        <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '14px' }}>
-                          {comment.userName}
-                        </div>
+                        <NameWithColor
+                          userId={comment.userId}
+                          name={comment.userName}
+                          style={{ fontWeight: 600, fontSize: '14px' }}
+                        />
                         <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
                           {getRelativeTime(comment.createdAt)}
                         </div>

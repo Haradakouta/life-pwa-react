@@ -10,6 +10,11 @@ import type { Screen } from '../layout/BottomNav';
 import { getUserTotalPoints } from '../../utils/mission';
 import { useAuth } from '../../hooks/useAuth';
 import { MdMonetizationOn } from 'react-icons/md';
+import { getUserCollection } from '../../utils/collection';
+import { collectionItems } from '../../data/collection';
+import type { CollectionItem } from '../../types/collection';
+import { getUserNameColor } from '../../utils/cosmetic';
+import { getUserProfile } from '../../utils/profile';
 
 const GoalsSummary = lazy(() => import('../goals/GoalsSummary').then(m => ({ default: m.GoalsSummary })));
 
@@ -38,11 +43,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
   const [points, setPoints] = useState<number | null>(null);
+  const [partnerItem, setPartnerItem] = useState<CollectionItem | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [nameColor, setNameColor] = useState<string | undefined>(undefined);
 
-  // ポイント取得
+  // ポイント、パートナー、プロフィール取得
   useEffect(() => {
     if (user) {
       getUserTotalPoints(user.uid).then(setPoints);
+      getUserCollection(user.uid).then(col => {
+        if (col && col.partnerItemId) {
+          const item = collectionItems.find(i => i.id === col.partnerItemId);
+          setPartnerItem(item || null);
+        }
+      });
+      getUserProfile(user.uid).then(profile => {
+        if (profile) {
+          setDisplayName(profile.displayName);
+        }
+      });
+      getUserNameColor(user.uid).then(setNameColor);
     }
   }, [user]);
 
@@ -69,28 +89,107 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   }, [onNavigate]);
 
   return (
-    <section className="screen active dashboard-screen">
+    <section className="screen active dashboard-screen" style={{ position: 'relative' }}>
       <div className="dashboard-header" style={{ padding: '12px 16px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 className="dashboard-title" style={{ fontSize: '22px', marginBottom: '2px' }}>{t('dashboard.title')}</h2>
+          <h2 className="dashboard-title" style={{ fontSize: '22px', marginBottom: '2px' }}>
+            {t('dashboard.title')}
+            {displayName && (
+              <span style={{
+                marginLeft: '8px',
+                fontSize: '16px',
+                background: nameColor && nameColor.includes('gradient') ? nameColor : undefined,
+                color: nameColor && !nameColor.includes('gradient') ? nameColor : 'inherit',
+                WebkitBackgroundClip: nameColor && nameColor.includes('gradient') ? 'text' : undefined,
+                WebkitTextFillColor: nameColor && nameColor.includes('gradient') ? 'transparent' : undefined,
+              }}>
+                {displayName}
+              </span>
+            )}
+          </h2>
           <div className="dashboard-subtitle" style={{ fontSize: '13px' }}>{t('dashboard.subtitle')}</div>
         </div>
-        {points !== null && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            background: 'rgba(245, 158, 11, 0.1)',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            border: '1px solid rgba(245, 158, 11, 0.3)'
-          }}>
-            <MdMonetizationOn size={20} color="#F59E0B" />
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#D97706' }}>{points.toLocaleString()}</span>
-            <span style={{ fontSize: '0.8rem', color: '#D97706' }}>pt</span>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Partner Monster */}
+          {partnerItem && (
+            <div
+              onClick={() => handleNavigate('collection')}
+              style={{
+                fontSize: '32px',
+                cursor: 'pointer',
+                animation: 'bounce 2s infinite ease-in-out',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              {partnerItem.imageUrl.startsWith('/') ? (
+                <img src={partnerItem.imageUrl} alt={partnerItem.name} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+              ) : (
+                partnerItem.imageUrl
+              )}
+            </div>
+          )}
+
+          {points !== null && (
+            <div
+              onClick={() => handleNavigate('collection')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                cursor: 'pointer'
+              }}
+            >
+              <MdMonetizationOn size={20} color="#F59E0B" />
+              <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#D97706' }}>{points.toLocaleString()}</span>
+              <span style={{ fontSize: '0.8rem', color: '#D97706' }}>pt</span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Raid Banner */}
+      <div
+        onClick={() => handleNavigate('raid')}
+        style={{
+          margin: '0 16px 16px',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #2a0845 0%, #6441a5 100%)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: 'white',
+          boxShadow: '0 4px 12px rgba(42, 8, 69, 0.3)',
+          cursor: 'pointer',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '4px' }}>RAID BATTLE</div>
+          <div style={{ fontSize: '18px', fontWeight: 800 }}>BOSS: ジャンクフード・ゴーレム</div>
+          <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.9 }}>Click to Battle!</div>
+        </div>
+        <div style={{ fontSize: '40px', position: 'relative', zIndex: 1 }}>
+          🍔
+        </div>
+        {/* Background Overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          backgroundImage: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)'
+        }} />
+      </div>
+
       <Suspense fallback={<SummaryCardSkeleton />}>
         <SummaryCard />
       </Suspense>

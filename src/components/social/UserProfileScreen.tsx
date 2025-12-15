@@ -14,6 +14,7 @@ import { formatCount, formatJoinDate } from '../../utils/formatNumber';
 import type { UserProfile } from '../../types/profile';
 import type { Post } from '../../types/post';
 import { AvatarWithFrame } from '../common/AvatarWithFrame';
+import { NameWithColor } from '../common/NameWithColor';
 
 type ProfileTab = 'posts' | 'replies' | 'media' | 'likes';
 
@@ -206,17 +207,15 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
         >
           <MdArrowBack size={24} />
         </button>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: 700,
-          background: 'linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          margin: 0
-        }}>
-          {profile.displayName}
-        </h2>
+        <NameWithColor
+          userId={profile.uid}
+          name={profile.displayName}
+          style={{
+            fontSize: '20px',
+            fontWeight: 700,
+            margin: 0
+          }}
+        />
         <div style={{ width: '40px' }} />
       </div>
 
@@ -285,7 +284,11 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = React.memo(({
 
         <div style={{ marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '4px' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>{profile.displayName}</div>
+            <NameWithColor
+              userId={profile.uid}
+              name={profile.displayName}
+              style={{ fontSize: '20px', fontWeight: 700 }}
+            />
             {equippedTitle && <TitleBadge title={equippedTitle} size="medium" showName={true} />}
           </div>
           <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>@{profile.username}</div>

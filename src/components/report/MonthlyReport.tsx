@@ -7,6 +7,7 @@ import { useIntakeStore, useExpenseStore } from '../../store';
 import { generateMonthlyComparison, generateAIPrompt } from '../../utils/reportGenerator';
 import type { MonthlyComparison } from '../../utils/reportGenerator';
 import { generateText } from '../../api/gemini';
+import { ProGate } from '../subscription/ProGate';
 
 export function MonthlyReport() {
   const { intakes } = useIntakeStore();
@@ -178,14 +179,20 @@ export function MonthlyReport() {
           </h4>
 
           {!aiSuggestions ? (
-            <button
-              className="submit"
-              onClick={handleGenerateAISuggestions}
-              disabled={loadingAI || current.intakes.count === 0}
-              style={{ width: '100%' }}
+            <ProGate
+              featureName="AI改善提案"
+              description="月次データに基づいたAIアドバイス機能はプレミアムプラン限定です。"
+              lockType="replace"
             >
-              {loadingAI ? '提案を生成中...' : 'AI改善提案を生成'}
-            </button>
+              <button
+                className="submit"
+                onClick={handleGenerateAISuggestions}
+                disabled={loadingAI || current.intakes.count === 0}
+                style={{ width: '100%' }}
+              >
+                {loadingAI ? '提案を生成中...' : 'AI改善提案を生成'}
+              </button>
+            </ProGate>
           ) : (
             <div className="ai-suggestions">
               <div className="suggestions-content">{aiSuggestions}</div>

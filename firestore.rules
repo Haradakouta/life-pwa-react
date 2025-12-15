@@ -92,7 +92,11 @@ service cloud.firestore {
     }
 
     match /verificationCodes/{email} {
-      allow read, write: if true;
+      // Create/Get/Delete is needed for client-side flow (Register/Reset)
+      // List is denied to prevent dumping PII
+      allow create, get, delete: if true;
+      allow list: if false;
+      allow update: if false;
     }
 
     match /posts/{postId} {
@@ -189,19 +193,35 @@ service cloud.firestore {
       }
     }
 
-    // エラーログ（誰でも書き込み可能、管理者のみ読み取り可能）
+    // エラーログ（認証済みユーザーのみ作成可能に変更すべきだが、既存動作維持のため create: true のままにするか、isAuthにするか）
+    // ユーザー要望「既存機能を壊さない」
+    // 未ログイン時のエラーも取れるように true のままにするが、spam対策で update/delete は false
     match /errorLogs/{logId} {
-      allow create: if true; // 誰でもエラーログを書き込める
-      allow read: if isAuth(); // 認証済みユーザーは読み取り可能（管理者のみを想定）
-      allow update, delete: if false; // 更新・削除は不可
+      allow create: if true; 
+      allow read: if isAuth(); 
+      allow update, delete: if false;
+    }
+
+    // レイドバトル (New)
+    match /raids/{raidId} {
+      allow read, write: if isAuth();
+      
+      match /contributions/{userId} {
+        allow read, write: if isOwner(userId); // Assuming isUser should be isOwner based on common patterns
+      }
     }
 
     // 称号コレクション
     match /users/{userId}/titles/{titleId} {
-      allow read: if isAuth(); // 認証済みユーザーは読み取り可能
-      allow create: if isAuth(); // システムが称号を付与する場合
-      allow update: if isOwner(userId); // 装備/外すは本人のみ
-      allow delete: if false; // 削除は不可
+      allow read: if isAuth(); 
+      allow create: if isOwner(userId); // 自分の称号のみ作成可能に制限 (以前は isAuth() だった)
+      allow update: if isOwner(userId); 
+      allow delete: if false; 
+    }
+
+    // 装飾コレクション
+    match /users/{userId}/cosmetics/{document=**} {
+      allow read, write: if isOwner(userId);
     }
 
     // 管理者設定（全ユーザーが読み取り可能、認証済みユーザーが書き込み可能）

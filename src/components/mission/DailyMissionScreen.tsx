@@ -3,11 +3,10 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { getUserMissionData, checkAndUpdateMissions, getUserTotalPoints } from '../../utils/mission';
+import { getUserMissionData, getUserTotalPoints } from '../../utils/mission';
 import { dailyMissions } from '../../data/missions';
 import type { MissionProgress } from '../../types/mission';
-import { MdRefresh, MdCheckCircle, MdRadioButtonUnchecked, MdArrowBack, MdEmojiEvents } from 'react-icons/md';
-import { useIntakeStore, useExpenseStore } from '../../store';
+import { MdRefresh, MdArrowBack } from 'react-icons/md';
 
 interface DailyMissionScreenProps {
   onBack?: () => void;
@@ -15,9 +14,7 @@ interface DailyMissionScreenProps {
 
 export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }) => {
   const { user } = useAuth();
-  const intakeStore = useIntakeStore();
-  const expenseStore = useExpenseStore();
-  const [missionData, setMissionData] = useState<{ missions: MissionProgress[]; totalPoints: number } | null>(null);
+  const [missionData, setMissionData] = useState<{ missions: MissionProgress[]; totalPoints: number; missionLevel: number; currentExp: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -29,7 +26,7 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
 
   const fetchMissionData = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const data = await getUserMissionData(user.uid);
@@ -38,6 +35,8 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
         setMissionData({
           missions: data.missions,
           totalPoints,
+          missionLevel: data.missionLevel || 1,
+          currentExp: data.currentExp || 0,
         });
       }
     } catch (error) {
@@ -49,13 +48,8 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
 
   const handleRefresh = async () => {
     if (!user) return;
-    
     setRefreshing(true);
     try {
-      await checkAndUpdateMissions(user.uid, {
-        intakeCount: intakeStore.intakes.length,
-        expenseCount: expenseStore.expenses.length,
-      });
       await fetchMissionData();
     } catch (error) {
       console.error('ミッション更新エラー:', error);
@@ -81,14 +75,14 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
     );
   }
 
-  const getMissionProgress = (missionId: string): MissionProgress | undefined => {
-    return missionData?.missions.find(m => m.missionId === missionId);
-  };
+  const nextLevelExp = Math.floor(100 * Math.pow(missionData?.missionLevel || 1, 1.5));
+  const currentExp = missionData?.currentExp || 0;
+  const progressPercent = Math.min(100, (currentExp / nextLevelExp) * 100);
 
   return (
-    <div style={{ padding: '16px' }}>
-      {/* ヘッダー */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div style={{ padding: '16px', paddingBottom: '80px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onBack && (
             <button
@@ -102,139 +96,117 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--background)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'none';
               }}
             >
               <MdArrowBack size={24} color="var(--text)" />
             </button>
           )}
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)' }}>デイリーミッション</h2>
+          <h2 style={{ margin: 0 }}>ミッション</h2>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            borderRadius: '9999px',
-            backgroundColor: 'var(--primary)',
-            color: 'white',
+            background: 'none',
             border: 'none',
             cursor: 'pointer',
-            transition: 'opacity 0.2s',
-            opacity: refreshing ? 0.7 : 1,
+            color: 'var(--text-secondary)',
+            opacity: refreshing ? 0.5 : 1,
           }}
         >
-          {refreshing ? (
-            <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          ) : (
-            <MdRefresh size={20} />
-          )}
-          更新
+          <MdRefresh size={24} />
         </button>
       </div>
 
-      {/* ポイント表示 */}
+      {/* Level & XP Card */}
       <div style={{
-        padding: '16px',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        borderRadius: '12px',
-        marginBottom: '24px',
+        borderRadius: '16px',
+        padding: '20px',
         color: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        marginBottom: '24px',
+        boxShadow: '0 4px 12px rgba(118, 75, 162, 0.3)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <MdEmojiEvents size={32} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
           <div>
-            <div style={{ fontSize: '14px', opacity: 0.9 }}>累計ポイント</div>
-            <div style={{ fontSize: '28px', fontWeight: 700 }}>
-              {missionData?.totalPoints || 0}
-            </div>
+            <div style={{ fontSize: '14px', opacity: 0.9 }}>Current Level</div>
+            <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{missionData?.missionLevel || 1}</div>
           </div>
+          <div style={{ fontSize: '14px', opacity: 0.9 }}>
+            {currentExp} / {nextLevelExp} XP
+          </div>
+        </div>
+
+        {/* XP Bar */}
+        <div style={{ height: '8px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: `${progressPercent}%`,
+            background: '#fff',
+            borderRadius: '4px',
+            transition: 'width 0.5s ease-out'
+          }} />
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '12px', textAlign: 'right', opacity: 0.8 }}>
+          あと {nextLevelExp - currentExp} XP でレベルアップ！
         </div>
       </div>
 
-      {/* ミッション一覧 */}
+      {/* Mission List */}
+      <h3 style={{ marginBottom: '12px' }}>常設ミッション</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {dailyMissions.map(mission => {
-          const progress = getMissionProgress(mission.id);
+          const progress = missionData?.missions.find(m => m.missionId === mission.id);
           const current = progress?.current || 0;
-          const completed = progress?.completed || false;
-          const percentage = Math.min((current / mission.target) * 100, 100);
+          const target = progress?.target || mission.target;
+          const isCompleted = progress?.completed || false;
 
           return (
-            <div
-              key={mission.id}
-              style={{
-                padding: '16px',
-                background: completed ? 'var(--card)' : 'var(--background)',
-                border: `2px solid ${completed ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: '12px',
-                opacity: completed ? 1 : 0.9,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '24px' }}>{mission.icon}</span>
-                  <div>
-                    <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)' }}>
-                      {mission.name}
-                    </div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      {mission.description}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {completed ? (
-                    <MdCheckCircle size={24} color="var(--primary)" />
-                  ) : (
-                    <MdRadioButtonUnchecked size={24} color="var(--text-secondary)" />
+            <div key={mission.id} style={{
+              background: 'var(--card)',
+              padding: '16px',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              opacity: isCompleted ? 0.7 : 1,
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Progress Bar Background */}
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                height: '4px',
+                width: `${Math.min(100, (current / target) * 100)}%`,
+                background: 'var(--primary)',
+                transition: 'width 0.3s ease'
+              }} />
+
+              <div style={{ fontSize: '32px' }}>{mission.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{mission.name}</div>
+                  {isCompleted && (
+                    <span style={{
+                      fontSize: '12px',
+                      background: 'var(--primary)',
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '10px'
+                    }}>
+                      COMPLETED
+                    </span>
                   )}
-                  <div style={{
-                    padding: '4px 12px',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    borderRadius: '9999px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                  }}>
-                    +{mission.points}P
-                  </div>
                 </div>
-              </div>
-              
-              {/* 進捗バー */}
-              <div style={{ marginTop: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  <span>{current} / {mission.target}</span>
-                  <span>{Math.round(percentage)}%</span>
-                </div>
-                <div style={{
-                  width: '100%',
-                  height: '8px',
-                  background: 'var(--border)',
-                  borderRadius: '9999px',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    width: `${percentage}%`,
-                    height: '100%',
-                    background: completed
-                      ? 'linear-gradient(90deg, var(--primary) 0%, #43a047 100%)'
-                      : 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                    transition: 'width 0.3s ease',
-                  }} />
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{mission.description}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '12px' }}>
+                  <span style={{ color: 'var(--primary)' }}>+{mission.points} XP & Point</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    {current} / {target}
+                  </span>
                 </div>
               </div>
             </div>
@@ -244,4 +216,3 @@ export const DailyMissionScreen: React.FC<DailyMissionScreenProps> = ({ onBack }
     </div>
   );
 };
-

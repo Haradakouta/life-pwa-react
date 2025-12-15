@@ -22,6 +22,10 @@ const SocialScreen = lazy(() => import('../social/SocialScreen').then(m => ({ de
 const AdminScreen = lazy(() => import('../admin/AdminScreen').then(m => ({ default: m.AdminScreen })));
 const GoalsScreen = lazy(() => import('../goals/GoalsScreen').then(m => ({ default: m.GoalsScreen })));
 const ExerciseScreen = lazy(() => import('../exercise/ExerciseScreen').then(m => ({ default: m.ExerciseScreen })));
+const DailyMissionScreen = lazy(() => import('../mission/DailyMissionScreen').then(m => ({ default: m.DailyMissionScreen })));
+
+const CollectionScreen = lazy(() => import('../collection/CollectionScreen').then(m => ({ default: m.CollectionScreen })));
+const RaidScreen = lazy(() => import('../raid/RaidScreen').then(m => ({ default: m.RaidScreen })));
 
 // ローディングコンポーネント
 const ScreenLoader: React.FC = () => {
@@ -55,17 +59,17 @@ export const Layout: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   // 言語変更を監視して再レンダリング
   useEffect(() => {
     const handleLanguageChange = () => {
       // 強制的に再レンダリング
       setCurrentScreen((prev) => prev);
     };
-    
+
     window.addEventListener('i18n:languageChanged', handleLanguageChange);
     i18n.on('languageChanged', handleLanguageChange);
-    
+
     return () => {
       window.removeEventListener('i18n:languageChanged', handleLanguageChange);
       i18n.off('languageChanged', handleLanguageChange);
@@ -128,6 +132,13 @@ export const Layout: React.FC = () => {
         return <GoalsScreen />;
       case 'exercise':
         return <ExerciseScreen />;
+      case 'mission':
+        return <DailyMissionScreen onBack={() => handleNavigate('home')} />;
+
+      case 'collection':
+        return <CollectionScreen onBack={() => handleNavigate('home')} />;
+      case 'raid':
+        return <RaidScreen />;
       default:
         return <Dashboard {...screenProps} />;
     }
@@ -136,7 +147,7 @@ export const Layout: React.FC = () => {
   return (
     <>
       <Header title={getScreenTitle(currentScreen)} currentScreen={currentScreen} onNavigate={handleNavigate} />
-      <main 
+      <main
         className={`screen-transition-modern ${isTransitioning ? 'transitioning' : ''}`}
         style={{
           opacity: isTransitioning ? 0.7 : 1,

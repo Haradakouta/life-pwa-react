@@ -14,7 +14,7 @@ export const getUserCosmetics = async (userId: string): Promise<UserCosmetic | n
   try {
     const userDataRef = doc(db, `users/${userId}/cosmetics`, 'data');
     const userDataSnap = await getDoc(userDataRef);
-    
+
     if (userDataSnap.exists()) {
       const data = userDataSnap.data();
       return {
@@ -26,7 +26,7 @@ export const getUserCosmetics = async (userId: string): Promise<UserCosmetic | n
         totalPoints: data.totalPoints || 0,
       };
     }
-    
+
     // データが存在しない場合は初期化
     return {
       userId,
@@ -49,25 +49,25 @@ export const purchaseCosmetic = async (userId: string, cosmeticId: string): Prom
   try {
     const cosmetic = cosmetics.find(c => c.id === cosmeticId);
     if (!cosmetic) return false;
-    
+
     // 既に所有しているかチェック
     const userCosmetics = await getUserCosmetics(userId);
     if (!userCosmetics) return false;
-    
+
     if (userCosmetics.ownedCosmetics.includes(cosmeticId)) {
       return false; // 既に所有している
     }
-    
+
     // ポイントを消費
     const success = await spendPoints(userId, cosmetic.price);
     if (!success) {
       return false; // ポイント不足
     }
-    
+
     // 装飾を追加
     const userDataRef = doc(db, `users/${userId}/cosmetics`, 'data');
     const userDataSnap = await getDoc(userDataRef);
-    
+
     if (userDataSnap.exists()) {
       const currentOwned = userDataSnap.data().ownedCosmetics || [];
       await updateDoc(userDataRef, {
@@ -79,7 +79,7 @@ export const purchaseCosmetic = async (userId: string, cosmeticId: string): Prom
         totalPoints: 0,
       });
     }
-    
+
     console.log(`✅ 装飾「${cosmetic.name}」を購入しました`);
     return true;
   } catch (error) {
@@ -99,15 +99,15 @@ export const equipCosmetic = async (
   try {
     const userCosmetics = await getUserCosmetics(userId);
     if (!userCosmetics) return;
-    
+
     // 所有しているかチェック
     if (!userCosmetics.ownedCosmetics.includes(cosmeticId)) {
       throw new Error('この装飾を所有していません');
     }
-    
+
     const userDataRef = doc(db, `users/${userId}/cosmetics`, 'data');
     const updateData: Record<string, string> = {};
-    
+
     if (type === 'frame') {
       updateData.equippedFrame = cosmeticId;
     } else if (type === 'nameColor') {
@@ -115,7 +115,7 @@ export const equipCosmetic = async (
     } else if (type === 'skin') {
       updateData.equippedSkin = cosmeticId;
     }
-    
+
     await updateDoc(userDataRef, updateData);
     console.log(`✅ 装飾「${cosmeticId}」を装備しました`);
   } catch (error) {
@@ -158,6 +158,48 @@ export const unlockAllFramesForUser = async (userId: string): Promise<void> => {
       ownedCosmetics: frameIds,
       totalPoints: 0,
     });
+  }
+};
+
+/**
+ * ユーザーの名前色を取得
+ */
+export const getUserNameColor = async (userId: string): Promise<string | undefined> => {
+  try {
+    const userCosmetics = await getUserCosmetics(userId);
+    if (!userCosmetics || !userCosmetics.equippedNameColor) return undefined;
+
+    const cosmetic = cosmetics.find(c => c.id === userCosmetics.equippedNameColor);
+    if (!cosmetic || cosmetic.type !== 'nameColor') return undefined;
+
+    return cosmetic.data.gradient || cosmetic.data.color;
+  } catch (error) {
+    console.error('名前色取得エラー:', error);
+    return undefined;
+  }
+};
+
+/**
+ * 装飾をアンロック（報酬などで付与）
+ */
+export const unlockCosmetic = async (userId: string, cosmeticId: string): Promise<void> => {
+  try {
+    const userDataRef = doc(db, `users/${userId}/cosmetics`, 'data');
+    const userDataSnap = await getDoc(userDataRef);
+
+    if (userDataSnap.exists()) {
+      await updateDoc(userDataRef, {
+        ownedCosmetics: arrayUnion(cosmeticId)
+      });
+    } else {
+      await setDoc(userDataRef, {
+        ownedCosmetics: [cosmeticId],
+        totalPoints: 0,
+      });
+    }
+    console.log(`🎁 Unlocked cosmetic: ${cosmeticId}`);
+  } catch (error) {
+    console.error('装飾アンロックエラー:', error);
   }
 };
 

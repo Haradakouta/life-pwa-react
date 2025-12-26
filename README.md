@@ -61,6 +61,11 @@
 このプロジェクトはReact + TypeScript + Firebaseで構築されたPWAです。
 詳細な仕様や開発ログについては、リポジトリ内の `AGENT.md` を参照してください。
 
+### セットアップ/引き継ぎ
+
+- 別PCセットアップ手順: `docs/HANDOVER.md`
+- 環境チェック: `npm run doctor`
+
 ### 技術スタック
 - **Frontend:** React 19, TypeScript, Vite, Zustand
 - **Backend:** Firebase (Auth, Firestore, Functions, Storage)

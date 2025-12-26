@@ -167,7 +167,7 @@ life-pwa-react/
 │   ├── package.json               # Node.js 20, express, cors, nodemailer
 │   └── tsconfig.json
 │
-├── vite.config.ts                  # Vite設定（base: '/life-pwa-react/'）
+├── vite.config.ts                  # Vite設定（base: '/'）
 ├── firebase.json                   # Firebase設定
 ├── .firebaserc                     # Firebaseプロジェクト（oshi-para）
 ├── firestore.rules                 # Firestoreセキュリティルール
@@ -183,7 +183,7 @@ life-pwa-react/
 ### フロントエンド
 - **React 19.1.1** - UIライブラリ
 - **TypeScript 5.9.3** - 型安全性
-- **Vite 7.1.7** - ビルドツール（base: '/life-pwa-react/'）
+- **Vite 7.1.7** - ビルドツール（base: '/'）
 - **Zustand 5.0.8** - 状態管理（localStorage + Firestore永続化）
 - **Recharts 3.2.1** - データ可視化
 - **React Icons 5.5.0** - アイコンライブラリ（Material Design Icons）
@@ -826,6 +826,8 @@ interface Exercise {
 ## 🔄 バージョン管理
 
 ### 重要な変更履歴
+- **2025-12-15:** 機能凍結宣言。メンテナンスモードへ移行。
+- **2025-12-14:** レイドバトル（PvE）、コスメティック機能実装。バーコード/レシートスキャン刷新（ネイティブカメラ化）。収益化基盤（Stripe）実装。
 - **2025-01-XX:** 目標管理機能追加（カロリー・予算・体重・運動の4種類）、運動記録機能追加、ダッシュボードUI改善
 - **2025-01-XX:** Firestore管理者APIキー管理機能追加、`gemini-2.5-flash-lite`への統一、429エラー自動リトライ機能追加
 - **2025-01-XX:** Firebase Hostingへの移行、カスタムドメイン（healthfinanse.jp）設定、PWA設定修正
@@ -1015,4 +1017,3 @@ cat .env
 ---
 
 **このドキュメントは定期的に更新されます。作業前に必ず最新版を確認してください。**
-

@@ -123,7 +123,7 @@ Firebase Functions（Cloud Functions）を使用するには、**Blazeプラン*
 1. **迷惑メールフォルダを確認**
 2. **Gmailアプリパスワードが正しいか確認**
    ```bash
-   firebase functions:config:get
+   firebase functions:secrets:list
    ```
 3. **Cloud Functionsのログを確認**
    ```bash
@@ -139,7 +139,7 @@ Firebase Functions（Cloud Functions）を使用するには、**Blazeプラン*
    ```
 
 2. **Node.jsのバージョンを確認**
-   - 推奨: Node.js 18以上
+   - 推奨: Node.js 20
 
 ## 📝 補足
 

@@ -20,6 +20,7 @@
     "selectMonth": "Select Month",
     "selectMonthYear": "Tap to select year and month",
     "select": "Please select",
+    "all": "All",
     "next": "Next",
     "skipAndNext": "Skip and Next",
     "weekday": {
@@ -577,7 +578,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "Delete this expense?",
+      "deleteConfirm": "Delete this transaction?",
       "noData": "No data for this month"
     },
     "screen": {

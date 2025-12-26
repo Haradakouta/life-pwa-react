@@ -7,7 +7,8 @@
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
 import { useSettingsStore } from '../store';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions as firebaseFunctions } from '../config/firebase';
 
 // 運営者APIキーのキャッシュ（パフォーマンス向上のため）
 let cachedOperatorApiKey: string | null = null;
@@ -198,8 +199,7 @@ const logInteraction = (
   metadata?: any
 ) => {
   try {
-    const functions = getFunctions();
-    const logGeminiInteraction = httpsCallable(functions, 'logGeminiInteraction');
+    const logGeminiInteraction = httpsCallable(firebaseFunctions, 'logGeminiInteraction');
     logGeminiInteraction({
       requestType,
       prompt,
@@ -222,8 +222,7 @@ const logInteraction = (
  */
 const fetchExamples = async (requestType: string): Promise<string> => {
   try {
-    const functions = getFunctions();
-    const getFewShotExamples = httpsCallable(functions, 'getFewShotExamples');
+    const getFewShotExamples = httpsCallable(firebaseFunctions, 'getFewShotExamples');
 
     // タイムアウトを設定（例取得に時間がかかりすぎてUXを損なわないように）
     const timeoutPromise = new Promise((_, reject) =>

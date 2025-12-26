@@ -111,10 +111,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     const totalExpenses = expenses
       .filter((expense) => expense.type === 'expense')
       .reduce((sum, expense) => sum + expense.amount, 0);
-    const totalIncome = expenses
-      .filter((expense) => expense.type === 'income')
-      .reduce((sum, expense) => sum + expense.amount, 0);
-    return totalExpenses - totalIncome; // 純支出（支出 - 収入）
+    return totalExpenses; // 支出合計（収入は含めない）
   },
 
   getTotalByCategory: (category, year, month) => {
@@ -130,12 +127,47 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
 
     try {
       set({ loading: true });
+      const localExpenses = get().expenses;
       const firestoreExpenses = await expenseOperations.getAll(user.uid);
-      set({ expenses: firestoreExpenses, loading: false, initialized: true });
-      saveToStorage(STORAGE_KEYS.EXPENSES, firestoreExpenses);
+
+      const mergedById = new Map<string, Expense>();
+      const upsert = (expense: Expense) => {
+        const existing = mergedById.get(expense.id);
+        if (!existing) {
+          mergedById.set(expense.id, expense);
+          return;
+        }
+
+        const existingUpdated = existing.updatedAt || existing.createdAt;
+        const incomingUpdated = expense.updatedAt || expense.createdAt;
+        mergedById.set(expense.id, incomingUpdated >= existingUpdated ? expense : existing);
+      };
+
+      localExpenses.forEach(upsert);
+      firestoreExpenses.forEach(upsert);
+
+      const mergedExpenses = Array.from(mergedById.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      set({ expenses: mergedExpenses, loading: false, initialized: true });
+      saveToStorage(STORAGE_KEYS.EXPENSES, mergedExpenses);
+
+      // Firestoreが空だった/一部欠けていた場合、ローカル分をバックフィルして「再起動で消える」を防ぐ
+      const firestoreIds = new Set(firestoreExpenses.map((e) => e.id));
+      const missing = mergedExpenses.filter((e) => !firestoreIds.has(e.id));
+      if (missing.length > 0) {
+        await Promise.all(
+          missing.map((e) =>
+            expenseOperations.add(user.uid, e).catch((error) => {
+              console.warn('[ExpenseStore] Failed to backfill expense to Firestore:', error);
+            })
+          )
+        );
+      }
     } catch (error) {
       console.error('Failed to sync expenses with Firestore:', error);
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
 }));

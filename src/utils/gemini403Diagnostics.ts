@@ -3,7 +3,7 @@
  * 403エラーの詳細な原因を調査するためのユーティリティ
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export interface DiagnosticResult {
   timestamp: string;
@@ -211,6 +211,5 @@ export function logDiagnosticResult(result: DiagnosticResult): void {
   });
   console.groupEnd();
 }
-
 
 

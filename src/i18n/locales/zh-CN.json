@@ -20,6 +20,7 @@
     "selectMonth": "选择月份",
     "selectMonthYear": "点击选择年月",
     "select": "请选择",
+    "all": "全部",
     "next": "下一步",
     "skipAndNext": "跳过并继续",
     "weekday": {
@@ -591,7 +592,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "删除此支出？",
+      "deleteConfirm": "删除这条记录？",
       "noData": "本月无数据"
     },
     "screen": {

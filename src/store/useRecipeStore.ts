@@ -23,6 +23,29 @@ interface RecipeStore {
 
 const MAX_HISTORY = 10;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isRecipe = (value: unknown): value is Recipe => {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.id === 'string' &&
+    typeof value.title === 'string' &&
+    typeof value.content === 'string' &&
+    Array.isArray(value.ingredients) &&
+    typeof value.isFavorite === 'boolean' &&
+    typeof value.createdAt === 'string'
+  );
+};
+
+const isRecipeHistory = (value: unknown): value is RecipeHistory => {
+  if (!isRecord(value)) return false;
+  if (typeof value.id !== 'string') return false;
+  if (typeof value.generatedAt !== 'string') return false;
+  if (!isRecord(value.recipe)) return false;
+  return typeof value.recipe.title === 'string';
+};
+
 export const useRecipeStore = create<RecipeStore>((set, get) => ({
   recipeHistory: getFromStorage<RecipeHistory[]>(STORAGE_KEYS.RECIPE_HISTORY, []),
   favoriteRecipes: getFromStorage<Recipe[]>(STORAGE_KEYS.FAVORITE_RECIPES, []),
@@ -50,7 +73,7 @@ export const useRecipeStore = create<RecipeStore>((set, get) => ({
     // Firestoreに保存
     if (user) {
       try {
-        await recipeOperations.add(user.uid, historyItem as any);
+        await recipeOperations.add(user.uid, historyItem);
       } catch (error) {
         console.error('Failed to add recipe history to Firestore:', error);
       }
@@ -76,7 +99,7 @@ export const useRecipeStore = create<RecipeStore>((set, get) => ({
     // Firestoreに保存
     if (user) {
       try {
-        await recipeOperations.add(user.uid, favoriteRecipe as any);
+        await recipeOperations.add(user.uid, favoriteRecipe);
       } catch (error) {
         console.error('Failed to add favorite recipe to Firestore:', error);
       }
@@ -115,21 +138,34 @@ export const useRecipeStore = create<RecipeStore>((set, get) => ({
     try {
       set({ loading: true });
       console.log(`[RecipeStore] Syncing data for user: ${user.uid}`);
-      const firestoreRecipes = await recipeOperations.getAll(user.uid);
+      const firestoreEntries = await recipeOperations.getAll(user.uid);
 
-      // レシピデータを履歴とお気に入りに分類
-      // （実装簡略化のため、現在は全てお気に入りとして扱う）
-      const favorites = firestoreRecipes as unknown as Recipe[];
+      const favorites: Recipe[] = [];
       const history: RecipeHistory[] = [];
 
-      console.log(`[RecipeStore] Loaded ${favorites.length} recipes from Firestore`);
+      for (const entry of firestoreEntries) {
+        if (isRecipeHistory(entry)) {
+          history.push(entry);
+        } else if (isRecipe(entry)) {
+          favorites.push(entry);
+        }
+      }
+
+      history.sort((a, b) => b.generatedAt.localeCompare(a.generatedAt));
+      favorites.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+      const trimmedHistory = history.slice(0, MAX_HISTORY);
+
+      console.log(
+        `[RecipeStore] Loaded ${favorites.length} favorites, ${trimmedHistory.length} history entries from Firestore`
+      );
       set({
-        recipeHistory: history,
+        recipeHistory: trimmedHistory,
         favoriteRecipes: favorites,
         loading: false,
         initialized: true
       });
-      saveToStorage(STORAGE_KEYS.RECIPE_HISTORY, history);
+      saveToStorage(STORAGE_KEYS.RECIPE_HISTORY, trimmedHistory);
       saveToStorage(STORAGE_KEYS.FAVORITE_RECIPES, favorites);
     } catch (error) {
       console.error('Failed to sync recipes with Firestore:', error);

@@ -1,5 +1,11 @@
-const secret = 'UHFpR3VYTFhLUVFPV212T1JMbnJWRGVOZldOdHh5c3E=';
-const url = 'https://18o058flkh.apigw.ntruss.com/custom/v1/83/7aa3c233bc71b3bb695f28e415b76623b44b8198fef8ac4d18ee5eb86c6f6ad2/general';
+const secret = process.env.CLOVA_SECRET_KEY;
+const url = process.env.CLOVA_API_URL;
+
+if (!secret || !url) {
+    console.error('Missing env vars: CLOVA_API_URL / CLOVA_SECRET_KEY');
+    console.error('Example: CLOVA_API_URL=... CLOVA_SECRET_KEY=... node scripts/test_clova.js');
+    process.exit(1);
+}
 
 async function test() {
     const body = {

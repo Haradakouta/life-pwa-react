@@ -31,11 +31,9 @@ export async function getHealthBasedShoppingList(
 
     // Gemini APIを使用して健康目標に基づいた食材を提案
     try {
-        // 運営者のAPIキーを取得（環境変数から取得、なければデフォルト）
+        // 運営者のAPIキーを取得（環境変数から）
         const envKey = import.meta.env.VITE_GEMINI_API_KEY;
-        const operatorKey = (envKey && envKey !== 'YOUR_GEMINI_API_KEY_HERE')
-            ? envKey
-            : 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M'; // 新しい運営者APIキー
+        const operatorKey = (envKey && envKey !== 'YOUR_GEMINI_API_KEY_HERE') ? envKey : null;
 
         // ユーザーのAPIキーを取得（設定から取得）
         const userSettings = useSettingsStore.getState().settings;
@@ -45,9 +43,8 @@ export async function getHealthBasedShoppingList(
 
         // 優先順位: ユーザーのAPIキー > 運営者のAPIキー
         const GEMINI_API_KEY = userKey || operatorKey;
-        const API_ENABLED = !!GEMINI_API_KEY;
 
-        if (!API_ENABLED) {
+        if (!GEMINI_API_KEY) {
             // APIが無効な場合は、基本的な推奨リストを返す
             return getBasicHealthRecommendation(bmi);
         }
@@ -321,4 +318,3 @@ export function getNutritionalSupplementItems(
 
     return items;
 }
-

@@ -3,7 +3,7 @@
  * 403エラーの原因を調査するためのユーティリティ
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyDL7jV9ZpXJVqQY05BdkP2qfP_3LczPO2M';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 /**
  * APIキーの基本情報を取得
@@ -117,6 +117,5 @@ export async function testAllModels(): Promise<{
 
   return results;
 }
-
 
 

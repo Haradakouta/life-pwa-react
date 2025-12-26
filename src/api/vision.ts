@@ -1,7 +1,8 @@
 /**
- * Google Cloud Vision API連携 (Cloud Functions経由)
+ * LINE CLOVA OCR連携 (Cloud Functions経由)
  */
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../config/firebase';
 
 export interface ReceiptItem {
   name: string;
@@ -45,7 +46,6 @@ export const scanReceipt = async (imageFile: File): Promise<ReceiptOCRResult> =>
     const base64Image = await fileToBase64(imageFile);
 
     // Cloud Functionsを呼び出し
-    const functions = getFunctions();
     const scanReceiptWithVision = httpsCallable<{ base64Image: string }, ReceiptOCRResult>(
       functions,
       'scanReceiptWithVision'

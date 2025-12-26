@@ -12,7 +12,18 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Intake, Expense, Stock, ShoppingItem, Recipe, Settings, Goal, Exercise, MealTemplate } from '../types';
+import type {
+  Intake,
+  Expense,
+  Stock,
+  ShoppingItem,
+  Recipe,
+  RecipeHistory,
+  Settings,
+  Goal,
+  Exercise,
+  MealTemplate,
+} from '../types';
 
 // コレクション名の定義
 const COLLECTIONS = {
@@ -41,16 +52,15 @@ export const intakeOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Intake));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Intake, 'id'>), id: snap.id }));
   },
 
   // 追加
-  add: async (userId: string, intake: Omit<Intake, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.INTAKES)),
-      intake
-    );
-    return docRef.id;
+  add: async (userId: string, intake: Intake) => {
+    const { id, ...data } = intake;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.INTAKES), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   // 更新
@@ -72,7 +82,7 @@ export const intakeOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const intakes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Intake));
+      const intakes = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Intake, 'id'>), id: snap.id }));
       callback(intakes);
     });
   },
@@ -86,15 +96,14 @@ export const expenseOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Expense));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Expense, 'id'>), id: snap.id }));
   },
 
-  add: async (userId: string, expense: Omit<Expense, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.EXPENSES)),
-      expense
-    );
-    return docRef.id;
+  add: async (userId: string, expense: Expense) => {
+    const { id, ...data } = expense;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.EXPENSES), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   update: async (userId: string, id: string, expense: Partial<Expense>) => {
@@ -113,7 +122,7 @@ export const expenseOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const expenses = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Expense));
+      const expenses = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Expense, 'id'>), id: snap.id }));
       callback(expenses);
     });
   },
@@ -127,15 +136,14 @@ export const stockOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Stock));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Stock, 'id'>), id: snap.id }));
   },
 
-  add: async (userId: string, stock: Omit<Stock, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.STOCKS)),
-      stock
-    );
-    return docRef.id;
+  add: async (userId: string, stock: Stock) => {
+    const { id, ...data } = stock;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.STOCKS), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   update: async (userId: string, id: string, stock: Partial<Stock>) => {
@@ -154,7 +162,7 @@ export const stockOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const stocks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Stock));
+      const stocks = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Stock, 'id'>), id: snap.id }));
       callback(stocks);
     });
   },
@@ -168,15 +176,14 @@ export const shoppingOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ShoppingItem));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<ShoppingItem, 'id'>), id: snap.id }));
   },
 
-  add: async (userId: string, item: Omit<ShoppingItem, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.SHOPPING)),
-      item
-    );
-    return docRef.id;
+  add: async (userId: string, item: ShoppingItem) => {
+    const { id, ...data } = item;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.SHOPPING), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   update: async (userId: string, id: string, item: Partial<ShoppingItem>) => {
@@ -195,32 +202,31 @@ export const shoppingOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ShoppingItem));
+      const items = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<ShoppingItem, 'id'>), id: snap.id }));
       callback(items);
     });
   },
 };
 
 // レシピ（Recipe）の操作
+type RecipeEntry = Recipe | RecipeHistory;
+
 export const recipeOperations = {
-  getAll: async (userId: string): Promise<Recipe[]> => {
-    const q = query(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES)),
-      orderBy('createdAt', 'desc')
+  getAll: async (userId: string): Promise<RecipeEntry[]> => {
+    const snapshot = await getDocs(collection(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES)));
+    return snapshot.docs.map(
+      (snap) => ({ ...(snap.data() as Record<string, unknown>), id: snap.id } as RecipeEntry)
     );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Recipe));
   },
 
-  add: async (userId: string, recipe: Omit<Recipe, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES)),
-      recipe
-    );
-    return docRef.id;
+  add: async (userId: string, entry: RecipeEntry) => {
+    const { id, ...data } = entry;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
-  update: async (userId: string, id: string, recipe: Partial<Recipe>) => {
+  update: async (userId: string, id: string, recipe: Partial<RecipeEntry>) => {
     const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES), id);
     await updateDoc(docRef, recipe);
   },
@@ -230,13 +236,12 @@ export const recipeOperations = {
     await deleteDoc(docRef);
   },
 
-  subscribe: (userId: string, callback: (recipes: Recipe[]) => void) => {
-    const q = query(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES)),
-      orderBy('createdAt', 'desc')
-    );
+  subscribe: (userId: string, callback: (recipes: RecipeEntry[]) => void) => {
+    const q = query(collection(db, getUserCollectionPath(userId, COLLECTIONS.RECIPES)));
     return onSnapshot(q, (snapshot) => {
-      const recipes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Recipe));
+      const recipes = snapshot.docs.map(
+        (snap) => ({ ...(snap.data() as Record<string, unknown>), id: snap.id } as RecipeEntry)
+      );
       callback(recipes);
     });
   },
@@ -295,7 +300,7 @@ export const goalOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Goal));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Goal, 'id'>), id: snap.id }));
   },
 
   getActive: async (userId: string): Promise<Goal[]> => {
@@ -305,7 +310,7 @@ export const goalOperations = {
     );
     const snapshot = await getDocs(q);
     return snapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() } as Goal))
+      .map((snap) => ({ ...(snap.data() as Omit<Goal, 'id'>), id: snap.id }))
       .filter((goal) => goal.status === 'active');
   },
 
@@ -337,7 +342,7 @@ export const goalOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const goals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Goal));
+      const goals = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Goal, 'id'>), id: snap.id }));
       callback(goals);
     });
   },
@@ -351,15 +356,14 @@ export const exerciseOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Exercise));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Exercise, 'id'>), id: snap.id }));
   },
 
-  add: async (userId: string, exercise: Omit<Exercise, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES)),
-      exercise
-    );
-    return docRef.id;
+  add: async (userId: string, exercise: Exercise) => {
+    const { id, ...data } = exercise;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.EXERCISES), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   update: async (userId: string, id: string, exercise: Partial<Exercise>) => {
@@ -378,7 +382,7 @@ export const exerciseOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const exercises = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Exercise));
+      const exercises = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<Exercise, 'id'>), id: snap.id }));
       callback(exercises);
     });
   },
@@ -392,15 +396,14 @@ export const mealTemplateOperations = {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MealTemplate));
+    return snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<MealTemplate, 'id'>), id: snap.id }));
   },
 
-  add: async (userId: string, template: Omit<MealTemplate, 'id'>) => {
-    const docRef = await addDoc(
-      collection(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES)),
-      template
-    );
-    return docRef.id;
+  add: async (userId: string, template: MealTemplate) => {
+    const { id, ...data } = template;
+    const docRef = doc(db, getUserCollectionPath(userId, COLLECTIONS.MEAL_TEMPLATES), id);
+    await setDoc(docRef, data);
+    return id;
   },
 
   delete: async (userId: string, id: string) => {
@@ -414,7 +417,7 @@ export const mealTemplateOperations = {
       orderBy('createdAt', 'desc')
     );
     return onSnapshot(q, (snapshot) => {
-      const templates = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MealTemplate));
+      const templates = snapshot.docs.map((snap) => ({ ...(snap.data() as Omit<MealTemplate, 'id'>), id: snap.id }));
       callback(templates);
     });
   },

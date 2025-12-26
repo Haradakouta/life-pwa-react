@@ -1,12 +1,13 @@
 /**
- * 支出一覧表示コンポーネント
+ * 収支一覧表示コンポーネント
  */
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseStore } from '../../store';
 import { MdDelete, MdCalendarToday } from 'react-icons/md';
 import { MonthPickerModal } from '../common/MonthPickerModal';
 import { getPredefinedCategoryColor, getColorForCustomCategory } from '../../utils/categoryColors';
+import type { Expense, ExpenseCategory } from '../../types';
 
 export const ExpenseList: React.FC = () => {
   const { t } = useTranslation();
@@ -15,13 +16,15 @@ export const ExpenseList: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | ExpenseCategory>('all');
 
   const monthlyExpenses = expenses.filter((expense) => {
     const date = new Date(expense.date);
     return date.getFullYear() === selectedYear && date.getMonth() + 1 === selectedMonth;
   });
 
-  const categoryLabels: Record<string, string> = {
+  const categoryLabels: Record<ExpenseCategory, string> = {
     food: t('expense.categories.food'),
     transport: t('expense.categories.transport'),
     utilities: t('expense.categories.utilities'),
@@ -33,19 +36,44 @@ export const ExpenseList: React.FC = () => {
     income_other: t('expense.categories.other'),
   };
 
-  const getCategoryDisplay = (expense: any) => {
+  const getCategoryDisplay = (expense: Expense) => {
     if ((expense.category === 'other' || expense.category === 'income_other') && expense.customCategory) {
       return expense.customCategory;
     }
     return categoryLabels[expense.category] || expense.category;
   };
 
-  const getCategoryColor = (expense: any) => {
+  const getCategoryColor = (expense: Expense) => {
     if ((expense.category === 'other' || expense.category === 'income_other') && expense.customCategory) {
       return getColorForCustomCategory(expense.customCategory);
     }
     return getPredefinedCategoryColor(expense.category);
   };
+
+  const availableCategories = useMemo(() => {
+    const base: ExpenseCategory[] =
+      typeFilter === 'income'
+        ? ['salary', 'bonus', 'income_other']
+        : typeFilter === 'expense'
+          ? ['food', 'transport', 'utilities', 'entertainment', 'health', 'other']
+          : ['food', 'transport', 'utilities', 'entertainment', 'health', 'other', 'salary', 'bonus', 'income_other'];
+    return base;
+  }, [typeFilter]);
+
+  useEffect(() => {
+    if (categoryFilter === 'all') return;
+    if (!availableCategories.includes(categoryFilter)) {
+      setCategoryFilter('all');
+    }
+  }, [availableCategories, categoryFilter]);
+
+  const filteredExpenses = useMemo(() => {
+    return monthlyExpenses.filter((expense) => {
+      if (typeFilter !== 'all' && expense.type !== typeFilter) return false;
+      if (categoryFilter !== 'all' && expense.category !== categoryFilter) return false;
+      return true;
+    });
+  }, [monthlyExpenses, typeFilter, categoryFilter]);
 
   const handleDelete = (id: string) => {
     if (window.confirm(t('expense.list.deleteConfirm'))) {
@@ -90,13 +118,35 @@ export const ExpenseList: React.FC = () => {
         <MdCalendarToday size={20} color="var(--primary)" />
       </button>
 
-      {monthlyExpenses.length === 0 ? (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '6px' }}>{t('expense.form.type')}</label>
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}>
+            <option value="all">{t('common.all')}</option>
+            <option value="expense">{t('expense.form.expense')}</option>
+            <option value="income">{t('expense.form.income')}</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', marginBottom: '6px' }}>{t('expense.form.category')}</label>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as typeof categoryFilter)}>
+            <option value="all">{t('common.all')}</option>
+            {availableCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {categoryLabels[cat] || cat}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {filteredExpenses.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
           {t('expense.list.noData')}
         </p>
       ) : (
         <div className="list">
-          {monthlyExpenses
+          {filteredExpenses
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .map((expense) => (
               <div key={expense.id} className="list-item">

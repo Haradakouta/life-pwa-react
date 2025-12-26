@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '../../hooks/useAuth';
 import { MdStar } from 'react-icons/md';
+import { functions as firebaseFunctions } from '../../config/firebase';
 
 // Test Key fallback if env is missing (for easier dev, but ideally should be in env)
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...';
@@ -22,8 +23,7 @@ export const UpgradeButton: React.FC = () => {
         setLoading(true);
 
         try {
-            const functions = getFunctions();
-            const createSession = httpsCallable<any, CreateCheckoutResponse>(functions, 'createCheckoutSession');
+            const createSession = httpsCallable<any, CreateCheckoutResponse>(firebaseFunctions, 'createCheckoutSession');
 
             // 1円テスト (Backendでデフォルト動作するが、念のため)
             const { data } = await createSession({});

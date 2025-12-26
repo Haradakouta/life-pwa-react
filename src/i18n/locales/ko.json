@@ -20,6 +20,7 @@
     "selectMonth": "월 선택",
     "selectMonthYear": "년월 선택",
     "select": "선택해주세요",
+    "all": "전체",
     "next": "다음",
     "skipAndNext": "건너뛰고 다음",
     "weekday": {
@@ -591,7 +592,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "이 지출을 삭제하시겠습니까?",
+      "deleteConfirm": "이 내역을 삭제하시겠습니까?",
       "noData": "이번 달 데이터 없음"
     },
     "screen": {

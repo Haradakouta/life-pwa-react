@@ -20,6 +20,7 @@
     "selectMonth": "月を選択",
     "selectMonthYear": "年月をタップして選択してください",
     "select": "選択してください",
+    "all": "すべて",
     "next": "次へ",
     "skipAndNext": "スキップして次へ",
     "weekday": {
@@ -620,12 +621,12 @@
     },
     "dateFormat": "年{{month}}月{{day}}日",
     "list": {
-      "deleteConfirm": "この支出を削除しますか？",
+      "deleteConfirm": "この収支を削除しますか？",
       "noData": "この月の収支はまだありません"
     },
     "screen": {
       "title": "家計簿",
-      "history": "支出履歴"
+      "history": "収支履歴"
     },
     "summary": {
       "title": "カテゴリ別集計",

@@ -100,6 +100,8 @@ firebase deploy --only functions
 firebase functions:secrets:set GMAIL_EMAIL
 firebase functions:secrets:set GMAIL_APP_PASSWORD
 firebase functions:secrets:set STRIPE_SECRET_KEY
+firebase functions:secrets:set CLOVA_API_URL
+firebase functions:secrets:set CLOVA_SECRET_KEY
 ```
 
 確認:

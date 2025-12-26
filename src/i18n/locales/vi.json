@@ -20,6 +20,7 @@
     "selectMonth": "Chọn tháng",
     "selectMonthYear": "Chọn năm tháng",
     "select": "Vui lòng chọn",
+    "all": "Tất cả",
     "next": "Tiếp theo",
     "skipAndNext": "Bỏ qua và tiếp tục",
     "weekday": {
@@ -591,7 +592,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "Xóa chi tiêu này?",
+      "deleteConfirm": "Xóa giao dịch này?",
       "noData": "Không có dữ liệu cho tháng này"
     },
     "screen": {

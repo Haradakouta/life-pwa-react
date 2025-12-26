@@ -20,6 +20,7 @@
     "selectMonth": "Pilih Bulan",
     "selectMonthYear": "Pilih Tahun dan Bulan",
     "select": "Silakan pilih",
+    "all": "Semua",
     "next": "Lanjut",
     "skipAndNext": "Lewati dan Lanjut",
     "weekday": {
@@ -591,7 +592,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "Hapus pengeluaran ini?",
+      "deleteConfirm": "Hapus transaksi ini?",
       "noData": "Tidak ada data untuk bulan ini"
     },
     "screen": {

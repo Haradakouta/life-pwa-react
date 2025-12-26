@@ -20,6 +20,7 @@
     "selectMonth": "Выбрать месяц",
     "selectMonthYear": "Выбрать год и месяц",
     "select": "Пожалуйста, выберите",
+    "all": "Все",
     "next": "Далее",
     "skipAndNext": "Пропустить и продолжить",
     "weekday": {
@@ -591,7 +592,7 @@
     },
     "dateFormat": "{{year}}/{{month}}/{{day}}",
     "list": {
-      "deleteConfirm": "Удалить этот расход?",
+      "deleteConfirm": "Удалить эту операцию?",
       "noData": "Нет данных за этот месяц"
     },
     "screen": {

@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scanReceiptWithVision = void 0;
 const functions = require("firebase-functions");
-// CLOVA OCR API Configuration
-const CLOVA_API_URL = 'https://18o058flkh.apigw.ntruss.com/custom/v1/83/7aa3c233bc71b3bb695f28e415b76623b44b8198fef8ac4d18ee5eb86c6f6ad2/general';
-const CLOVA_SECRET_KEY = 'UHFpR3VYTFhLUVFPV212T1JMbnJWRGVOZldOdHh5c3E='; // TODO: Move to Firebase Secrets
+// CLOVA OCR API Configuration (Firebase Secrets / env)
+const CLOVA_API_URL = process.env.CLOVA_API_URL;
+const CLOVA_SECRET_KEY = process.env.CLOVA_SECRET_KEY;
 /**
  * 全角数字・記号・スペースを半角に変換
  */
@@ -17,6 +17,9 @@ const normalizeText = (text) => {
  * CLOVA OCR APIを呼び出す
  */
 const callClovaOCR = async (base64Image) => {
+    if (!CLOVA_API_URL || !CLOVA_SECRET_KEY) {
+        throw new Error('CLOVA OCR is not configured (missing CLOVA_API_URL / CLOVA_SECRET_KEY)');
+    }
     const body = {
         version: 'V2',
         requestId: `req-${Date.now()}`,
@@ -231,7 +234,7 @@ const parseReceiptText = (lines) => {
         rawText: lines.join('\n'),
     };
 };
-exports.scanReceiptWithVision = functions.https.onCall({ region: 'us-central1', memory: '512MiB' }, async (request) => {
+exports.scanReceiptWithVision = functions.https.onCall({ region: 'us-central1', memory: '512MiB', secrets: ['CLOVA_API_URL', 'CLOVA_SECRET_KEY'] }, async (request) => {
     // 認証チェック
     if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', '認証が必要です。');

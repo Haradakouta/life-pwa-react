@@ -31,6 +31,17 @@
       "thu": "四",
       "fri": "五",
       "sat": "六"
+    },
+    "errorBoundary": {
+      "description": "抱歉，发生未知错误。",
+      "details": "错误详情",
+      "retry": "重试",
+      "title": "发生错误"
+    },
+    "titleUnlocked": {
+      "close": "关闭",
+      "description": "获得了{{count}}个新称号",
+      "title": "获得了称号！"
     }
   },
   "settings": {
@@ -448,7 +459,11 @@
         "savings": "储蓄 (日元)",
         "optional": "（可选）",
         "next": "下一步",
-        "skip": "跳过"
+        "skip": "跳过",
+        "agePlaceholder": "未知错误",
+        "heightPlaceholder": "例如：30",
+        "savingsPlaceholder": "例: 1,000,000",
+        "weightPlaceholder": "例: 65"
       },
       "step5": {
         "title": "选择都道府县",
@@ -829,6 +844,85 @@
       "noStockInModal": "未找到可用库存",
       "quantity": "数量：{{count}}",
       "expiryDays": "过期：{{days}} 天"
+    }
+  },
+  "adminPanel": {
+    "apiKey": {
+      "description": "设置所有用户使用的运营者API密钥。",
+      "error": "此API密钥将保存到Firestore的admin/config集合中。",
+      "save": "保存API密钥失败：{{error}}",
+      "saving": "保存API密钥",
+      "success": "正在保存...",
+      "title": "已保存运营者API密钥。已清除缓存。"
+    },
+    "deleteFollows": {
+      "button": "运营者Gemini API密钥设置",
+      "confirm": "删除所有关注关系",
+      "error": "确定要删除所有关注关系吗？此操作无法撤消。",
+      "success": "删除关注关系失败：{{error}}"
+    },
+    "deletePosts": {
+      "button": "所有关注关系已删除：{{result}}",
+      "confirm": "删除所有帖子",
+      "error": "确定要删除所有帖子吗？此操作无法撤消。",
+      "success": "删除帖子失败：{{error}}"
+    },
+    "loading": "所有帖子已删除：{{result}}",
+    "noPermission": "正在加载管理员面板...",
+    "title": "没有管理员权限。",
+    "unknownError": "管理员面板"
+  },
+  "badges": {
+    "categories": {
+      "feature": "✨ 功能使用",
+      "goal": "🎯 达成目标",
+      "milestone": "📊 里程碑",
+      "streak": "🔥 连续记录"
+    },
+    "next": "下一步",
+    "ok": "确定",
+    "screenTitle": "🏆 成就",
+    "title": "徽章收藏",
+    "unlocked": "获得徽章！"
+  },
+  "barcode": {
+    "cameraNotFound": "未找到相机",
+    "cameraStartFailed": "相机启动失败",
+    "fetchFailed": "获取商品信息失败",
+    "guide": "请将条形码对准框内",
+    "processing": "正在获取商品信息...",
+    "productNotFound": "未找到商品信息: {{code}}",
+    "receiptScanner": {
+      "album": "相册",
+      "cameraError": "无法访问相机。请尝试选择文件。",
+      "guide": "请将收据放入框内",
+      "ocrError": "读取失败",
+      "processing": "正在加载",
+      "title": "扫描收据"
+    },
+    "screen": {
+      "barcodeButton": "条形码",
+      "barcodeSubtext": "JAN码",
+      "modeDescription": "您可以扫描条形码或收据",
+      "receiptButton": "收据",
+      "receiptSubtext": "OCR识别",
+      "selectMode": "选择扫描模式",
+      "title": "扫描"
+    },
+    "title": "条形码扫描"
+  },
+  "social": {
+    "profile": {
+      "edit": "编辑个人资料",
+      "likes": "赞",
+      "media": "媒体",
+      "noPosts": "暂无帖子",
+      "noReplies": "暂无回复",
+      "notFound": "找不到个人资料",
+      "posts": "帖子",
+      "replies": "回复",
+      "userNoPosts": "该用户暂无帖子",
+      "userNoReplies": "该用户暂无回复"
     }
   }
 }

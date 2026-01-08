@@ -31,6 +31,17 @@
       "thu": "T5",
       "fri": "T6",
       "sat": "T7"
+    },
+    "errorBoundary": {
+      "description": "Xin lỗi, đã xảy ra lỗi không mong muốn.",
+      "details": "Chi tiết lỗi",
+      "retry": "Thử lại",
+      "title": "Đã xảy ra lỗi"
+    },
+    "titleUnlocked": {
+      "close": "Đóng",
+      "description": "Bạn đã nhận được {{count}} danh hiệu mới",
+      "title": "Bạn đã nhận được danh hiệu!"
     }
   },
   "settings": {
@@ -448,7 +459,11 @@
         "savings": "Tiết kiệm (yên)",
         "optional": "(Tùy chọn)",
         "next": "Tiếp theo",
-        "skip": "Bỏ qua"
+        "skip": "Bỏ qua",
+        "agePlaceholder": "Lỗi không xác định",
+        "heightPlaceholder": "Ví dụ: 30",
+        "savingsPlaceholder": "Ví dụ: 1000000",
+        "weightPlaceholder": "Ví dụ: 65"
       },
       "step5": {
         "title": "Chọn tỉnh/thành phố",
@@ -829,6 +844,85 @@
       "noStockInModal": "Không tìm thấy nguyên liệu khả dụng",
       "quantity": "SL: {{count}}",
       "expiryDays": "Hết hạn: {{days}} ngày"
+    }
+  },
+  "adminPanel": {
+    "apiKey": {
+      "description": "Đặt khóa API quản trị viên để tất cả người dùng sử dụng.",
+      "error": "Khóa API này sẽ được lưu trữ trong bộ sưu tập admin/config của Firestore.",
+      "save": "Lưu khóa API thất bại: {{error}}",
+      "saving": "Lưu khóa API",
+      "success": "Đang lưu...",
+      "title": "Đã lưu khóa API quản trị viên. Đã xóa bộ nhớ cache."
+    },
+    "deleteFollows": {
+      "button": "Cài đặt khóa API Gemini quản trị viên",
+      "confirm": "Xóa tất cả các mối quan hệ theo dõi",
+      "error": "Bạn có thực sự muốn xóa tất cả các mối quan hệ theo dõi không? Thao tác này không thể hoàn tác.",
+      "success": "Xóa mối quan hệ theo dõi thất bại: {{error}}"
+    },
+    "deletePosts": {
+      "button": "Tất cả các mối quan hệ theo dõi đã được xóa: {{result}}",
+      "confirm": "Xóa tất cả bài đăng",
+      "error": "Bạn có thực sự muốn xóa tất cả các bài đăng không? Thao tác này không thể hoàn tác.",
+      "success": "Xóa bài đăng thất bại: {{error}}"
+    },
+    "loading": "Tất cả các bài đăng đã được xóa: {{result}}",
+    "noPermission": "Đang tải bảng điều khiển quản trị viên...",
+    "title": "Bạn không có quyền quản trị viên.",
+    "unknownError": "Bảng điều khiển quản trị viên"
+  },
+  "badges": {
+    "categories": {
+      "feature": "✨ Sử dụng tính năng",
+      "goal": "🎯 Đạt mục tiêu",
+      "milestone": "📊 Cột mốc",
+      "streak": "🔥 Chuỗi liên tiếp"
+    },
+    "next": "Tiếp theo",
+    "ok": "OK",
+    "screenTitle": "🏆 Thành tích",
+    "title": "Bộ sưu tập huy hiệu",
+    "unlocked": "Đã nhận huy hiệu!"
+  },
+  "barcode": {
+    "cameraNotFound": "Không tìm thấy máy ảnh",
+    "cameraStartFailed": "Không thể khởi động máy ảnh",
+    "fetchFailed": "Không thể lấy thông tin sản phẩm",
+    "guide": "Vui lòng căn chỉnh mã vạch vào khung",
+    "processing": "Đang lấy thông tin sản phẩm...",
+    "productNotFound": "Không tìm thấy thông tin sản phẩm: {{code}}",
+    "receiptScanner": {
+      "album": "Album",
+      "cameraError": "Không thể truy cập máy ảnh. Vui lòng thử chọn tệp.",
+      "guide": "Vui lòng đặt hóa đơn vào trong khung",
+      "ocrError": "Đọc không thành công",
+      "processing": "Đang tải",
+      "title": "Quét biên lai"
+    },
+    "screen": {
+      "barcodeButton": "Mã vạch",
+      "barcodeSubtext": "Mã JAN",
+      "modeDescription": "Bạn có thể quét mã vạch hoặc biên lai",
+      "receiptButton": "Biên lai",
+      "receiptSubtext": "Đọc OCR",
+      "selectMode": "Chọn chế độ quét",
+      "title": "Quét"
+    },
+    "title": "Quét mã vạch"
+  },
+  "social": {
+    "profile": {
+      "edit": "Chỉnh sửa hồ sơ",
+      "likes": "Thích",
+      "media": "Đa phương tiện",
+      "noPosts": "Chưa có bài đăng nào",
+      "noReplies": "Chưa có trả lời nào",
+      "notFound": "Không tìm thấy hồ sơ",
+      "posts": "Bài đăng",
+      "replies": "Trả lời",
+      "userNoPosts": "Người dùng này chưa đăng bài nào",
+      "userNoReplies": "Người dùng này chưa trả lời bài nào"
     }
   }
 }

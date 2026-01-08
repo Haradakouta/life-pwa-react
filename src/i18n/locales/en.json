@@ -481,7 +481,13 @@
         "updateSuccess": "Password reset complete! Please login with your new password."
       },
       "back": "Back"
-    }
+    },
+    "badges": "Badge",
+    "goals": "Goal",
+    "recipe": "AI Recipes",
+    "report": "Report",
+    "settings": "Settings",
+    "shopping": "Shopping"
   },
   "product": {
     "productInfo": "Product info retrieved",
@@ -815,6 +821,198 @@
       "noStockInModal": "No usable stock found",
       "quantity": "Qty: {{count}}",
       "expiryDays": "Expires in: {{days}} days"
+    }
+  },
+  "adminPanel": {
+    "apiKey": {
+      "description": "Set the operator API key to be used by all users.",
+      "error": "This API key will be stored in the `admin/config` collection in Firestore.",
+      "save": "Failed to save API key: {{error}}",
+      "saving": "Save API Key",
+      "success": "Saving...",
+      "title": "Operator API key saved. Cache cleared."
+    },
+    "deleteFollows": {
+      "button": "Operator Gemini API Key Settings",
+      "confirm": "Delete all follow relationships",
+      "error": "Are you sure you want to delete all follow relationships? This operation cannot be undone.",
+      "success": "Failed to delete follow relationships: {{error}}"
+    },
+    "deletePosts": {
+      "button": "All follow relationships deleted: {{result}}",
+      "confirm": "Delete all posts",
+      "error": "Are you sure you want to delete all posts? This operation cannot be undone.",
+      "success": "Failed to delete posts: {{error}}"
+    },
+    "loading": "All posts deleted: {{result}}",
+    "noPermission": "Loading admin panel...",
+    "title": "You do not have administrator privileges.",
+    "unknownError": "Admin Panel"
+  },
+  "auth": {
+    "appDescription": "Unknown error",
+    "appName": "\"Kensuke\" - a life management app where AI supports your health",
+    "authError": "Authentication error occurred",
+    "complete": "Registration complete",
+    "dataNote": "Data is securely saved to Firestore",
+    "email": "Email address",
+    "forgotPassword": "Forgot password?",
+    "googleLogin": "Log in with Google",
+    "login": "Log in",
+    "next": "Next",
+    "nextProcessing": "Next...",
+    "noAccount": "Don't have an account?",
+    "or": "Or",
+    "password": "Password",
+    "passwordConfirmPlaceholder": "Enter again",
+    "passwordPlaceholder": "6 characters or more",
+    "passwordReset": "Password reset",
+    "passwordResetFlow": {
+      "back": "Back",
+      "step1": {
+        "description": "We will send a verification code to reset your password",
+        "sendCode": "Send verification code",
+        "sendFailed": "Failed to send verification code",
+        "sending": "Sending...",
+        "title": "Enter your email address"
+      },
+      "step2": {
+        "description": "Enter the 6-digit code sent to {{email}}",
+        "invalidCode": "Incorrect verification code",
+        "resend": "Resend code",
+        "resendFailed": "Failed to resend",
+        "resendSuccess": "Verification code resent!",
+        "title": "Enter verification code",
+        "verify": "Verify",
+        "verifyFailed": "Failed to verify",
+        "verifying": "Verifying..."
+      },
+      "step3": {
+        "confirmPassword": "Password (confirm)",
+        "description": "Please enter a new password",
+        "newPassword": "New password",
+        "passwordMismatch": "Passwords do not match",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "title": "Set new password",
+        "update": "Update password",
+        "updateFailed": "Failed to update password",
+        "updateSuccess": "Password reset complete! Please log in with your new password.",
+        "updating": "Updating..."
+      }
+    },
+    "processing": "Processing...",
+    "register": "Register",
+    "registerFlow": {
+      "back": "Back",
+      "step1": {
+        "description": "Sending verification code",
+        "sendCode": "Send verification code",
+        "sendFailed": "Failed to send verification code",
+        "sending": "Sending...",
+        "title": "Enter email address"
+      },
+      "step2": {
+        "description": "Enter the 6-digit code sent to {{email}}",
+        "invalidCode": "Verification code is incorrect",
+        "resend": "Resend code",
+        "resendFailed": "Failed to resend",
+        "resendSuccess": "Verification code resent!",
+        "title": "Enter verification code",
+        "verify": "Confirm",
+        "verifyFailed": "Confirmation failed",
+        "verifying": "Confirming..."
+      },
+      "step3": {
+        "password": "Password",
+        "passwordConfirm": "Password (confirm)",
+        "passwordMismatch": "Passwords do not match",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "title": "Enter user information",
+        "username": "Username",
+        "usernameRequired": "Please enter your username"
+      },
+      "step4": {
+        "age": "Age",
+        "agePlaceholder": "Example: 30",
+        "description": "Please enter your personal information (optional)",
+        "height": "Height (cm)",
+        "heightPlaceholder": "Example: 170",
+        "next": "Next",
+        "optional": "(Optional)",
+        "savings": "Savings (JPY)",
+        "savingsPlaceholder": "Example: 1000000",
+        "skip": "Skip and proceed",
+        "title": "Enter health information",
+        "weight": "Weight (kg)",
+        "weightPlaceholder": "Example: 65"
+      },
+      "step5": {
+        "complete": "Registration complete",
+        "createAccount": "Create account",
+        "createFailed": "Account creation failed",
+        "creating": "Creating...",
+        "description": "Please select your prefecture (can only be changed once every 30 days)",
+        "label": "Prefecture",
+        "prefectureRequired": "Please select a prefecture",
+        "profileCreateFailed": "Failed to create profile: {{error}}",
+        "title": "Select prefecture"
+      }
+    },
+    "securityNote": "* Secure authentication using Firebase Authentication",
+    "skipAndNext": "Skip and go to next",
+    "usernamePlaceholder": "Taro Yamada"
+  },
+  "badges": {
+    "categories": {
+      "feature": "✨ Feature Utilization",
+      "goal": "🎯 Goal Achievement",
+      "milestone": "📊 Milestones",
+      "streak": "🔥 Streak"
+    },
+    "next": "Next",
+    "ok": "OK",
+    "screenTitle": "🏆 Achievements",
+    "title": "Badge Collection",
+    "unlocked": "Badge acquired!"
+  },
+  "barcode": {
+    "cameraNotFound": "Camera not found",
+    "cameraStartFailed": "Failed to launch camera",
+    "fetchFailed": "Failed to retrieve product information",
+    "guide": "Please align the barcode within the frame",
+    "processing": "Retrieving product information...",
+    "productNotFound": "Product information not found: {{code}}",
+    "receiptScanner": {
+      "album": "Album",
+      "cameraError": "Cannot access camera. Please try selecting a file.",
+      "guide": "Please fit the receipt within the frame",
+      "ocrError": "Failed to read",
+      "processing": "Loading",
+      "title": "Scan receipt"
+    },
+    "screen": {
+      "barcodeButton": "Barcode",
+      "barcodeSubtext": "JAN code",
+      "modeDescription": "You can scan a barcode or a receipt",
+      "receiptButton": "Receipt",
+      "receiptSubtext": "OCR scan",
+      "selectMode": "Select scan mode",
+      "title": "Scan"
+    },
+    "title": "Barcode scan"
+  },
+  "social": {
+    "profile": {
+      "edit": "Edit Profile",
+      "likes": "Likes",
+      "media": "Media",
+      "noPosts": "No posts yet",
+      "noReplies": "No replies yet",
+      "notFound": "Profile not found",
+      "posts": "Posts",
+      "replies": "Replies",
+      "userNoPosts": "This user has not posted yet",
+      "userNoReplies": "This user has not replied yet"
     }
   }
 }

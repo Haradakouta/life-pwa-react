@@ -31,6 +31,17 @@
       "thu": "Kam",
       "fri": "Jum",
       "sat": "Sab"
+    },
+    "errorBoundary": {
+      "description": "Mohon maaf, terjadi kesalahan yang tidak terduga.",
+      "details": "Detail kesalahan",
+      "retry": "Coba lagi",
+      "title": "Terjadi kesalahan"
+    },
+    "titleUnlocked": {
+      "close": "Tutup",
+      "description": "Anda mendapatkan {{count}} gelar baru",
+      "title": "Anda mendapatkan gelar!"
     }
   },
   "settings": {
@@ -448,7 +459,11 @@
         "savings": "Tabungan (yen)",
         "optional": "(Opsional)",
         "next": "Lanjut",
-        "skip": "Lewati"
+        "skip": "Lewati",
+        "agePlaceholder": "Kesalahan tidak diketahui",
+        "heightPlaceholder": "Contoh: 30",
+        "savingsPlaceholder": "Contoh: 1000000",
+        "weightPlaceholder": "Contoh: 65"
       },
       "step5": {
         "title": "Pilih Prefektur",
@@ -829,6 +844,85 @@
       "noStockInModal": "Tidak ada stok yang dapat digunakan ditemukan",
       "quantity": "Jml: {{count}}",
       "expiryDays": "Kedaluwarsa dalam: {{days}} hari"
+    }
+  },
+  "adminPanel": {
+    "apiKey": {
+      "description": "Mengatur kunci API operator yang akan digunakan oleh semua pengguna.",
+      "error": "Kunci API ini akan disimpan di koleksi admin/config Firestore.",
+      "save": "Gagal menyimpan kunci API: {{error}}",
+      "saving": "Simpan Kunci API",
+      "success": "Menyimpan...",
+      "title": "Kunci API operator telah disimpan. Cache telah dihapus."
+    },
+    "deleteFollows": {
+      "button": "Pengaturan Kunci API Gemini Operator",
+      "confirm": "Hapus semua hubungan mengikuti",
+      "error": "Apakah Anda yakin ingin menghapus semua hubungan mengikuti? Tindakan ini tidak dapat dibatalkan.",
+      "success": "Gagal menghapus hubungan mengikuti: {{error}}"
+    },
+    "deletePosts": {
+      "button": "Semua hubungan mengikuti telah dihapus: {{result}}",
+      "confirm": "Hapus semua postingan",
+      "error": "Apakah Anda yakin ingin menghapus semua postingan? Tindakan ini tidak dapat dibatalkan.",
+      "success": "Gagal menghapus postingan: {{error}}"
+    },
+    "loading": "Semua postingan telah dihapus: {{result}}",
+    "noPermission": "Memuat panel admin...",
+    "title": "Anda tidak memiliki izin administrator.",
+    "unknownError": "Panel Admin"
+  },
+  "badges": {
+    "categories": {
+      "feature": "✨ Pemanfaatan Fitur",
+      "goal": "🎯 Pencapaian Target",
+      "milestone": "📊 Milestone",
+      "streak": "🔥 Rekor Beruntun"
+    },
+    "next": "Berikutnya",
+    "ok": "OK",
+    "screenTitle": "🏆 Pencapaian",
+    "title": "Koleksi Lencana",
+    "unlocked": "Lencana diperoleh!"
+  },
+  "barcode": {
+    "cameraNotFound": "Kamera tidak ditemukan",
+    "cameraStartFailed": "Gagal memulai kamera",
+    "fetchFailed": "Gagal mendapatkan informasi produk",
+    "guide": "Posisikan kode batang di dalam bingkai",
+    "processing": "Mendapatkan informasi produk...",
+    "productNotFound": "Informasi produk tidak ditemukan: {{code}}",
+    "receiptScanner": {
+      "album": "Album",
+      "cameraError": "Tidak dapat mengakses kamera. Coba pilih file.",
+      "guide": "Posisikan struk di dalam bingkai",
+      "ocrError": "Gagal membaca",
+      "processing": "Memuat",
+      "title": "Pindai struk"
+    },
+    "screen": {
+      "barcodeButton": "Kode batang",
+      "barcodeSubtext": "Kode JAN",
+      "modeDescription": "Anda dapat memindai kode batang atau struk",
+      "receiptButton": "Struk",
+      "receiptSubtext": "Pembacaan OCR",
+      "selectMode": "Pilih mode pemindaian",
+      "title": "Pindai"
+    },
+    "title": "Pindai kode batang"
+  },
+  "social": {
+    "profile": {
+      "edit": "Edit profil",
+      "likes": "Suka",
+      "media": "Media",
+      "noPosts": "Belum ada postingan",
+      "noReplies": "Belum ada balasan",
+      "notFound": "Profil tidak ditemukan",
+      "posts": "Postingan",
+      "replies": "Balasan",
+      "userNoPosts": "Pengguna ini belum memposting apa pun",
+      "userNoReplies": "Pengguna ini belum membalas apa pun"
     }
   }
 }

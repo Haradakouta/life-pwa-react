@@ -31,6 +31,17 @@
       "thu": "목",
       "fri": "금",
       "sat": "토"
+    },
+    "errorBoundary": {
+      "description": "죄송합니다. 예상치 못한 오류가 발생했습니다.",
+      "details": "오류 상세",
+      "retry": "재시도",
+      "title": "오류가 발생했습니다"
+    },
+    "titleUnlocked": {
+      "close": "닫기",
+      "description": "새로운 칭호 {{count}}개를 획득했습니다",
+      "title": "칭호를 획득했습니다!"
     }
   },
   "settings": {
@@ -448,7 +459,11 @@
         "savings": "저축액 (엔)",
         "optional": "(선택)",
         "next": "다음",
-        "skip": "건너뛰기"
+        "skip": "건너뛰기",
+        "agePlaceholder": "알 수 없는 오류",
+        "heightPlaceholder": "예: 30",
+        "savingsPlaceholder": "예: 1,000,000",
+        "weightPlaceholder": "예: 65"
       },
       "step5": {
         "title": "거주지 선택",
@@ -829,6 +844,85 @@
       "noStockInModal": "사용 가능한 재고가 없습니다",
       "quantity": "수량: {{count}}",
       "expiryDays": "유통기한: {{days}}일"
+    }
+  },
+  "adminPanel": {
+    "apiKey": {
+      "description": "모든 사용자가 사용하는 운영자 API 키를 설정합니다.",
+      "error": "이 API 키는 Firestore의 admin/config 컬렉션에 저장됩니다.",
+      "save": "API 키 저장에 실패했습니다: {{error}}",
+      "saving": "API 키 저장",
+      "success": "저장 중...",
+      "title": "운영자 API 키를 저장했습니다. 캐시를 지웠습니다."
+    },
+    "deleteFollows": {
+      "button": "운영자 Gemini API 키 설정",
+      "confirm": "모든 팔로우 관계 삭제",
+      "error": "정말로 모든 팔로우 관계를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "success": "팔로우 관계 삭제에 실패했습니다: {{error}}"
+    },
+    "deletePosts": {
+      "button": "모든 팔로우 관계가 삭제되었습니다: {{result}}",
+      "confirm": "모든 게시물 삭제",
+      "error": "정말로 모든 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "success": "게시물 삭제에 실패했습니다: {{error}}"
+    },
+    "loading": "모든 게시물이 삭제되었습니다: {{result}}",
+    "noPermission": "관리자 패널 로드 중...",
+    "title": "관리자 권한이 없습니다.",
+    "unknownError": "관리자 패널"
+  },
+  "badges": {
+    "categories": {
+      "feature": "✨ 기능 활용",
+      "goal": "🎯 목표 달성",
+      "milestone": "📊 마일스톤",
+      "streak": "🔥 연속 기록"
+    },
+    "next": "다음",
+    "ok": "확인",
+    "screenTitle": "🏆 업적",
+    "title": "배지 컬렉션",
+    "unlocked": "배지 획득!"
+  },
+  "barcode": {
+    "cameraNotFound": "카메라를 찾을 수 없습니다",
+    "cameraStartFailed": "카메라 실행에 실패했습니다",
+    "fetchFailed": "상품 정보 가져오기에 실패했습니다",
+    "guide": "바코드를 프레임 안에 맞춰주세요",
+    "processing": "상품 정보를 가져오는 중...",
+    "productNotFound": "상품 정보를 찾을 수 없습니다: {{code}}",
+    "receiptScanner": {
+      "album": "앨범",
+      "cameraError": "카메라에 접근할 수 없습니다. 파일 선택을 시도해 보세요.",
+      "guide": "영수증을 프레임 안에 맞춰주세요",
+      "ocrError": "읽기 실패",
+      "processing": "로드 중",
+      "title": "영수증 스캔"
+    },
+    "screen": {
+      "barcodeButton": "바코드",
+      "barcodeSubtext": "JAN 코드",
+      "modeDescription": "바코드 또는 영수증을 스캔할 수 있습니다",
+      "receiptButton": "영수증",
+      "receiptSubtext": "OCR 읽기",
+      "selectMode": "스캔 모드 선택",
+      "title": "스캔"
+    },
+    "title": "바코드 스캔"
+  },
+  "social": {
+    "profile": {
+      "edit": "프로필 편집",
+      "likes": "좋아요",
+      "media": "미디어",
+      "noPosts": "아직 게시물이 없습니다",
+      "noReplies": "아직 답글이 없습니다",
+      "notFound": "프로필을 찾을 수 없습니다",
+      "posts": "게시물",
+      "replies": "답글",
+      "userNoPosts": "이 사용자는 아직 게시물을 올리지 않았습니다",
+      "userNoReplies": "이 사용자는 아직 답글을 달지 않았습니다"
     }
   }
 }

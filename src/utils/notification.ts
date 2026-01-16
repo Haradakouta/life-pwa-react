@@ -357,6 +357,8 @@ export const getNotificationIcon = (type: NotificationType): string => {
       return '@';
     case 'message':
       return '💬';
+    case 'raid_victory':
+      return '🏆'; // トロフィー
     default:
       return '🔔';
   }
@@ -389,6 +391,8 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${actor.name}さんがあなたをメンションしました`;
       case 'message':
         return `${actor.name}さんからメッセージが届きました`;
+      case 'raid_victory':
+        return `レイドボスを討伐しました！`;
       default:
         return `${actor.name}さんから通知があります`;
     }
@@ -415,6 +419,8 @@ export const getNotificationMessage = (notification: NotificationGroup): string 
         return `${firstActor.name}さんと他${othersCount}人があなたをメンションしました`;
       case 'message':
         return `${firstActor.name}さんと他${othersCount}人からメッセージが届きました`;
+      case 'raid_victory':
+        return `レイドボスを討伐しました！`;
       default:
         return `${firstActor.name}さんと他${othersCount}人から通知があります`;
     }

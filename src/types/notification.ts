@@ -12,7 +12,8 @@ export type NotificationType =
   | 'friend_request' // フレンドリクエスト
   | 'friend_accept'  // フレンド承認
   | 'mention'        // メンション
-  | 'message';       // DM
+  | 'message'        // DM
+  | 'raid_victory';  // レイドボス討伐
 
 export interface Notification {
   id: string;

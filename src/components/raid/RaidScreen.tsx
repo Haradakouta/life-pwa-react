@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentRaidBoss, getUserRaidData, attackRaidBoss } from '../../utils/raid';
+import { getCurrentRaidBoss, getUserRaidData, attackRaidBoss, getRaidRanking } from '../../utils/raid';
 import type { RaidBoss, UserRaidData } from '../../utils/raid';
 import { useAuth } from '../../hooks/useAuth';
 import { useIntakeStore, useExerciseStore } from '../../store';
@@ -12,6 +12,12 @@ export const RaidScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [attacking, setAttacking] = useState(false);
     const [attackMessage, setAttackMessage] = useState<string | null>(null);
+    const [ranking, setRanking] = useState<Array<{
+        userId: string;
+        totalDamage: number;
+        userName?: string;
+        userAvatar?: string;
+    }>>([]);
 
     const intakeStore = useIntakeStore();
     const exerciseStore = useExerciseStore();
@@ -21,6 +27,7 @@ export const RaidScreen: React.FC = () => {
 
     useEffect(() => {
         fetchData();
+        fetchRanking();
     }, [user]);
 
     // データ同期と計算
@@ -42,6 +49,15 @@ export const RaidScreen: React.FC = () => {
             console.error('Failed to fetch raid data:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchRanking = async () => {
+        try {
+            const rankingData = await getRaidRanking(10);
+            setRanking(rankingData);
+        } catch (error) {
+            console.error('Failed to fetch ranking:', error);
         }
     };
 
@@ -83,6 +99,7 @@ export const RaidScreen: React.FC = () => {
         setAttackMessage(result.message);
         if (result.success) {
             await fetchData(); // データ更新（これにより availableDamage も再計算される）
+            await fetchRanking(); // ランキングも更新
         }
         setAttacking(false);
     };
@@ -232,6 +249,90 @@ export const RaidScreen: React.FC = () => {
                         <span style={{ fontWeight: 700, color: 'var(--text)' }}>{userData?.totalDamage.toLocaleString() || 0}</span>
                     </div>
                 </div>
+            </div>
+
+            {/* ダメージランキング */}
+            <div style={{ background: 'var(--card)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginTop: '24px' }}>
+                <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
+                    🏆 ダメージランキング TOP 10
+                </h3>
+                
+                {ranking.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+                        まだ参加者がいません
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {ranking.map((entry, index) => (
+                            <div
+                                key={entry.userId}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    background: index < 3 ? 'rgba(245, 158, 11, 0.1)' : 'var(--background)',
+                                    borderRadius: '12px',
+                                    border: index < 3 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border)',
+                                }}
+                            >
+                                {/* 順位 */}
+                                <div
+                                    style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        background: index === 0 ? '#fbbf24' : index === 1 ? '#d1d5db' : index === 2 ? '#cd7f32' : 'var(--border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: 800,
+                                        fontSize: '14px',
+                                        color: index < 3 ? 'white' : 'var(--text-secondary)',
+                                    }}
+                                >
+                                    {index + 1}
+                                </div>
+
+                                {/* アバター */}
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        overflow: 'hidden',
+                                        background: 'var(--border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    {entry.userAvatar ? (
+                                        <img
+                                            src={entry.userAvatar}
+                                            alt={entry.userName}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <span style={{ fontSize: '20px' }}>👤</span>
+                                    )}
+                                </div>
+
+                                {/* ユーザー名 */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {entry.userName || 'Unknown User'}
+                                    </div>
+                                </div>
+
+                                {/* ダメージ */}
+                                <div style={{ fontWeight: 800, fontSize: '16px', color: '#ef4444' }}>
+                                    {entry.totalDamage.toLocaleString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

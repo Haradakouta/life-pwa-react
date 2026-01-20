@@ -1,7 +1,9 @@
 /**
  * api/gemini.ts — Google Gemini API連携
  *
- * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供し * ⚠️ 重要: gemini-2.5-proを使用（Tier 1従量制プラン）/
+ * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供
+ * ⚠️ 重要: gemini-2.5-proを使用（Tier 1従量制プラン）
+ */
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
 import { useSettingsStore } from '../store';

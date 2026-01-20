@@ -505,7 +505,10 @@ async function generateRecipeWithKey(
 （料理のコツやアドバイス）
 ---
 ${examples}
-`.trim(    // Gemini 2.5 Pro（Tier 1従量制）を使用  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+`.trim();
+
+    // Gemini 2.5 Pro（Tier 1従量制）を使用
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
     // リクエスト統計を記録
     logRequestStats('recipe');

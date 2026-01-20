@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
+// admin.initializeApp() is already called in index.ts
 const db = admin.firestore();
 
 // Gemini API設定

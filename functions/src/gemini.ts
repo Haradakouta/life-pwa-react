@@ -90,7 +90,7 @@ async function callGeminiApi(
  * レシピ生成
  */
 export const generateRecipe = functions.https.onCall(
-  async (data: any, context: functions.https.CallableContext) => {
+  async (data: any, context: any) => {
     try {
       const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
 
@@ -173,7 +173,7 @@ export const generateRecipe = functions.https.onCall(
  * 健康アドバイス生成
  */
 export const generateHealthAdvice = functions.https.onCall(
-  async (data: any, context: functions.https.CallableContext) => {
+  async (data: any, context: any) => {
     try {
       const { meals, exercises, weight, goals } = data;
 
@@ -221,7 +221,7 @@ ${goals}
  * カロリー推定（画像なしテキストベース）
  */
 export const estimateCalories = functions.https.onCall(
-  async (data: any, context: functions.https.CallableContext) => {
+  async (data: any, context: any) => {
     try {
       const { foodDescription } = data;
 
@@ -262,7 +262,7 @@ export const estimateCalories = functions.https.onCall(
  * 汎用テキスト生成（月次レポートのAI改善提案など）
  */
 export const generateText = functions.https.onCall(
-  async (data: any, context: functions.https.CallableContext) => {
+  async (data: any, context: any) => {
     try {
       const { prompt } = data;
 

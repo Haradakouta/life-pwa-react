@@ -7,7 +7,15 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
 // admin.initializeApp() is already called in index.ts
-const db = admin.firestore();
+// Delay Firestore initialization to avoid timeout during deployment
+let db: admin.firestore.Firestore;
+
+function getDb() {
+  if (!db) {
+    db = admin.firestore();
+  }
+  return db;
+}
 
 // Gemini API設定
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
@@ -25,7 +33,7 @@ async function getGeminiApiKey(): Promise<string> {
 
   // Firestoreから取得を試みる
   try {
-    const configDoc = await db.collection('admin').doc('config').get();
+    const configDoc = await getDb().collection('admin').doc('config').get();
     if (configDoc.exists) {
       const config = configDoc.data();
       if (config?.geminiApiKey && config.geminiApiKey.trim() !== '') {

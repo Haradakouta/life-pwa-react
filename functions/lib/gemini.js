@@ -8,7 +8,14 @@ exports.generateText = exports.estimateCalories = exports.generateHealthAdvice =
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 // admin.initializeApp() is already called in index.ts
-const db = admin.firestore();
+// Delay Firestore initialization to avoid timeout during deployment
+let db;
+function getDb() {
+    if (!db) {
+        db = admin.firestore();
+    }
+    return db;
+}
 // Gemini API設定
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const MODEL_NAME = 'gemini-2.5-pro';
@@ -24,7 +31,7 @@ async function getGeminiApiKey() {
     }
     // Firestoreから取得を試みる
     try {
-        const configDoc = await db.collection('admin').doc('config').get();
+        const configDoc = await getDb().collection('admin').doc('config').get();
         if (configDoc.exists) {
             const config = configDoc.data();
             if ((config === null || config === void 0 ? void 0 : config.geminiApiKey) && config.geminiApiKey.trim() !== '') {

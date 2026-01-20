@@ -89,9 +89,8 @@ async function callGeminiApi(
 /**
  * レシピ生成
  */
-export const generateRecipe = functions
-  .region('asia-northeast1')
-  .https.onCall(async (data, context) => {
+export const generateRecipe = functions.https.onCall(
+  async (data: any, context: functions.https.CallableContext) => {
     try {
       const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
 
@@ -167,14 +166,14 @@ export const generateRecipe = functions
       console.error('[Gemini] Recipe generation error:', error);
       throw new functions.https.HttpsError('internal', error.message || 'レシピ生成に失敗しました');
     }
-  });
+  }
+);
 
 /**
  * 健康アドバイス生成
  */
-export const generateHealthAdvice = functions
-  .region('asia-northeast1')
-  .https.onCall(async (data, context) => {
+export const generateHealthAdvice = functions.https.onCall(
+  async (data: any, context: functions.https.CallableContext) => {
     try {
       const { meals, exercises, weight, goals } = data;
 
@@ -215,14 +214,14 @@ ${goals}
       console.error('[Gemini] Health advice generation error:', error);
       throw new functions.https.HttpsError('internal', error.message || '健康アドバイス生成に失敗しました');
     }
-  });
+  }
+);
 
 /**
  * カロリー推定（画像なしテキストベース）
  */
-export const estimateCalories = functions
-  .region('asia-northeast1')
-  .https.onCall(async (data, context) => {
+export const estimateCalories = functions.https.onCall(
+  async (data: any, context: functions.https.CallableContext) => {
     try {
       const { foodDescription } = data;
 
@@ -256,14 +255,14 @@ export const estimateCalories = functions
       console.error('[Gemini] Calorie estimation error:', error);
       throw new functions.https.HttpsError('internal', error.message || 'カロリー推定に失敗しました');
     }
-  });
+  }
+);
 
 /**
  * 汎用テキスト生成（月次レポートのAI改善提案など）
  */
-export const generateText = functions
-  .region('asia-northeast1')
-  .https.onCall(async (data, context) => {
+export const generateText = functions.https.onCall(
+  async (data: any, context: functions.https.CallableContext) => {
     try {
       const { prompt } = data;
 
@@ -286,4 +285,5 @@ export const generateText = functions
       console.error('[Gemini] Text generation error:', error);
       throw new functions.https.HttpsError('internal', error.message || 'テキスト生成に失敗しました');
     }
-  });
+  }
+);

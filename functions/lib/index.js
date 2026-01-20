@@ -512,4 +512,5 @@ exports.getFewShotExamples = functions.https.onCall({ region: 'us-central1' }, a
 __exportStar(require("./vision"), exports);
 __exportStar(require("./notifications"), exports);
 __exportStar(require("./stripe"), exports);
+__exportStar(require("./gemini"), exports);
 //# sourceMappingURL=index.js.map

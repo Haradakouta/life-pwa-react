@@ -558,3 +558,4 @@ export const getFewShotExamples = functions.https.onCall(
 export * from './vision';
 export * from './notifications';
 export * from './stripe';
+export * from './gemini';

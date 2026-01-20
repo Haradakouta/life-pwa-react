@@ -6,7 +6,7 @@ import { MdAutoAwesome, MdTrendingUp, MdTrendingDown, MdArrowForward } from 'rea
 import { useIntakeStore, useExpenseStore } from '../../store';
 import { generateMonthlyComparison, generateAIPrompt } from '../../utils/reportGenerator';
 import type { MonthlyComparison } from '../../utils/reportGenerator';
-import { generateText } from '../../api/gemini';
+import { generateText } from '../../api/geminiCloudFunctions';
 import { ProGate } from '../subscription/ProGate';
 
 export function MonthlyReport() {

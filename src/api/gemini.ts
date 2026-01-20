@@ -1,9 +1,7 @@
 /**
  * api/gemini.ts — Google Gemini API連携
  *
- * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供します。
- * ⚠️ 重要: gemini-2.5-flash-liteのみを使用（gemini-2.0-flash-expは無料プランで利用不可）
- */
+ * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供し * ⚠️ 重要: gemini-2.5-proを使用（Tier 1従量制プラン）/
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
 import { useSettingsStore } from '../store';
@@ -340,7 +338,7 @@ ${examples}
 在庫から使える材料を最大限活用したレシピを提案してください。
 `;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
     logRequestStats('recipe');
 
@@ -411,7 +409,7 @@ ${examples}
       'recipe_from_stock',
       prompt,
       recipeText,
-      'gemini-2.5-flash-lite',
+      'gemini-2.5-pro',
       'success',
       undefined,
       { stockCount: stockItems.length, dietaryRestriction, difficulty, customRequest }
@@ -429,7 +427,7 @@ ${examples}
       'recipe_from_stock',
       'ERROR_DURING_GENERATION', // プロンプトは取得できない場合がある
       '',
-      'gemini-2.5-flash-lite',
+      'gemini-2.5-pro',
       'error',
       error instanceof Error ? error.message : String(error),
       { stockCount: stockItems.length, dietaryRestriction, difficulty, customRequest }
@@ -507,10 +505,7 @@ async function generateRecipeWithKey(
 （料理のコツやアドバイス）
 ---
 ${examples}
-`.trim();
-
-    // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+`.trim(    // Gemini 2.5 Pro（Tier 1従量制）を使用  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
     // リクエスト統計を記録
     logRequestStats('recipe');
@@ -630,7 +625,7 @@ ${examples}
           'recipe',
           prompt,
           text.trim(),
-          'gemini-2.5-flash-lite',
+          'gemini-2.5-pro',
           'success',
           undefined,
           { ingredients, dietaryRestriction, difficulty, customRequest }
@@ -656,7 +651,7 @@ ${examples}
       'recipe',
       'ERROR_DURING_GENERATION',
       '',
-      'gemini-2.5-flash-lite',
+      'gemini-2.5-pro',
       'error',
       error instanceof Error ? error.message : String(error),
       { ingredients, dietaryRestriction, difficulty, customRequest }
@@ -913,8 +908,8 @@ export function isGeminiEnabled(): boolean {
  * テキスト生成（内部実装：指定されたAPIキーで試行）
  */
 async function generateTextWithKey(apiKey: string, prompt: string): Promise<string> {
-  // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-flash-liteに変更
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+  // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-proに変更
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
   logRequestStats('recipe'); // テキスト生成もrecipeとしてカウント
 
@@ -1072,7 +1067,7 @@ async function scanCalorieWithKey(apiKey: string, mealName: string, imageFile: F
 4. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
   // リクエスト統計を記録
   logRequestStats('receipt'); // カロリー計測もreceiptとしてカウント

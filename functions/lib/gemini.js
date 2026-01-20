@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateText = exports.estimateCalories = exports.generateHealthAdvice = exports.generateRecipe = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+// admin.initializeApp() is already called in index.ts
 const db = admin.firestore();
 // Gemini API設定
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
@@ -75,9 +76,7 @@ async function callGeminiApi(prompt, options = {}) {
 /**
  * レシピ生成
  */
-exports.generateRecipe = functions
-    .region('asia-northeast1')
-    .https.onCall(async (data, context) => {
+exports.generateRecipe = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d, _e;
     try {
         const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
@@ -153,9 +152,7 @@ exports.generateRecipe = functions
 /**
  * 健康アドバイス生成
  */
-exports.generateHealthAdvice = functions
-    .region('asia-northeast1')
-    .https.onCall(async (data, context) => {
+exports.generateHealthAdvice = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d, _e;
     try {
         const { meals, exercises, weight, goals } = data;
@@ -198,9 +195,7 @@ ${goals}
 /**
  * カロリー推定（画像なしテキストベース）
  */
-exports.estimateCalories = functions
-    .region('asia-northeast1')
-    .https.onCall(async (data, context) => {
+exports.estimateCalories = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d, _e;
     try {
         const { foodDescription } = data;
@@ -235,9 +230,7 @@ exports.estimateCalories = functions
 /**
  * 汎用テキスト生成（月次レポートのAI改善提案など）
  */
-exports.generateText = functions
-    .region('asia-northeast1')
-    .https.onCall(async (data, context) => {
+exports.generateText = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d, _e;
     try {
         const { prompt } = data;

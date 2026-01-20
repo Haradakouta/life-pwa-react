@@ -558,4 +558,6 @@ export const getFewShotExamples = functions.https.onCall(
 export * from './vision';
 export * from './notifications';
 export * from './stripe';
+
+// Gemini functions - exported last to ensure admin is initialized
 export * from './gemini';

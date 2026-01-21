@@ -1,35 +1,27 @@
 import * as functions from 'firebase-functions';
+import { onInit } from 'firebase-functions/v2/core';
 import * as admin from 'firebase-admin';
 import * as nodemailer from 'nodemailer';
 import { BigQuery } from '@google-cloud/bigquery';
 
-// Firebase Admin - 遅延初期化
-let initialized = false;
+// Firebase Admin & BigQuery - onInitで初期化
 let db: admin.firestore.Firestore;
+let bigquery: BigQuery;
 
-function initializeFirebase() {
-  if (!initialized) {
-    admin.initializeApp();
-    initialized = true;
-  }
-}
+onInit(async () => {
+  admin.initializeApp();
+  db = admin.firestore();
+  bigquery = new BigQuery();
+});
 
 function getDb() {
-  initializeFirebase();
-  if (!db) {
-    db = admin.firestore();
-  }
   return db;
 }
 
-// BigQuery - 遅延初期化でタイムアウトを防ぐ
-let bigquery: BigQuery;
 function getBigQuery() {
-  if (!bigquery) {
-    bigquery = new BigQuery();
-  }
   return bigquery;
 }
+
 const DATASET_ID = 'gemini_logs';
 const TABLE_ID = 'interactions';
 

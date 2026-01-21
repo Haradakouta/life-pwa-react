@@ -16,31 +16,22 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFewShotExamples = exports.logGeminiInteraction = exports.deleteAllPosts = exports.deleteAllFollows = exports.resetPassword = exports.sendPasswordResetEmail = exports.sendVerificationEmailV2 = void 0;
 const functions = require("firebase-functions");
+const core_1 = require("firebase-functions/v2/core");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const bigquery_1 = require("@google-cloud/bigquery");
-// Firebase Admin - 遅延初期化
-let initialized = false;
+// Firebase Admin & BigQuery - onInitで初期化
 let db;
-function initializeFirebase() {
-    if (!initialized) {
-        admin.initializeApp();
-        initialized = true;
-    }
-}
+let bigquery;
+(0, core_1.onInit)(async () => {
+    admin.initializeApp();
+    db = admin.firestore();
+    bigquery = new bigquery_1.BigQuery();
+});
 function getDb() {
-    initializeFirebase();
-    if (!db) {
-        db = admin.firestore();
-    }
     return db;
 }
-// BigQuery - 遅延初期化でタイムアウトを防ぐ
-let bigquery;
 function getBigQuery() {
-    if (!bigquery) {
-        bigquery = new bigquery_1.BigQuery();
-    }
     return bigquery;
 }
 const DATASET_ID = 'gemini_logs';

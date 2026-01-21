@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStockStore, useRecipeStore } from '../../store';
-import { generateRecipe, generateRecipeFromStock } from '../../api/geminiCloudFunctions';
+import { generateRecipe, generateRecipeFromStock } from '../../api/gemini';
 import type { RecipeDifficulty, DietaryRestriction, Recipe, StockCategory } from '../../types';
 import { generateUUID } from '../../utils/uuid';
 import { MdRestaurantMenu, MdInventory, MdAutoAwesome, MdClose, MdCheckBox, MdCheckBoxOutlineBlank, MdSmartToy } from 'react-icons/md';

@@ -1,23 +1,22 @@
 import * as admin from 'firebase-admin';
-import { onInit } from 'firebase-functions/v2/core';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-// onInitで初期化
+// 遅延初期化 - admin.initializeApp()はindex.tsのonInitで呼ばれる
 let db: admin.firestore.Firestore;
 let messaging: admin.messaging.Messaging;
 
-onInit(async () => {
-    // admin.initializeApp() is called in index.ts
-    db = admin.firestore();
-    messaging = admin.messaging();
-});
-
 function getDb() {
+    if (!db) {
+        db = admin.firestore();
+    }
     return db;
 }
 
 function getMessaging() {
+    if (!messaging) {
+        messaging = admin.messaging();
+    }
     return messaging;
 }
 

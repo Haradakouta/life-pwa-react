@@ -2,21 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleInactivityReminder = exports.scheduleWeeklyWeightReminder = exports.sendCommentNotification = exports.sendLikeNotification = void 0;
 const admin = require("firebase-admin");
-const core_1 = require("firebase-functions/v2/core");
 const firestore_1 = require("firebase-functions/v2/firestore");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
-// onInitで初期化
+// 遅延初期化 - admin.initializeApp()はindex.tsのonInitで呼ばれる
 let db;
 let messaging;
-(0, core_1.onInit)(async () => {
-    // admin.initializeApp() is called in index.ts
-    db = admin.firestore();
-    messaging = admin.messaging();
-});
 function getDb() {
+    if (!db) {
+        db = admin.firestore();
+    }
     return db;
 }
 function getMessaging() {
+    if (!messaging) {
+        messaging = admin.messaging();
+    }
     return messaging;
 }
 // 通知を送信するヘルパー関数

@@ -5,7 +5,15 @@ import { BigQuery } from '@google-cloud/bigquery';
 
 admin.initializeApp();
 const db = admin.firestore();
-const bigquery = new BigQuery();
+
+// BigQuery - 遅延初期化でタイムアウトを防ぐ
+let bigquery: BigQuery;
+function getBigQuery() {
+  if (!bigquery) {
+    bigquery = new BigQuery();
+  }
+  return bigquery;
+}
 const DATASET_ID = 'gemini_logs';
 const TABLE_ID = 'interactions';
 
@@ -494,7 +502,7 @@ export const logGeminiInteraction = functions.https.onCall(
     const userId = request.auth?.uid || 'anonymous';
 
     const row = {
-      timestamp: bigquery.timestamp(new Date(timestamp || Date.now())),
+      timestamp: getBigQuery().timestamp(new Date(timestamp || Date.now())),
       user_id: userId,
       request_type: requestType,
       prompt: prompt,
@@ -503,11 +511,11 @@ export const logGeminiInteraction = functions.https.onCall(
       status: status,
       error_message: errorMessage || null,
       metadata: metadata ? JSON.stringify(metadata) : null,
-      created_at: bigquery.timestamp(new Date()),
+      created_at: getBigQuery().timestamp(new Date()),
     };
 
     try {
-      await bigquery
+      await getBigQuery()
         .dataset(DATASET_ID)
         .table(TABLE_ID)
         .insert([row]);
@@ -546,7 +554,7 @@ export const getFewShotExamples = functions.https.onCall(
     };
 
     try {
-      const [rows] = await bigquery.query(options);
+      const [rows] = await getBigQuery().query(options);
       return { examples: rows };
     } catch (error) {
       console.error('Error fetching examples from BigQuery:', error);

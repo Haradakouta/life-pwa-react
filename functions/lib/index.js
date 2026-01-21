@@ -21,7 +21,14 @@ const nodemailer = require("nodemailer");
 const bigquery_1 = require("@google-cloud/bigquery");
 admin.initializeApp();
 const db = admin.firestore();
-const bigquery = new bigquery_1.BigQuery();
+// BigQuery - 遅延初期化でタイムアウトを防ぐ
+let bigquery;
+function getBigQuery() {
+    if (!bigquery) {
+        bigquery = new bigquery_1.BigQuery();
+    }
+    return bigquery;
+}
 const DATASET_ID = 'gemini_logs';
 const TABLE_ID = 'interactions';
 // メール送信関数（共通ロジック）
@@ -458,7 +465,7 @@ exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' },
     const { requestType, prompt, response, model, status, errorMessage, metadata, timestamp } = request.data;
     const userId = ((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'anonymous';
     const row = {
-        timestamp: bigquery.timestamp(new Date(timestamp || Date.now())),
+        timestamp: getBigQuery().timestamp(new Date(timestamp || Date.now())),
         user_id: userId,
         request_type: requestType,
         prompt: prompt,
@@ -467,10 +474,10 @@ exports.logGeminiInteraction = functions.https.onCall({ region: 'us-central1' },
         status: status,
         error_message: errorMessage || null,
         metadata: metadata ? JSON.stringify(metadata) : null,
-        created_at: bigquery.timestamp(new Date()),
+        created_at: getBigQuery().timestamp(new Date()),
     };
     try {
-        await bigquery
+        await getBigQuery()
             .dataset(DATASET_ID)
             .table(TABLE_ID)
             .insert([row]);
@@ -501,7 +508,7 @@ exports.getFewShotExamples = functions.https.onCall({ region: 'us-central1' }, a
         params: { requestType, limit },
     };
     try {
-        const [rows] = await bigquery.query(options);
+        const [rows] = await getBigQuery().query(options);
         return { examples: rows };
     }
     catch (error) {

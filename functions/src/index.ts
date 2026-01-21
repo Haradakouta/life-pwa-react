@@ -3,8 +3,24 @@ import * as admin from 'firebase-admin';
 import * as nodemailer from 'nodemailer';
 import { BigQuery } from '@google-cloud/bigquery';
 
-admin.initializeApp();
-const db = admin.firestore();
+// Firebase Admin - 遅延初期化
+let initialized = false;
+let db: admin.firestore.Firestore;
+
+function initializeFirebase() {
+  if (!initialized) {
+    admin.initializeApp();
+    initialized = true;
+  }
+}
+
+function getDb() {
+  initializeFirebase();
+  if (!db) {
+    db = admin.firestore();
+  }
+  return db;
+}
 
 // BigQuery - 遅延初期化でタイムアウトを防ぐ
 let bigquery: BigQuery;
@@ -423,7 +439,7 @@ export const resetPassword = functions.https.onCall(
 );
 
 async function deleteCollection(collectionPath: string, batchSize: number) {
-  const collectionRef = db.collection(collectionPath);
+  const collectionRef = getDb().collection(collectionPath);
   const query = collectionRef.orderBy('__name__').limit(batchSize);
   return new Promise((resolve, reject) => {
     deleteQueryBatch(query, resolve).catch(reject);
@@ -437,7 +453,7 @@ async function deleteQueryBatch(query: FirebaseFirestore.Query, resolve: (value?
     resolve();
     return;
   }
-  const batch = db.batch();
+  const batch = getDb().batch();
   snapshot.docs.forEach((doc) => {
     batch.delete(doc.ref);
   });
@@ -452,11 +468,11 @@ export const deleteAllFollows = functions.https.onCall({ timeoutSeconds: 540, me
     throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
   }
   console.log('Starting to delete all follow/following relationships.');
-  const usersSnapshot = await db.collection('users').get();
+  const usersSnapshot = await getDb().collection('users').get();
   for (const userDoc of usersSnapshot.docs) {
     await deleteCollection(`users/${userDoc.id}/followers`, 100);
     await deleteCollection(`users/${userDoc.id}/following`, 100);
-    const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
+    const profileRef = getDb().doc(`users/${userDoc.id}/profile/data`);
     try {
       await profileRef.update({
         'stats.followerCount': 0,
@@ -475,16 +491,16 @@ export const deleteAllPosts = functions.https.onCall({ timeoutSeconds: 540, memo
     throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
   }
   console.log('Starting to delete all posts and their subcollections.');
-  const postsSnapshot = await db.collection('posts').get();
+  const postsSnapshot = await getDb().collection('posts').get();
   for (const postDoc of postsSnapshot.docs) {
     await deleteCollection(`posts/${postDoc.id}/likes`, 100);
     await deleteCollection(`posts/${postDoc.id}/comments`, 100);
     await deleteCollection(`posts/${postDoc.id}/reposts`, 100);
     await postDoc.ref.delete();
   }
-  const usersSnapshot = await db.collection('users').get();
+  const usersSnapshot = await getDb().collection('users').get();
   for (const userDoc of usersSnapshot.docs) {
-    const profileRef = db.doc(`users/${userDoc.id}/profile/data`);
+    const profileRef = getDb().doc(`users/${userDoc.id}/profile/data`);
     try {
       await profileRef.update({ 'stats.postCount': 0 });
     } catch (e) {

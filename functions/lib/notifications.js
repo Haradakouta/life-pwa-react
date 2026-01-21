@@ -4,18 +4,31 @@ exports.scheduleInactivityReminder = exports.scheduleWeeklyWeightReminder = expo
 const admin = require("firebase-admin");
 const firestore_1 = require("firebase-functions/v2/firestore");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
-const db = admin.firestore();
-const messaging = admin.messaging();
+// 遅延初期化 - タイムアウト防止
+let db;
+let messaging;
+function getDb() {
+    if (!db) {
+        db = admin.firestore();
+    }
+    return db;
+}
+function getMessaging() {
+    if (!messaging) {
+        messaging = admin.messaging();
+    }
+    return messaging;
+}
 // 通知を送信するヘルパー関数
 const sendPushNotification = async (userId, title, body, data = {}) => {
     try {
         // ユーザーのFCMトークンを取得
-        const tokensSnapshot = await db.collection('users').doc(userId).collection('fcmTokens').get();
+        const tokensSnapshot = await getDb().collection('users').doc(userId).collection('fcmTokens').get();
         if (tokensSnapshot.empty) {
             console.log(`No FCM tokens found for user ${userId}`);
             return;
         }
-        const tokens = tokensSnapshot.docs.map(doc => doc.data().token);
+        const tokens = tokensSnapshot.docs.map((doc) => doc.data().token);
         // 重複排除
         const uniqueTokens = [...new Set(tokens)];
         const message = {
@@ -31,7 +44,7 @@ const sendPushNotification = async (userId, title, body, data = {}) => {
                 },
             },
         };
-        const response = await messaging.sendMulticast(message);
+        const response = await getMessaging().sendMulticast(message);
         console.log(`Notifications sent to user ${userId}: ${response.successCount} success, ${response.failureCount} failure`);
         // 無効なトークンを削除
         if (response.failureCount > 0) {
@@ -42,9 +55,9 @@ const sendPushNotification = async (userId, title, body, data = {}) => {
                 }
             });
             // Firestoreから削除（バッチ処理）
-            const batch = db.batch();
+            const batch = getDb().batch();
             for (const token of failedTokens) {
-                const tokenRef = db.collection('users').doc(userId).collection('fcmTokens').doc(token);
+                const tokenRef = getDb().collection('users').doc(userId).collection('fcmTokens').doc(token);
                 batch.delete(tokenRef);
             }
             await batch.commit();
@@ -61,7 +74,7 @@ exports.sendLikeNotification = (0, firestore_1.onDocumentCreated)('posts/{postId
     const { postId, userId } = event.params;
     try {
         // 投稿データを取得して投稿主を特定
-        const postDoc = await db.collection('posts').doc(postId).get();
+        const postDoc = await getDb().collection('posts').doc(postId).get();
         if (!postDoc.exists)
             return;
         const postData = postDoc.data();
@@ -70,7 +83,7 @@ exports.sendLikeNotification = (0, firestore_1.onDocumentCreated)('posts/{postId
         if (postOwnerId === userId)
             return;
         // いいねしたユーザーの情報を取得
-        const userDoc = await db.collection('users').doc(userId).get();
+        const userDoc = await getDb().collection('users').doc(userId).get();
         const userData = userDoc.data();
         const userName = ((_a = userData === null || userData === void 0 ? void 0 : userData.profile) === null || _a === void 0 ? void 0 : _a.displayName) || '誰か';
         await sendPushNotification(postOwnerId, 'いいねされました！', `${userName}さんがあなたの投稿にいいねしました`, { type: 'like', postId });
@@ -89,7 +102,7 @@ exports.sendCommentNotification = (0, firestore_1.onDocumentCreated)('posts/{pos
     const commentUserId = commentData.userId;
     try {
         // 投稿データを取得して投稿主を特定
-        const postDoc = await db.collection('posts').doc(postId).get();
+        const postDoc = await getDb().collection('posts').doc(postId).get();
         if (!postDoc.exists)
             return;
         const postData = postDoc.data();
@@ -98,7 +111,7 @@ exports.sendCommentNotification = (0, firestore_1.onDocumentCreated)('posts/{pos
         if (postOwnerId === commentUserId)
             return;
         // コメントしたユーザーの情報を取得
-        const userDoc = await db.collection('users').doc(commentUserId).get();
+        const userDoc = await getDb().collection('users').doc(commentUserId).get();
         const userData = userDoc.data();
         const userName = ((_b = userData === null || userData === void 0 ? void 0 : userData.profile) === null || _b === void 0 ? void 0 : _b.displayName) || '誰か';
         await sendPushNotification(postOwnerId, 'コメントが届きました！', `${userName}さんがあなたの投稿にコメントしました: "${commentData.content}"`, { type: 'comment', postId });
@@ -116,7 +129,7 @@ exports.scheduleWeeklyWeightReminder = (0, scheduler_1.onSchedule)({
     console.log('Running weekly weight reminder');
     try {
         // 全ユーザーを取得（バッチ処理が必要だが、簡易実装として全件取得）
-        const usersSnapshot = await db.collection('users').get();
+        const usersSnapshot = await getDb().collection('users').get();
         for (const doc of usersSnapshot.docs) {
             const userId = doc.id;
             await sendPushNotification(userId, '週初めの体重チェック！', 'おはようございます！今週のスタートに体重を記録して、健康管理を始めましょう。', { type: 'weight_reminder' });
@@ -135,7 +148,7 @@ exports.scheduleInactivityReminder = (0, scheduler_1.onSchedule)({
     console.log('Running inactivity reminder');
     try {
         const now = new Date();
-        const usersSnapshot = await db.collection('users').get();
+        const usersSnapshot = await getDb().collection('users').get();
         for (const doc of usersSnapshot.docs) {
             const userId = doc.id;
             const userData = doc.data();

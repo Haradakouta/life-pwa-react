@@ -2,24 +2,39 @@ import * as admin from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-const db = admin.firestore();
-const messaging = admin.messaging();
+// 遅延初期化 - タイムアウト防止
+let db: admin.firestore.Firestore;
+let messaging: admin.messaging.Messaging;
+
+function getDb() {
+    if (!db) {
+        db = admin.firestore();
+    }
+    return db;
+}
+
+function getMessaging() {
+    if (!messaging) {
+        messaging = admin.messaging();
+    }
+    return messaging;
+}
 
 // 通知を送信するヘルパー関数
 const sendPushNotification = async (userId: string, title: string, body: string, data: any = {}) => {
     try {
         // ユーザーのFCMトークンを取得
-        const tokensSnapshot = await db.collection('users').doc(userId).collection('fcmTokens').get();
+        const tokensSnapshot = await getDb().collection('users').doc(userId).collection('fcmTokens').get();
 
         if (tokensSnapshot.empty) {
             console.log(`No FCM tokens found for user ${userId}`);
             return;
         }
 
-        const tokens = tokensSnapshot.docs.map(doc => doc.data().token);
+        const tokens = tokensSnapshot.docs.map((doc: any) => doc.data().token);
 
         // 重複排除
-        const uniqueTokens = [...new Set(tokens)];
+        const uniqueTokens: string[] = [...new Set(tokens)] as string[];
 
         const message: admin.messaging.MulticastMessage = {
             tokens: uniqueTokens,
@@ -38,22 +53,22 @@ const sendPushNotification = async (userId: string, title: string, body: string,
             },
         };
 
-        const response = await messaging.sendMulticast(message);
+        const response = await getMessaging().sendMulticast(message);
         console.log(`Notifications sent to user ${userId}: ${response.successCount} success, ${response.failureCount} failure`);
 
         // 無効なトークンを削除
         if (response.failureCount > 0) {
             const failedTokens: string[] = [];
-            response.responses.forEach((resp, idx) => {
+            response.responses.forEach((resp: any, idx: number) => {
                 if (!resp.success) {
                     failedTokens.push(uniqueTokens[idx]);
                 }
             });
 
             // Firestoreから削除（バッチ処理）
-            const batch = db.batch();
+            const batch = getDb().batch();
             for (const token of failedTokens) {
-                const tokenRef = db.collection('users').doc(userId).collection('fcmTokens').doc(token);
+                const tokenRef = getDb().collection('users').doc(userId).collection('fcmTokens').doc(token);
                 batch.delete(tokenRef);
             }
             await batch.commit();
@@ -66,12 +81,12 @@ const sendPushNotification = async (userId: string, title: string, body: string,
 };
 
 // 1. ソーシャル通知: いいね
-export const sendLikeNotification = onDocumentCreated('posts/{postId}/likes/{userId}', async (event) => {
+export const sendLikeNotification = onDocumentCreated('posts/{postId}/likes/{userId}', async (event: any) => {
     const { postId, userId } = event.params;
 
     try {
         // 投稿データを取得して投稿主を特定
-        const postDoc = await db.collection('posts').doc(postId).get();
+        const postDoc = await getDb().collection('posts').doc(postId).get();
         if (!postDoc.exists) return;
 
         const postData = postDoc.data();
@@ -81,7 +96,7 @@ export const sendLikeNotification = onDocumentCreated('posts/{postId}/likes/{use
         if (postOwnerId === userId) return;
 
         // いいねしたユーザーの情報を取得
-        const userDoc = await db.collection('users').doc(userId).get();
+        const userDoc = await getDb().collection('users').doc(userId).get();
         const userData = userDoc.data();
         const userName = userData?.profile?.displayName || '誰か';
 
@@ -98,7 +113,7 @@ export const sendLikeNotification = onDocumentCreated('posts/{postId}/likes/{use
 });
 
 // 1. ソーシャル通知: コメント
-export const sendCommentNotification = onDocumentCreated('posts/{postId}/comments/{commentId}', async (event) => {
+export const sendCommentNotification = onDocumentCreated('posts/{postId}/comments/{commentId}', async (event: any) => {
     const { postId } = event.params;
     const commentData = event.data?.data();
 
@@ -108,7 +123,7 @@ export const sendCommentNotification = onDocumentCreated('posts/{postId}/comment
 
     try {
         // 投稿データを取得して投稿主を特定
-        const postDoc = await db.collection('posts').doc(postId).get();
+        const postDoc = await getDb().collection('posts').doc(postId).get();
         if (!postDoc.exists) return;
 
         const postData = postDoc.data();
@@ -118,7 +133,7 @@ export const sendCommentNotification = onDocumentCreated('posts/{postId}/comment
         if (postOwnerId === commentUserId) return;
 
         // コメントしたユーザーの情報を取得
-        const userDoc = await db.collection('users').doc(commentUserId).get();
+        const userDoc = await getDb().collection('users').doc(commentUserId).get();
         const userData = userDoc.data();
         const userName = userData?.profile?.displayName || '誰か';
 
@@ -139,12 +154,12 @@ export const scheduleWeeklyWeightReminder = onSchedule({
     schedule: '0 6 * * 1',
     timeZone: 'Asia/Tokyo',
     region: 'us-central1',
-}, async (event) => {
+}, async (event: any) => {
     console.log('Running weekly weight reminder');
 
     try {
         // 全ユーザーを取得（バッチ処理が必要だが、簡易実装として全件取得）
-        const usersSnapshot = await db.collection('users').get();
+        const usersSnapshot = await getDb().collection('users').get();
 
         for (const doc of usersSnapshot.docs) {
             const userId = doc.id;
@@ -165,12 +180,12 @@ export const scheduleInactivityReminder = onSchedule({
     schedule: '0 10 * * *',
     timeZone: 'Asia/Tokyo',
     region: 'us-central1',
-}, async (event) => {
+}, async (event: any) => {
     console.log('Running inactivity reminder');
 
     try {
         const now = new Date();
-        const usersSnapshot = await db.collection('users').get();
+        const usersSnapshot = await getDb().collection('users').get();
 
         for (const doc of usersSnapshot.docs) {
             const userId = doc.id;

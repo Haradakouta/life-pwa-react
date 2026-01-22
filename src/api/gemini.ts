@@ -687,6 +687,26 @@ export async function generateRecipe(
   difficulty: RecipeDifficulty = 'none',
   customRequest = ''
 ): Promise<string> {
+  // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
+  try {
+    console.log('[Gemini] Cloud Functions経由でレシピ生成');
+    const generateRecipeFunc = httpsCallable(firebaseFunctions, 'generateRecipe');
+    const result = await generateRecipeFunc({
+      ingredients,
+      dietaryRestriction,
+      difficulty,
+      customRequest
+    });
+    const data = result.data as { success: boolean; recipe: string };
+    if (data.success && data.recipe) {
+      return data.recipe;
+    }
+    throw new Error('Cloud Functions returned invalid response');
+  } catch (error) {
+    console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
+    // フォールバック: 直接API呼び出し（開発・デバッグ用）
+  }
+  
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
@@ -809,6 +829,27 @@ export async function generateRecipeFromStock(
   difficulty: RecipeDifficulty = 'none',
   customRequest = ''
 ): Promise<string> {
+  // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
+  try {
+    console.log('[Gemini] Cloud Functions経由で在庫からレシピ生成');
+    const ingredients = stockItems.map(item => item.name);
+    const generateRecipeFunc = httpsCallable(firebaseFunctions, 'generateRecipe');
+    const result = await generateRecipeFunc({
+      ingredients,
+      dietaryRestriction,
+      difficulty,
+      customRequest
+    });
+    const data = result.data as { success: boolean; recipe: string };
+    if (data.success && data.recipe) {
+      return data.recipe;
+    }
+    throw new Error('Cloud Functions returned invalid response');
+  } catch (error) {
+    console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
+    // フォールバック: 直接API呼び出し（開発・デバッグ用）
+  }
+  
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
@@ -976,6 +1017,21 @@ async function generateTextWithKey(apiKey: string, prompt: string): Promise<stri
 export async function generateText(prompt: string): Promise<string> {
   console.log('[Gemini Text] テキスト生成開始');
 
+  // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
+  try {
+    console.log('[Gemini] Cloud Functions経由でテキスト生成');
+    const generateTextFunc = httpsCallable(firebaseFunctions, 'generateText');
+    const result = await generateTextFunc({ prompt });
+    const data = result.data as { success: boolean; text: string };
+    if (data.success && data.text) {
+      return data.text;
+    }
+    throw new Error('Cloud Functions returned invalid response');
+  } catch (error) {
+    console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
+    // フォールバック: 直接API呼び出し（開発・デバッグ用）
+  }
+  
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();

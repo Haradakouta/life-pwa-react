@@ -1218,11 +1218,42 @@ async function scanCalorieWithKey(apiKey: string, mealName: string, imageFile: F
  * 料理画像からカロリーを推定
  */
 export async function scanCalorie(mealName: string, imageFile: File): Promise<{ calories: number; reasoning: string; confidence?: number }> {
+  console.log('[Gemini Calorie] カロリー計測開始', {
+    mealName,
+    fileName: imageFile.name,
+    fileSize: imageFile.size,
+  });
+
+  // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
+  try {
+    console.log('[Gemini] Cloud Functions経由でカロリー計測');
+    // 画像をBase64に変換
+    const base64Image = await fileToBase64(imageFile);
+    const scanCalorieFunc = httpsCallable(firebaseFunctions, 'scanCalorie');
+    const result = await scanCalorieFunc({
+      mealName,
+      imageBase64: base64Image,
+      mimeType: imageFile.type || 'image/jpeg',
+    });
+    const data = result.data as { success: boolean; calories: number; reasoning: string; confidence?: number };
+    if (data.success) {
+      return {
+        calories: data.calories,
+        reasoning: data.reasoning,
+        confidence: data.confidence,
+      };
+    }
+    throw new Error('Cloud Functions returned invalid response');
+  } catch (error) {
+    console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
+    // フォールバック: 直接API呼び出し（開発・デバッグ用）
+  }
+
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
 
-  console.log('[Gemini Calorie] カロリー計測開始', {
+  console.log('[Gemini Calorie] フォールバック: 直接API呼び出し', {
     mealName,
     fileName: imageFile.name,
     fileSize: imageFile.size,

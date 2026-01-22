@@ -131,3 +131,126 @@ export const generateText = functions.https.onCall(
   }
 });
 
+
+/**
+ * 画像付きでGemini APIにリクエストを送信
+ */
+async function callGeminiApiWithImage(
+  prompt: string,
+  imageBase64: string,
+  mimeType: string,
+  options: {
+    temperature?: number;
+    maxOutputTokens?: number;
+  } = {}
+): Promise<any> {
+  const apiKey = getGeminiApiKey();
+  const url = `${GEMINI_API_BASE_URL}/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+
+  const requestBody = {
+    contents: [
+      {
+        parts: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: imageBase64,
+            },
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      temperature: options.temperature ?? 0.3,
+      topK: 32,
+      topP: 1,
+      maxOutputTokens: options.maxOutputTokens ?? 1024,
+    },
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * カロリー推定（画像解析）
+ */
+export const scanCalorie = functions.https.onCall(
+  { timeoutSeconds: 300, memory: '512MiB' },
+  async (request: any) => {
+    const { mealName, imageBase64, mimeType } = request.data;
+
+    if (!mealName) {
+      throw new functions.https.HttpsError('invalid-argument', '料理名が指定されていません');
+    }
+
+    if (!imageBase64) {
+      throw new functions.https.HttpsError('invalid-argument', '画像データが指定されていません');
+    }
+
+    const prompt = `
+あなたは栄養学の専門家です。
+この料理画像を見て、料理名「${mealName}」のカロリーを推定してください。
+
+以下のJSON形式で出力してください：
+{
+  "calories": 推定カロリー（数値、kcal単位）,
+  "reasoning": "カロリー推定の根拠（料理の内容、量、調理方法などを考慮した理由を日本語で詳しく説明）",
+  "confidence": 信頼度（0-100の数値、オプション）
+}
+
+**重要な指示:**
+1. 料理名と画像の両方を参考にして、できるだけ正確なカロリーを推定してください
+2. 料理の量、調理方法（揚げ物、蒸し物など）、食材の種類を考慮してください
+3. reasoningには、なぜそのカロリーと推定したかの根拠を詳しく書いてください
+4. 必ずJSONのみを返してください（説明文は不要）
+`.trim();
+
+    try {
+      const result = await callGeminiApiWithImage(
+        prompt,
+        imageBase64,
+        mimeType || 'image/jpeg',
+        { temperature: 0.3, maxOutputTokens: 1024 }
+      );
+
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // JSONを抽出（マークダウンのコードブロックを除去）
+      let jsonText = text.trim();
+      const jsonMatch = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      } else if (jsonText.includes('```')) {
+        const codeMatch = jsonText.match(/```\s*([\s\S]*?)\s*```/);
+        if (codeMatch) {
+          jsonText = codeMatch[1];
+        }
+      }
+
+      // JSONをパース
+      const parsedData = JSON.parse(jsonText);
+
+      return {
+        success: true,
+        calories: parsedData.calories || 0,
+        reasoning: parsedData.reasoning || 'カロリーを推定しました',
+        confidence: parsedData.confidence,
+      };
+    } catch (error: any) {
+      console.error('[Gemini] Calorie scan error:', error);
+      throw new functions.https.HttpsError('internal', error.message || 'カロリー推定に失敗しました');
+    }
+  }
+);

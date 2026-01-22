@@ -58,7 +58,9 @@ async function callGeminiApi(
 /**
  * レシピ生成
  */
-export const generateRecipe = functions.https.onCall(async (data: any) => {
+export const generateRecipe = functions.https.onCall(
+  { timeoutSeconds: 300, memory: '512MB' },
+  async (data: any) => {
   const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
 
   if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
@@ -106,10 +108,13 @@ export const generateRecipe = functions.https.onCall(async (data: any) => {
   }
 });
 
+
 /**
  * 汎用テキスト生成
  */
-export const generateText = functions.https.onCall(async (data: any) => {
+export const generateText = functions.https.onCall(
+  { timeoutSeconds: 300, memory: '512MB' },
+  async (data: any) => {
   const { prompt } = data;
 
   if (!prompt) {
@@ -125,3 +130,4 @@ export const generateText = functions.https.onCall(async (data: any) => {
     throw new functions.https.HttpsError('internal', error.message || 'テキスト生成に失敗しました');
   }
 });
+

@@ -59,7 +59,7 @@ async function callGeminiApi(
  * レシピ生成
  */
 export const generateRecipe = functions.https.onCall(
-  { timeoutSeconds: 300, memory: '512MB' },
+  { timeoutSeconds: 300, memory: '512MiB' },
   async (data: any) => {
   const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
 
@@ -113,7 +113,7 @@ export const generateRecipe = functions.https.onCall(
  * 汎用テキスト生成
  */
 export const generateText = functions.https.onCall(
-  { timeoutSeconds: 300, memory: '512MB' },
+  { timeoutSeconds: 300, memory: '512MiB' },
   async (data: any) => {
   const { prompt } = data;
 

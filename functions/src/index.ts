@@ -1,24 +1,26 @@
 import * as functions from 'firebase-functions';
-import { onInit } from 'firebase-functions/v2/core';
 import * as admin from 'firebase-admin';
 import * as nodemailer from 'nodemailer';
 import { BigQuery } from '@google-cloud/bigquery';
 
-// Firebase Admin & BigQuery - onInitで初期化
-let db: admin.firestore.Firestore;
-let bigquery: BigQuery;
+// Firebase Adminを初期化
+admin.initializeApp();
 
-onInit(async () => {
-  admin.initializeApp();
-  db = admin.firestore();
-  bigquery = new BigQuery();
-});
+// Lazy initialization
+let db: admin.firestore.Firestore | null = null;
+let bigquery: BigQuery | null = null;
 
 function getDb() {
+  if (!db) {
+    db = admin.firestore();
+  }
   return db;
 }
 
 function getBigQuery() {
+  if (!bigquery) {
+    bigquery = new BigQuery();
+  }
   return bigquery;
 }
 

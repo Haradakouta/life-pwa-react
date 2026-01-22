@@ -13,9 +13,9 @@ const MODEL_NAME = 'gemini-2.5-pro';
  * 環境変数からAPIキーを取得
  */
 function getGeminiApiKey(): string {
-  const apiKey = functions.config().gemini?.api_key;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('Gemini API key not configured. Run: firebase functions:config:set gemini.api_key="YOUR_KEY"');
+    throw new Error('Gemini API key not configured. Set GEMINI_API_KEY environment variable.');
   }
   return apiKey;
 }

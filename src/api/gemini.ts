@@ -690,12 +690,16 @@ export async function generateRecipe(
   // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
   try {
     console.log('[Gemini] Cloud Functions経由でレシピ生成');
+    // 言語設定を取得
+    const settings = useSettingsStore.getState().settings;
+    const language = settings.language || 'ja';
     const generateRecipeFunc = httpsCallable(firebaseFunctions, 'generateRecipe');
     const result = await generateRecipeFunc({
       ingredients,
       dietaryRestriction,
       difficulty,
-      customRequest
+      customRequest,
+      language
     });
     const data = result.data as { success: boolean; recipe: string };
     if (data.success && data.recipe) {
@@ -832,13 +836,17 @@ export async function generateRecipeFromStock(
   // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
   try {
     console.log('[Gemini] Cloud Functions経由で在庫からレシピ生成');
+    // 言語設定を取得
+    const settings = useSettingsStore.getState().settings;
+    const language = settings.language || 'ja';
     const ingredients = stockItems.map(item => item.name);
     const generateRecipeFunc = httpsCallable(firebaseFunctions, 'generateRecipe');
     const result = await generateRecipeFunc({
       ingredients,
       dietaryRestriction,
       difficulty,
-      customRequest
+      customRequest,
+      language
     });
     const data = result.data as { success: boolean; recipe: string };
     if (data.success && data.recipe) {
@@ -1020,8 +1028,11 @@ export async function generateText(prompt: string): Promise<string> {
   // 🔥 Cloud Functions経由で呼び出す（APIキー漏洩対策）
   try {
     console.log('[Gemini] Cloud Functions経由でテキスト生成');
+    // 言語設定を取得
+    const settings = useSettingsStore.getState().settings;
+    const language = settings.language || 'ja';
     const generateTextFunc = httpsCallable(firebaseFunctions, 'generateText');
-    const result = await generateTextFunc({ prompt });
+    const result = await generateTextFunc({ prompt, language });
     const data = result.data as { success: boolean; text: string };
     if (data.success && data.text) {
       return data.text;
@@ -1229,11 +1240,15 @@ export async function scanCalorie(mealName: string, imageFile: File): Promise<{ 
     console.log('[Gemini] Cloud Functions経由でカロリー計測');
     // 画像をBase64に変換
     const base64Image = await fileToBase64(imageFile);
+    // 言語設定を取得
+    const settings = useSettingsStore.getState().settings;
+    const language = settings.language || 'ja';
     const scanCalorieFunc = httpsCallable(firebaseFunctions, 'scanCalorie');
     const result = await scanCalorieFunc({
       mealName,
       imageBase64: base64Image,
       mimeType: imageFile.type || 'image/jpeg',
+      language,
     });
     const data = result.data as { success: boolean; calories: number; reasoning: string; confidence?: number };
     if (data.success) {

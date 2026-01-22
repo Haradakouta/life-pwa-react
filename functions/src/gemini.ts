@@ -9,6 +9,25 @@ import * as functions from 'firebase-functions';
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const MODEL_NAME = 'gemini-2.5-pro';
 
+// 言語コードから言語名へのマッピング
+const LANGUAGE_MAP: { [key: string]: string } = {
+  'ja': '日本語',
+  'en': 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
+  'ko': '한국어',
+  'vi': 'Tiếng Việt',
+  'ru': 'Русский',
+  'id': 'Bahasa Indonesia',
+};
+
+/**
+ * 言語コードから言語名を取得
+ */
+function getLanguageName(languageCode: string): string {
+  return LANGUAGE_MAP[languageCode] || LANGUAGE_MAP['ja'];
+}
+
 /**
  * 環境変数からAPIキーを取得
  */
@@ -61,7 +80,8 @@ async function callGeminiApi(
 export const generateRecipe = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
   async (request: any) => {
-  const { ingredients, dietaryRestriction, difficulty, customRequest } = request.data;
+  const { ingredients, dietaryRestriction, difficulty, customRequest, language } = request.data;
+  const languageName = getLanguageName(language || 'ja');
 
   if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
     throw new functions.https.HttpsError('invalid-argument', '食材が指定されていません');
@@ -82,8 +102,10 @@ export const generateRecipe = functions.https.onCall(
 
   const additionalRequirements = customRequest ? `\n\n**追加のリクエスト**: ${customRequest}` : '';
 
-  const prompt = `あなたは日本語で答えるプロの料理アドバイザーです。
-次の食材を使った${dietLabel}向けの家庭向けレシピを1つ提案してください。${difficultyCondition}${additionalRequirements}
+const prompt = `あなたは${languageName}で答えるプロの料理アドバイザーです。
+次の食材を使った${dietLabel}向けの家庭向けレシピを１つ提案してください。${difficultyCondition}${additionalRequirements}
+
+**重要**: 必ず${languageName}で回答してください。
 
 食材: ${ingredients.join('、')}
 
@@ -115,14 +137,18 @@ export const generateRecipe = functions.https.onCall(
 export const generateText = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
   async (request: any) => {
-  const { prompt } = request.data;
+  const { prompt, language } = request.data;
+  const languageName = getLanguageName(language || 'ja');
 
   if (!prompt) {
     throw new functions.https.HttpsError('invalid-argument', 'プロンプトが指定されていません');
   }
 
+  // 言語指定をプロンプトに追加
+  const promptWithLanguage = `${prompt}\n\n**重要**: 必ず${languageName}で回答してください。`;
+
   try {
-    const result = await callGeminiApi(prompt, { temperature: 0.7, maxOutputTokens: 2048 });
+    const result = await callGeminiApi(promptWithLanguage, { temperature: 0.7, maxOutputTokens: 2048 });
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
     return { success: true, text };
   } catch (error: any) {
@@ -189,7 +215,8 @@ async function callGeminiApiWithImage(
 export const scanCalorie = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
   async (request: any) => {
-    const { mealName, imageBase64, mimeType } = request.data;
+    const { mealName, imageBase64, mimeType, language } = request.data;
+    const languageName = getLanguageName(language || 'ja');
 
     if (!mealName) {
       throw new functions.https.HttpsError('invalid-argument', '料理名が指定されていません');
@@ -203,17 +230,19 @@ export const scanCalorie = functions.https.onCall(
 あなたは栄養学の専門家です。
 この料理画像を見て、料理名「${mealName}」のカロリーを推定してください。
 
+**重要**: 必ず${languageName}で回答してください。
+
 以下のJSON形式で出力してください：
 {
   "calories": 推定カロリー（数値、kcal単位）,
-  "reasoning": "カロリー推定の根拠（料理の内容、量、調理方法などを考慮した理由を日本語で詳しく説明）",
+  "reasoning": "カロリー推定の根拠（料理の内容、量、調理方法などを考慮した理由を${languageName}で詳しく説明）",
   "confidence": 信頼度（0-100の数値、オプション）
 }
 
 **重要な指示:**
 1. 料理名と画像の両方を参考にして、できるだけ正確なカロリーを推定してください
 2. 料理の量、調理方法（揚げ物、蒸し物など）、食材の種類を考慮してください
-3. reasoningには、なぜそのカロリーと推定したかの根拠を詳しく書いてください
+3. reasoningには、なぜそのカロリーと推定したかの根拠を${languageName}で詳しく書いてください
 4. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 

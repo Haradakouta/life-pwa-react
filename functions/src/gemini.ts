@@ -60,8 +60,8 @@ async function callGeminiApi(
  */
 export const generateRecipe = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
-  async (data: any) => {
-  const { ingredients, dietaryRestriction, difficulty, customRequest } = data;
+  async (request: any) => {
+  const { ingredients, dietaryRestriction, difficulty, customRequest } = request.data;
 
   if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
     throw new functions.https.HttpsError('invalid-argument', '食材が指定されていません');
@@ -114,8 +114,8 @@ export const generateRecipe = functions.https.onCall(
  */
 export const generateText = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
-  async (data: any) => {
-  const { prompt } = data;
+  async (request: any) => {
+  const { prompt } = request.data;
 
   if (!prompt) {
     throw new functions.https.HttpsError('invalid-argument', 'プロンプトが指定されていません');

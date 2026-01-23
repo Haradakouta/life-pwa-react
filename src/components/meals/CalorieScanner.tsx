@@ -164,20 +164,10 @@ export const CalorieScanner: React.FC<CalorieScannerProps> = ({
 
                 {result && (
                     <div>
-                        <div style={{ padding: '16px', background: '#e8f5e9', border: '2px solid #4caf50', borderRadius: '8px', marginBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                                <MdCheckCircle size={24} color="#4caf50" />
-                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#2e7d32' }}>
-                                    推定カロリー: {result.calories} kcal
-                                </div>
-                            </div>
-                            <div style={{ marginTop: '12px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#2e7d32' }}>
-                                    根拠:
-                                </div>
-                                <div style={{ fontSize: '14px', color: '#1b5e20', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                                    {result.reasoning}
-                                </div>
+                        <div style={{ padding: '24px', background: '#e8f5e9', border: '2px solid #4caf50', borderRadius: '12px', marginBottom: '16px', textAlign: 'center' }}>
+                            <MdCheckCircle size={32} color="#4caf50" style={{ marginBottom: '8px' }} />
+                            <div style={{ fontSize: '32px', fontWeight: 800, color: '#2e7d32' }}>
+                                {result.calories} kcal
                             </div>
                         </div>
                         <button

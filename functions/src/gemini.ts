@@ -7,7 +7,8 @@ import * as functions from 'firebase-functions';
 
 // Gemini API設定
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-const MODEL_NAME = 'gemini-2.5-pro';
+const MODEL_NAME = 'gemini-2.0-flash'; // テキスト生成用
+const IMAGE_MODEL_NAME = 'gemini-2.0-flash'; // 画像解析用（マルチモーダル対応）
 
 // 言語コードから言語名へのマッピング
 const LANGUAGE_MAP: { [key: string]: string } = {
@@ -171,7 +172,7 @@ async function callGeminiApiWithImage(
   } = {}
 ): Promise<any> {
   const apiKey = getGeminiApiKey();
-  const url = `${GEMINI_API_BASE_URL}/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+  const url = `${GEMINI_API_BASE_URL}/models/${IMAGE_MODEL_NAME}:generateContent?key=${apiKey}`;
 
   const requestBody = {
     contents: [

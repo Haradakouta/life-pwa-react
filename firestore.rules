@@ -207,7 +207,8 @@ service cloud.firestore {
       allow read, write: if isAuth();
       
       match /contributions/{userId} {
-        allow read, write: if isOwner(userId); // Assuming isUser should be isOwner based on common patterns
+        allow read: if isAuth(); // ランキング表示のため全ユーザーが読み取り可能
+        allow write: if isOwner(userId); // 書き込みは自分のデータのみ
       }
     }
 

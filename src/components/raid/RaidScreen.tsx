@@ -124,7 +124,17 @@ export const RaidScreen: React.FC = () => {
                 }}
             >
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                    <h2 style={{ margin: '0 0 16px', fontSize: '24px', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                    <h2 style={{ 
+                        margin: '0 0 16px', 
+                        fontSize: '24px', 
+                        fontWeight: 800, 
+                        color: '#ffffff',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)',
+                        background: 'rgba(0,0,0,0.4)',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        display: 'inline-block'
+                    }}>
                         BOSS: {boss.name}
                     </h2>
 

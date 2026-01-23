@@ -34,13 +34,7 @@ interface ReceiptOCRResult {
     rawText: string;
 }
 
-interface ClovaField {
-    inferText: string;
-    inferConfidence: number;
-    boundingPoly: {
-        vertices: { x: number; y: number }[];
-    };
-}
+
 
 
 

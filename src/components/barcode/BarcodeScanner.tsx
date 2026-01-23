@@ -205,6 +205,17 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     try {
       setError(null);
       const codeReader = new BrowserMultiFormatReader();
+      
+      // バーコードフォーマットをJANコード（EAN-13/EAN-8）に限定して精度向上
+      const hints = new Map();
+      const { BarcodeFormat, DecodeHintType } = await import('@zxing/library');
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,  // JANコード（13桁）
+        BarcodeFormat.EAN_8,   // JANコード（8桁）
+      ]);
+      hints.set(DecodeHintType.TRY_HARDER, true);  // 高精度モード
+      codeReader.hints = hints;
+      
       codeReaderRef.current = codeReader;
 
       const videoInputDevices = await codeReader.listVideoInputDevices();
@@ -232,9 +243,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const constraints = {
         video: {
           deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          width: { min: 1280, ideal: 1920, max: 2560 },
-          height: { min: 720, ideal: 1080, max: 1440 },
-          facingMode: 'environment'
+          width: { min: 640, ideal: 1280, max: 1920 },  // 解像度を下げて処理速度向上
+          height: { min: 480, ideal: 720, max: 1080 },
+          facingMode: 'environment',
+          focusMode: 'continuous',  // 連続オートフォーカス
         }
       };
 

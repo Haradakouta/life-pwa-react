@@ -1372,3 +1372,29 @@ ${ingredients.map((ing) => `・${ing} 適量`).join('\n')}
 ※ 403エラーが発生しています。新しいAPIキーを https://aistudio.google.com/app/apikey で取得してください。
 `.trim();
 }
+
+/**
+ * 傾向に基づいた1週間分の買い物リストを生成
+ */
+export async function generateShoppingListWithTrend(
+  trend: 'balanced' | 'healthy' | 'economical' | 'quick' | 'diet'
+): Promise<{
+  items: Array<{
+    name: string;
+    quantity: number;
+    category: 'staple' | 'protein' | 'vegetable' | 'fruit' | 'dairy' | 'seasoning' | 'other';
+  }>;
+  summary: string;
+}> {
+  const language = useSettingsStore.getState().settings.language || 'ja';
+  
+  const generateShoppingListWithTrendFn = httpsCallable(firebaseFunctions, 'generateShoppingListWithTrend');
+  const result = await generateShoppingListWithTrendFn({ trend, language });
+  const data = result.data as any;
+  
+  if (!data.success) {
+    throw new Error('買い物リスト生成に失敗しました');
+  }
+  
+  return data.shoppingList;
+}

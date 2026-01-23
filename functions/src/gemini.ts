@@ -287,3 +287,75 @@ export const scanCalorie = functions.https.onCall(
     }
   }
 );
+
+/**
+ * 傾向に基づいた1週間分の買い物リストを生成
+ */
+export const generateShoppingListWithTrend = functions.https.onCall(
+  { timeoutSeconds: 300, memory: '512MiB' },
+  async (request: any) => {
+  const { trend, language } = request.data;
+  const languageName = getLanguageName(language || 'ja');
+
+  if (!trend) {
+    throw new functions.https.HttpsError('invalid-argument', '傾向が指定されていません');
+  }
+
+  const trendDescriptions: { [key: string]: string } = {
+    'balanced': 'バランス重視 - 主食・主菜・副菜をバランスよく、栄養バランスを考慮した食材',
+    'healthy': '健康重視 - 野菜・果物を多めに、加工食品を少なめに、ビタミン・ミネラル豊富な食材',
+    'economical': '節約重視 - 価格を抑えた定番食材、大容量でコスパの良い食材',
+    'quick': '時短重視 - 調理時間が短い食材、下処理が少ない食材、簡単に調理できるもの',
+    'diet': 'ダイエット - 低カロリー・高タンパク、糖質控えめ、脂質控えめな食材',
+  };
+
+  const trendDescription = trendDescriptions[trend] || trendDescriptions['balanced'];
+
+  const prompt = `あなたは栄養士です。以下の傾向に基づいて、1週間分（7日間）の買い物リストを作成してください。
+
+傾向: ${trendDescription}
+
+要件:
+- どのスーパーでも買える一般的な食材のみ
+- 1週間で使い切れる量
+- 具体的な商品名と数量を記載
+- カテゴリ分けして整理
+
+以下のJSON形式で出力してください:
+{
+  "items": [
+    {
+      "name": "商品名",
+      "quantity": 数量,
+      "category": "staple | protein | vegetable | fruit | dairy | seasoning | other"
+    }
+  ],
+  "summary": "この買い物リストの特徴を1-2文で説明"
+}
+
+**重要**: 必ず${languageName}で回答してください。`;
+
+  try {
+    const result = await callGeminiApi(prompt, { 
+      temperature: 0.7, 
+      maxOutputTokens: 2048,
+      model: 'flash' // Flashモデルを使用（高速・低コスト）
+    });
+    
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    // JSONを抽出（```json ... ``` の形式に対応）
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON形式の応答が得られませんでした');
+    }
+    
+    const jsonText = jsonMatch[1] || jsonMatch[0];
+    const shoppingList = JSON.parse(jsonText);
+    
+    return { success: true, shoppingList };
+  } catch (error: any) {
+    console.error('[Gemini] Shopping list generation error:', error);
+    throw new functions.https.HttpsError('internal', error.message || '買い物リスト生成に失敗しました');
+  }
+});

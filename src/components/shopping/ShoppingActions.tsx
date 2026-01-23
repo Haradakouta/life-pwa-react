@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useShoppingStore, useStockStore, useSettingsStore, useIntakeStore } from '../../store';
 import { getHealthBasedShoppingList, analyzeNutritionalDeficiencies, getNutritionalSupplementItems } from '../../utils/healthShopping';
+import { generateShoppingListWithTrend } from '../../api/gemini';
 import { MdHealthAndSafety, MdRefresh } from 'react-icons/md';
 
 export const ShoppingActions: React.FC = () => {
@@ -12,10 +13,40 @@ export const ShoppingActions: React.FC = () => {
   const { settings } = useSettingsStore();
   const { intakes } = useIntakeStore();
   const [loadingHealthRecommendation, setLoadingHealthRecommendation] = useState(false);
+  const [loadingTrendList, setLoadingTrendList] = useState(false);
+  const [showTrendSelection, setShowTrendSelection] = useState(false);
 
   const handleWeeklyList = () => {
-    addWeeklyEssentials();
-    alert('1週間分の買い物リストを追加しました！');
+    setShowTrendSelection(!showTrendSelection);
+  };
+
+  const handleTrendSelection = async (trend: 'balanced' | 'healthy' | 'economical' | 'quick' | 'diet') => {
+    setLoadingTrendList(true);
+    setShowTrendSelection(false);
+    try {
+      const shoppingList = await generateShoppingListWithTrend(trend);
+      
+      let addedCount = 0;
+      for (const item of shoppingList.items) {
+        try {
+          await addItem({
+            name: item.name,
+            quantity: item.quantity,
+            category: item.category,
+          });
+          addedCount++;
+        } catch (error) {
+          console.error('アイテム追加エラー:', error);
+        }
+      }
+      
+      alert(`${addedCount}件の商品を追加しました！\n\n${shoppingList.summary}`);
+    } catch (error) {
+      console.error('買い物リスト生成エラー:', error);
+      alert('買い物リスト生成に失敗しました');
+    } finally {
+      setLoadingTrendList(false);
+    }
   };
 
   const handleLowStock = () => {
@@ -88,13 +119,91 @@ export const ShoppingActions: React.FC = () => {
       <button
         className="submit"
         onClick={handleWeeklyList}
+        disabled={loadingTrendList}
         style={{
           background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
           marginBottom: '8px',
         }}
       >
-        📅 1週間分の買い物リストを生成
+        {loadingTrendList ? (
+          <>
+            <MdRefresh size={18} style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '8px' }} />
+            生成中...
+          </>
+        ) : (
+          '📅 1週間分の買い物リストを生成'
+        )}
       </button>
+      
+      {showTrendSelection && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '8px',
+          marginBottom: '12px',
+          padding: '12px',
+          background: 'rgba(59, 130, 246, 0.05)',
+          borderRadius: '8px',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+        }}>
+          <button
+            className="submit"
+            onClick={() => handleTrendSelection('balanced')}
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+              fontSize: '14px',
+              padding: '10px',
+            }}
+          >
+            ⚖️ バランス重視
+          </button>
+          <button
+            className="submit"
+            onClick={() => handleTrendSelection('healthy')}
+            style={{
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              fontSize: '14px',
+              padding: '10px',
+            }}
+          >
+            🥗 健康重視
+          </button>
+          <button
+            className="submit"
+            onClick={() => handleTrendSelection('economical')}
+            style={{
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              fontSize: '14px',
+              padding: '10px',
+            }}
+          >
+            💰 節約重視
+          </button>
+          <button
+            className="submit"
+            onClick={() => handleTrendSelection('quick')}
+            style={{
+              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+              fontSize: '14px',
+              padding: '10px',
+            }}
+          >
+            ⏱️ 時短重視
+          </button>
+          <button
+            className="submit"
+            onClick={() => handleTrendSelection('diet')}
+            style={{
+              background: 'linear-gradient(135deg, #ec4899, #db2777)',
+              fontSize: '14px',
+              padding: '10px',
+              gridColumn: 'span 2',
+            }}
+          >
+            🏋️ ダイエット
+          </button>
+        </div>
+      )}
       <button
         className="submit"
         onClick={handleLowStock}

@@ -31,12 +31,15 @@ export const NameWithColor: React.FC<NameWithColorProps> = ({ userId, name, styl
 
     const combinedStyle: React.CSSProperties = {
         ...style,
-        background: nameColor || style?.color || 'var(--text)',
-        WebkitBackgroundClip: nameColor ? 'text' : undefined,
-        WebkitTextFillColor: nameColor ? 'transparent' : undefined,
-        backgroundClip: nameColor ? 'text' : undefined,
-        color: nameColor ? 'transparent' : style?.color || 'var(--text)',
-        display: 'inline-block', // gradientの場合に必要になることがある
+        ...(nameColor ? {
+            background: nameColor,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            display: 'inline-block',
+        } : {
+            color: style?.color || 'var(--text)',
+        }),
     };
 
     return (

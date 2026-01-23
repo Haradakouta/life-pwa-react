@@ -7,8 +7,8 @@ import * as functions from 'firebase-functions';
 
 // Gemini API設定
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-const MODEL_NAME = 'gemini-2.0-flash'; // テキスト生成用
-const IMAGE_MODEL_NAME = 'gemini-2.0-flash'; // 画像解析用（マルチモーダル対応）
+const PRO_MODEL_NAME = 'gemini-3-pro-preview'; // AI改善提案用（高品質）
+const FLASH_MODEL_NAME = 'gemini-3-flash-preview'; // レシピ生成・カロリー計測用（高速・低コスト）
 
 // 言語コードから言語名へのマッピング
 const LANGUAGE_MAP: { [key: string]: string } = {
@@ -48,10 +48,12 @@ async function callGeminiApi(
   options: {
     temperature?: number;
     maxOutputTokens?: number;
+    model?: 'pro' | 'flash'; // pro: AI改善提案, flash: その他
   } = {}
 ): Promise<any> {
   const apiKey = getGeminiApiKey();
-  const url = `${GEMINI_API_BASE_URL}/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+  const modelName = options.model === 'pro' ? PRO_MODEL_NAME : FLASH_MODEL_NAME;
+  const url = `${GEMINI_API_BASE_URL}/models/${modelName}:generateContent?key=${apiKey}`;
 
   const requestBody = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -149,7 +151,8 @@ export const generateText = functions.https.onCall(
   const promptWithLanguage = `${prompt}\n\n**重要**: 必ず${languageName}で回答してください。`;
 
   try {
-    const result = await callGeminiApi(promptWithLanguage, { temperature: 0.7, maxOutputTokens: 2048 });
+    // AI改善提案はProモデルを使用（高品質）
+    const result = await callGeminiApi(promptWithLanguage, { temperature: 0.7, maxOutputTokens: 2048, model: 'pro' });
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
     return { success: true, text };
   } catch (error: any) {
@@ -160,7 +163,7 @@ export const generateText = functions.https.onCall(
 
 
 /**
- * 画像付きでGemini APIにリクエストを送信
+ * 画像付きでGemini APIにリクエストを送信（常にFlashモデル使用）
  */
 async function callGeminiApiWithImage(
   prompt: string,
@@ -172,7 +175,7 @@ async function callGeminiApiWithImage(
   } = {}
 ): Promise<any> {
   const apiKey = getGeminiApiKey();
-  const url = `${GEMINI_API_BASE_URL}/models/${IMAGE_MODEL_NAME}:generateContent?key=${apiKey}`;
+  const url = `${GEMINI_API_BASE_URL}/models/${FLASH_MODEL_NAME}:generateContent?key=${apiKey}`;
 
   const requestBody = {
     contents: [

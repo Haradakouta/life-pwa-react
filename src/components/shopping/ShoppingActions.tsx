@@ -8,7 +8,7 @@ import { generateShoppingListWithTrend } from '../../api/gemini';
 import { MdHealthAndSafety, MdRefresh } from 'react-icons/md';
 
 export const ShoppingActions: React.FC = () => {
-  const { addWeeklyEssentials, addLowStockItems, addItem } = useShoppingStore();
+  const { addLowStockItems, addItem } = useShoppingStore();
   const { getExpiringStocks } = useStockStore();
   const { settings } = useSettingsStore();
   const { intakes } = useIntakeStore();

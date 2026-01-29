@@ -27,7 +27,9 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
   const [price, setPrice] = useState(product.price?.toString() || '');
   const [daysRemaining, setDaysRemaining] = useState('7');
 
-  const handleAddToMeals = () => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleAddToMeals = async () => {
     if (!calories) {
       alert(t('product.addToMeals.caloriesRequired'));
       return;
@@ -37,40 +39,56 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
       return;
     }
 
-    addIntake({
-      name: product.name,
-      calories: Number(calories),
-      price: Number(price),
-    });
+    try {
+      setIsSaving(true);
+      await addIntake({
+        name: product.name,
+        calories: Number(calories),
+        price: Number(price),
+      });
 
-    alert(t('product.addToMeals.success'));
-    onAdded();
+      alert(t('product.addToMeals.success'));
+      onAdded();
+    } catch (error) {
+      console.error('Failed to add intake:', error);
+      alert(t('common.error'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAddToStock = () => {
+  const handleAddToStock = async () => {
     if (!daysRemaining) {
       alert(t('product.addToStock.expiryDaysRequired'));
       return;
     }
 
-    addStock({
-      name: product.name,
-      quantity: 1,
-      daysRemaining: Number(daysRemaining),
-      price: price ? Number(price) : undefined,
-      category: detectStockCategory(product.name),
-    });
+    try {
+      setIsSaving(true);
+      await addStock({
+        name: product.name,
+        quantity: 1,
+        daysRemaining: Number(daysRemaining),
+        price: price ? Number(price) : undefined,
+        category: detectStockCategory(product.name),
+      });
 
-    if (onNavigateToStock) {
-      // 在庫画面に遷移する場合
-      onAdded();
-      setTimeout(() => {
-        onNavigateToStock();
-      }, 100);
-    } else {
-      // 従来通りアラート表示
-      alert(t('product.addToStock.success'));
-      onAdded();
+      if (onNavigateToStock) {
+        // 在庫画面に遷移する場合
+        onAdded();
+        setTimeout(() => {
+          onNavigateToStock();
+        }, 100);
+      } else {
+        // 従来通りアラート表示
+        alert(t('product.addToStock.success'));
+        onAdded();
+      }
+    } catch (error) {
+      console.error('Failed to add stock:', error);
+      alert(t('common.error'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -133,8 +151,8 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
             marginTop: '12px',
             padding: '8px 12px',
             background: product.source === 'rakuten_ichiba' ? '#bf0000' :
-                       product.source === 'rakuten_product' ? '#bf0000' :
-                       product.source === 'jancode_lookup' ? '#3b82f6' : '#10b981',
+              product.source === 'rakuten_product' ? '#bf0000' :
+                product.source === 'jancode_lookup' ? '#3b82f6' : '#10b981',
             color: '#fff',
             borderRadius: '6px',
             fontSize: '0.75rem',
@@ -162,6 +180,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           value={calories}
           onChange={(e) => setCalories(e.target.value)}
           placeholder={t('product.addToMeals.caloriesPlaceholder')}
+          disabled={isSaving}
         />
         <label>{t('product.addToMeals.price')}</label>
         <input
@@ -169,11 +188,13 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           placeholder={t('product.addToMeals.pricePlaceholder')}
+          disabled={isSaving}
         />
         <button
           className="submit"
           onClick={handleAddToMeals}
-          style={{ background: '#3b82f6' }}
+          style={{ background: '#3b82f6', opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'wait' : 'pointer' }}
+          disabled={isSaving}
         >
           {t('product.addToMeals.button')}
         </button>
@@ -191,11 +212,13 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           value={daysRemaining}
           onChange={(e) => setDaysRemaining(e.target.value)}
           placeholder={t('product.addToStock.expiryDaysPlaceholder')}
+          disabled={isSaving}
         />
         <button
           className="submit"
           onClick={handleAddToStock}
-          style={{ background: '#10b981' }}
+          style={{ background: '#10b981', opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'wait' : 'pointer' }}
+          disabled={isSaving}
         >
           {onNavigateToStock ? t('product.addToStock.buttonWithNavigate') : t('product.addToStock.button')}
         </button>

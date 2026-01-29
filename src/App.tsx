@@ -9,6 +9,7 @@ import { TitleUnlockedModal } from './components/common/TitleUnlockedModal';
 import { PrefectureSettingScreen } from './components/settings/PrefectureSettingScreen';
 import { WeightInputModal } from './components/settings/WeightInputModal';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { PWAInstallPrompt } from './components/common/PWAInstallPrompt';
 import { checkAndGrantTitles } from './utils/title';
 import { shouldShowWeightReminder, markWeightReminderShown } from './utils/weightReminder';
 import { checkAndUpdateMissions } from './utils/mission';
@@ -68,6 +69,27 @@ function App() {
   const recipeStore = useRecipeStore();
   const settingsStore = useSettingsStore();
   const badgeStore = useBadgeStore();
+
+  // Global Sound Effect
+  useEffect(() => {
+    const playClickSound = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Effects for buttons, links, and specific roles
+      const clickable = target.closest('button, a, [role="button"], input[type="submit"], input[type="button"], input[type="radio"], input[type="checkbox"], select');
+
+      if (clickable) {
+        // Clone audio to allow overlapping sounds (rapid tapping)
+        const audio = new Audio('/assets/kensuke_sfx.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {
+          // Ignore auto-play errors (e.g. user hasn't interacted yet)
+        });
+      }
+    };
+
+    document.addEventListener('click', playClickSound);
+    return () => document.removeEventListener('click', playClickSound);
+  }, []);
 
   // ミッションの定期チェック（日付変更時のリセット用）
   useEffect(() => {
@@ -478,6 +500,7 @@ function App() {
           }}
         />
       )}
+      <PWAInstallPrompt />
     </ErrorBoundary>
   );
 }

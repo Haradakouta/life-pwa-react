@@ -59,7 +59,7 @@ async function callGeminiApi(
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: options.temperature ?? 0.7,
-      maxOutputTokens: options.maxOutputTokens ?? 2048,
+      maxOutputTokens: options.maxOutputTokens ?? 8192,
     },
   };
 
@@ -83,29 +83,29 @@ async function callGeminiApi(
 export const generateRecipe = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
   async (request: any) => {
-  const { ingredients, dietaryRestriction, difficulty, customRequest, language } = request.data;
-  const languageName = getLanguageName(language || 'ja');
+    const { ingredients, dietaryRestriction, difficulty, customRequest, language } = request.data;
+    const languageName = getLanguageName(language || 'ja');
 
-  if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
-    throw new functions.https.HttpsError('invalid-argument', '食材が指定されていません');
-  }
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+      throw new functions.https.HttpsError('invalid-argument', '食材が指定されていません');
+    }
 
-  const dietLabel = dietaryRestriction === 'vegetarian' ? 'ベジタリアン' : dietaryRestriction === 'vegan' ? 'ヴィーガン' : '';
+    const dietLabel = dietaryRestriction === 'vegetarian' ? 'ベジタリアン' : dietaryRestriction === 'vegan' ? 'ヴィーガン' : '';
 
-  let difficultyCondition = '';
-  if (difficulty === 'super_easy') {
-    difficultyCondition = '\n\n**重要**: 料理初心者でも絶対に失敗しない超簡単なレシピにしてください。調理工程は3ステップ以内。';
-  } else if (difficulty === 'under_5min') {
-    difficultyCondition = '\n\n**重要**: 調理時間5分以内で完成するレシピにしてください。';
-  } else if (difficulty === 'under_10min') {
-    difficultyCondition = '\n\n**重要**: 調理時間10分以内で完成するレシピにしてください。';
-  } else if (difficulty === 'no_fire') {
-    difficultyCondition = '\n\n**重要**: 火を使わずに作れるレシピにしてください。';
-  }
+    let difficultyCondition = '';
+    if (difficulty === 'super_easy') {
+      difficultyCondition = '\n\n**重要**: 料理初心者でも絶対に失敗しない超簡単なレシピにしてください。調理工程は3ステップ以内。';
+    } else if (difficulty === 'under_5min') {
+      difficultyCondition = '\n\n**重要**: 調理時間5分以内で完成するレシピにしてください。';
+    } else if (difficulty === 'under_10min') {
+      difficultyCondition = '\n\n**重要**: 調理時間10分以内で完成するレシピにしてください。';
+    } else if (difficulty === 'no_fire') {
+      difficultyCondition = '\n\n**重要**: 火を使わずに作れるレシピにしてください。';
+    }
 
-  const additionalRequirements = customRequest ? `\n\n**追加のリクエスト**: ${customRequest}` : '';
+    const additionalRequirements = customRequest ? `\n\n**追加のリクエスト**: ${customRequest}` : '';
 
-const prompt = `あなたは${languageName}で答えるプロの料理アドバイザーです。
+    const prompt = `あなたは${languageName}で答えるプロの料理アドバイザーです。
 次の食材を使った${dietLabel}向けの家庭向けレシピを１つ提案してください。${difficultyCondition}${additionalRequirements}
 
 **重要**: 必ず${languageName}で回答してください。
@@ -123,15 +123,15 @@ const prompt = `あなたは${languageName}で答えるプロの料理アドバ�
 【ポイント】
 ---`;
 
-  try {
-    const result = await callGeminiApi(prompt, { temperature: 0.8, maxOutputTokens: 2048 });
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return { success: true, recipe: text };
-  } catch (error: any) {
-    console.error('[Gemini] Recipe error:', error);
-    throw new functions.https.HttpsError('internal', error.message || 'レシピ生成に失敗しました');
-  }
-});
+    try {
+      const result = await callGeminiApi(prompt, { temperature: 0.8, maxOutputTokens: 2048 });
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return { success: true, recipe: text };
+    } catch (error: any) {
+      console.error('[Gemini] Recipe error:', error);
+      throw new functions.https.HttpsError('internal', error.message || 'レシピ生成に失敗しました');
+    }
+  });
 
 
 /**
@@ -140,26 +140,26 @@ const prompt = `あなたは${languageName}で答えるプロの料理アドバ�
 export const generateText = functions.https.onCall(
   { timeoutSeconds: 300, memory: '512MiB' },
   async (request: any) => {
-  const { prompt, language } = request.data;
-  const languageName = getLanguageName(language || 'ja');
+    const { prompt, language } = request.data;
+    const languageName = getLanguageName(language || 'ja');
 
-  if (!prompt) {
-    throw new functions.https.HttpsError('invalid-argument', 'プロンプトが指定されていません');
-  }
+    if (!prompt) {
+      throw new functions.https.HttpsError('invalid-argument', 'プロンプトが指定されていません');
+    }
 
-  // 言語指定をプロンプトに追加
-  const promptWithLanguage = `${prompt}\n\n**重要**: 必ず${languageName}で回答してください。`;
+    // 言語指定をプロンプトに追加
+    const promptWithLanguage = `${prompt}\n\n**重要**: 必ず${languageName}で回答してください。`;
 
-  try {
-    // AI改善提案はProモデルを使用（高品質）
-    const result = await callGeminiApi(promptWithLanguage, { temperature: 0.7, maxOutputTokens: 2048, model: 'pro' });
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return { success: true, text };
-  } catch (error: any) {
-    console.error('[Gemini] Text error:', error);
-    throw new functions.https.HttpsError('internal', error.message || 'テキスト生成に失敗しました');
-  }
-});
+    try {
+      // AI改善提案はProモデルを使用（高品質）
+      const result = await callGeminiApi(promptWithLanguage, { temperature: 0.7, maxOutputTokens: 8192, model: 'pro' });
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return { success: true, text };
+    } catch (error: any) {
+      console.error('[Gemini] Text error:', error);
+      throw new functions.https.HttpsError('internal', error.message || 'テキスト生成に失敗しました');
+    }
+  });
 
 
 /**
@@ -172,10 +172,12 @@ async function callGeminiApiWithImage(
   options: {
     temperature?: number;
     maxOutputTokens?: number;
+    model?: 'pro' | 'flash';
   } = {}
 ): Promise<any> {
   const apiKey = getGeminiApiKey();
-  const url = `${GEMINI_API_BASE_URL}/models/${FLASH_MODEL_NAME}:generateContent?key=${apiKey}`;
+  const modelName = options.model === 'pro' ? PRO_MODEL_NAME : FLASH_MODEL_NAME;
+  const url = `${GEMINI_API_BASE_URL}/models/${modelName}:generateContent?key=${apiKey}`;
 
   const requestBody = {
     contents: [
@@ -255,11 +257,11 @@ export const scanCalorie = functions.https.onCall(
         prompt,
         imageBase64,
         mimeType || 'image/jpeg',
-        { temperature: 0.3, maxOutputTokens: 1024 }
+        { temperature: 0.3, maxOutputTokens: 4096, model: 'pro' }
       );
 
       const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
+
       // JSONを抽出（マークダウンのコードブロックを除去）
       let jsonText = text.trim();
       const jsonMatch = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
@@ -292,70 +294,136 @@ export const scanCalorie = functions.https.onCall(
  * 傾向に基づいた1週間分の買い物リストを生成
  */
 export const generateShoppingListWithTrend = functions.https.onCall(
-  { timeoutSeconds: 300, memory: '512MiB' },
+  { timeoutSeconds: 60, memory: '256MiB' }, // タイムアウトとメモリを削減（API呼ばないので）
   async (request: any) => {
-  const { trend, language } = request.data;
-  const languageName = getLanguageName(language || 'ja');
+    const { trend } = request.data;
+    // const languageName = getLanguageName(language || 'ja'); // ローカル生成なので一旦日本語固定または簡易対応
 
-  if (!trend) {
-    throw new functions.https.HttpsError('invalid-argument', '傾向が指定されていません');
-  }
-
-  const trendDescriptions: { [key: string]: string } = {
-    'balanced': 'バランス重視 - 主食・主菜・副菜をバランスよく、栄養バランスを考慮した食材',
-    'healthy': '健康重視 - 野菜・果物を多めに、加工食品を少なめに、ビタミン・ミネラル豊富な食材',
-    'economical': '節約重視 - 価格を抑えた定番食材、大容量でコスパの良い食材',
-    'quick': '時短重視 - 調理時間が短い食材、下処理が少ない食材、簡単に調理できるもの',
-    'diet': 'ダイエット - 低カロリー・高タンパク、糖質控えめ、脂質控えめな食材',
-  };
-
-  const trendDescription = trendDescriptions[trend] || trendDescriptions['balanced'];
-
-  const prompt = `あなたは栄養士です。以下の傾向に基づいて、1週間分（7日間）の買い物リストを作成してください。
-
-傾向: ${trendDescription}
-
-要件:
-- どのスーパーでも買える一般的な食材のみ
-- 1週間で使い切れる量
-- 具体的な商品名と数量を記載
-- カテゴリ分けして整理
-
-以下のJSON形式で出力してください:
-{
-  "items": [
-    {
-      "name": "商品名",
-      "quantity": 数量,
-      "category": "staple | protein | vegetable | fruit | dairy | seasoning | other"
+    if (!trend) {
+      throw new functions.https.HttpsError('invalid-argument', '傾向が指定されていません');
     }
-  ],
-  "summary": "この買い物リストの特徴を1-2文で説明"
-}
 
-**重要**: 必ず${languageName}で回答してください。`;
+    // 1. 食材データベース (米は除外済み)
+    // type: カテゴリ (staple, protein, vegetable, fruit, dairy, seasoning, other)
+    // trends: その食材が適している傾向 (空配列なら全傾向OK)
+    interface Ingredient {
+      name: string;
+      category: string;
+      trends?: string[]; // 指定がなければ汎用
+    }
 
-  try {
-    const result = await callGeminiApi(prompt, { 
-      temperature: 0.7, 
-      maxOutputTokens: 2048,
-      model: 'flash' // Flashモデルを使用（高速・低コスト）
+    const INGREDIENTS_DB: Ingredient[] = [
+      // --- Protein (主菜・タンパク質) ---
+      { name: '鶏むね肉', category: 'protein', trends: ['diet', 'healthy', 'economical', 'balanced'] },
+      { name: '鶏ささみ', category: 'protein', trends: ['diet', 'healthy', 'quick'] },
+      { name: '豚こま切れ肉', category: 'protein', trends: ['economical', 'quick', 'balanced'] },
+      { name: '豚ロース薄切り', category: 'protein', trends: ['balanced', 'quick'] },
+      { name: '牛切り落とし肉', category: 'protein', trends: ['balanced', 'quick'] },
+      { name: '合い挽き肉', category: 'protein', trends: ['economical', 'quick', 'balanced'] },
+      { name: '鮭の切り身', category: 'protein', trends: ['balanced', 'healthy', 'diet'] },
+      { name: 'サバの切り身', category: 'protein', trends: ['balanced', 'healthy'] },
+      { name: '木綿豆腐', category: 'protein', trends: ['diet', 'healthy', 'economical', 'balanced'] },
+      { name: '納豆', category: 'protein', trends: ['healthy', 'economical', 'diet', 'balanced'] },
+      { name: '卵', category: 'protein', trends: ['economical', 'quick', 'balanced', 'diet'] },
+      { name: 'ツナ缶', category: 'protein', trends: ['quick', 'economical', 'balanced'] },
+
+      // --- Vegetable (野菜) ---
+      { name: 'キャベツ', category: 'vegetable', trends: ['economical', 'diet', 'balanced'] },
+      { name: 'レタス', category: 'vegetable', trends: ['quick', 'healthy', 'balanced'] },
+      { name: 'トマト', category: 'vegetable', trends: ['healthy', 'quick', 'balanced'] },
+      { name: 'きゅうり', category: 'vegetable', trends: ['quick', 'diet', 'balanced'] },
+      { name: 'ブロッコリー', category: 'vegetable', trends: ['healthy', 'diet', 'balanced'] },
+      { name: 'ほうれん草', category: 'vegetable', trends: ['healthy', 'balanced'] },
+      { name: '小松菜', category: 'vegetable', trends: ['economical', 'healthy', 'balanced'] },
+      { name: '玉ねぎ', category: 'vegetable', trends: ['economical', 'balanced', 'healthy'] },
+      { name: 'にんじん', category: 'vegetable', trends: ['economical', 'balanced', 'healthy'] },
+      { name: 'じゃがいも', category: 'vegetable', trends: ['economical', 'balanced'] },
+      { name: 'もやし', category: 'vegetable', trends: ['economical', 'diet', 'quick'] },
+      { name: 'きのこセット', category: 'vegetable', trends: ['diet', 'healthy', 'economical'] },
+      { name: '大根', category: 'vegetable', trends: ['economical', 'diet'] },
+      { name: 'ピーマン', category: 'vegetable', trends: ['balanced', 'healthy'] },
+
+      // --- Fruit (果物) ---
+      { name: 'バナナ', category: 'fruit', trends: ['economical', 'quick', 'balanced', 'healthy'] },
+      { name: 'りんご', category: 'fruit', trends: ['healthy', 'balanced'] },
+      { name: 'キウイフルーツ', category: 'fruit', trends: ['healthy', 'diet'] },
+
+      // --- Dairy (乳製品) ---
+      { name: '牛乳', category: 'dairy', trends: ['balanced', 'healthy'] },
+      { name: 'ヨーグルト', category: 'dairy', trends: ['healthy', 'diet', 'balanced'] },
+      { name: 'チーズ', category: 'dairy', trends: ['quick', 'balanced'] },
+
+      // --- Staple (主食 - 米以外) ---
+      { name: '食パン', category: 'staple', trends: ['quick', 'economical', 'balanced'] },
+      { name: 'うどん', category: 'staple', trends: ['quick', 'economical'] },
+      { name: 'パスタ', category: 'staple', trends: ['economical', 'balanced'] },
+      { name: 'オートミール', category: 'staple', trends: ['diet', 'healthy'] },
+
+      // --- Other (その他) ---
+      { name: '味噌', category: 'seasoning', trends: ['balanced', 'healthy'] },
+      { name: 'だしパック', category: 'seasoning', trends: ['quick', 'balanced'] }
+    ];
+
+    // 2. 傾向ごとの構成比率定義（栄養バランスを担保するロジック）
+    // 合計が7〜10個程度になるように設定
+    const COMPOSITION: { [key: string]: { [category: string]: number } } = {
+      'balanced': { protein: 3, vegetable: 4, fruit: 1, dairy: 1, staple: 1, seasoning: 1 },
+      'healthy': { protein: 3, vegetable: 5, fruit: 2, dairy: 1, staple: 0, seasoning: 0 },
+      'economical': { protein: 2, vegetable: 4, fruit: 0, dairy: 0, staple: 2, seasoning: 0 }, // 安い食材中心
+      'quick': { protein: 2, vegetable: 3, fruit: 1, dairy: 1, staple: 2, seasoning: 0 },
+      'diet': { protein: 4, vegetable: 5, fruit: 0, dairy: 1, staple: 0, seasoning: 0 }, // 高タンパク・低脂質
+    };
+
+    const targetComposition = COMPOSITION[trend] || COMPOSITION['balanced'];
+
+    // 3. ランダム抽出ロジック
+    const selectedItems: any[] = [];
+    const usedNames = new Set<string>();
+
+    Object.entries(targetComposition).forEach(([category, count]) => {
+      // そのカテゴリで、かつトレンドに合う（または汎用の）食材をフィルタリング
+      const candidates = INGREDIENTS_DB.filter(item =>
+        item.category === category &&
+        (!item.trends || item.trends.includes(trend))
+      );
+
+      // ランダムにシャッフル
+      const shuffled = candidates.sort(() => 0.5 - Math.random());
+
+      // 指定数だけピックアップ
+      let pickedCount = 0;
+      for (const item of shuffled) {
+        if (pickedCount >= count) break;
+        if (!usedNames.has(item.name)) {
+          selectedItems.push({
+            name: item.name,
+            quantity: 1, // 数量は1固定
+            category: item.category
+          });
+          usedNames.add(item.name);
+          pickedCount++;
+        }
+      }
     });
-    
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    // JSONを抽出（```json ... ``` の形式に対応）
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('JSON形式の応答が得られませんでした');
-    }
-    
-    const jsonText = jsonMatch[1] || jsonMatch[0];
-    const shoppingList = JSON.parse(jsonText);
-    
-    return { success: true, shoppingList };
-  } catch (error: any) {
-    console.error('[Gemini] Shopping list generation error:', error);
-    throw new functions.https.HttpsError('internal', error.message || '買い物リスト生成に失敗しました');
+
+    // 4. サマリー生成
+    const trendNames: { [key: string]: string } = {
+      'balanced': '栄養バランスの整った',
+      'healthy': '野菜たっぷりでヘルシーな',
+      'economical': 'お財布に優しい',
+      'quick': '時短で作れる',
+      'diet': '高タンパク・低カロリーな'
+    };
+    const summary = `${trendNames[trend] || 'バランスの良い'}食材を厳選しました。在庫に合わせて活用してください。`;
+
+    console.log('Generated Logic-based Shopping List:', selectedItems);
+
+    return {
+      success: true,
+      shoppingList: {
+        items: selectedItems,
+        summary: summary
+      }
+    };
   }
-});
+);

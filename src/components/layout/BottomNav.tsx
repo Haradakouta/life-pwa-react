@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { subscribeToUnreadCount } from '../../utils/notification';
 import { subscribeToConversations } from '../../utils/chat';
 
-export type Screen = 'home' | 'meals' | 'barcode' | 'report' | 'social' | 'settings' | 'stock' | 'shopping' | 'recipe' | 'expense' | 'badges' | 'admin' | 'goals' | 'exercise' | 'collection' | 'mission' | 'raid';
+export type Screen = 'home' | 'meals' | 'barcode' | 'report' | 'social' | 'settings' | 'stock' | 'shopping' | 'recipe' | 'expense' | 'badges' | 'admin' | 'goals' | 'exercise' | 'collection' | 'mission' | 'raid' | 'assets';
 
 interface BottomNavProps {
   currentScreen: Screen;

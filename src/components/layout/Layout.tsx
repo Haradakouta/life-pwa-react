@@ -26,6 +26,7 @@ const DailyMissionScreen = lazy(() => import('../mission/DailyMissionScreen').th
 
 const CollectionScreen = lazy(() => import('../collection/CollectionScreen').then(m => ({ default: m.CollectionScreen })));
 const RaidScreen = lazy(() => import('../raid/RaidScreen').then(m => ({ default: m.RaidScreen })));
+const AssetScreen = lazy(() => import('../assets/AssetScreen').then(m => ({ default: m.AssetScreen })));
 
 // ローディングコンポーネント
 const ScreenLoader: React.FC = () => {
@@ -75,6 +76,13 @@ export const Layout: React.FC = () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
   }, [i18n]);
+
+  // 固定費の自動計上チェック
+  useEffect(() => {
+    import('../../store/useFixedCostStore').then(({ useFixedCostStore }) => {
+      useFixedCostStore.getState().checkAndCreateExpenses();
+    });
+  }, []);
 
   // 画面遷移アニメーション
   useEffect(() => {
@@ -139,6 +147,8 @@ export const Layout: React.FC = () => {
         return <CollectionScreen onBack={() => handleNavigate('home')} />;
       case 'raid':
         return <RaidScreen />;
+      case 'assets':
+        return <AssetScreen onBack={() => handleNavigate('home')} />;
       default:
         return <Dashboard {...screenProps} />;
     }

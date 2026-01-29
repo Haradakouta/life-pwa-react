@@ -9,12 +9,13 @@ import { MdCameraAlt, MdClose, MdReceiptLong } from 'react-icons/md';
 import { ProGate } from '../subscription/ProGate';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
+import { GreenScreenOverlay } from '../common/GreenScreenOverlay';
 
 // --- Styled Components & Animations ---
 
-const shimmer = keyframes`
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+const move = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 `;
 
 const Container = styled.div`
@@ -145,8 +146,8 @@ const LoadingBar = styled.div`
     position: absolute;
     top: 0; left: 0; bottom: 0; width: 50%;
     background: #22c55e;
-    animation: ${shimmer} 1.5s infinite linear;
-    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+    animation: ${move} 1s infinite linear;
+    border-radius: 2px;
   }
 `;
 
@@ -222,6 +223,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
           <div style={{ fontSize: '13px', opacity: 0.7, marginTop: '8px' }}>解析しています...</div>
           <LoadingBar />
         </LoadingOverlay>
+        <GreenScreenOverlay videoSrc="/assets/galileo.mp4" isPlaying={true} />
       </Container>
     );
   }

@@ -85,7 +85,7 @@ export const ExpenseChart: React.FC = () => {
                 padding: '8px 12px',
               }}
               labelStyle={{ fontWeight: 600, marginBottom: '4px' }}
-              formatter={(value: number) => `¥${value.toLocaleString()}`}
+              formatter={(value: any) => `¥${value.toLocaleString()}`}
             />
             <Bar
               dataKey="amount"

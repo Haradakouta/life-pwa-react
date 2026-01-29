@@ -46,6 +46,11 @@
   },
   "settings": {
     "title": "設定",
+    "about": {
+      "title": "アプリについて"
+    },
+    "privacyPolicy": "セキュリティポリシー",
+    "termsOfService": "利用規約",
     "profile": {
       "title": "プロフィール",
       "edit": "プロフィール編集",

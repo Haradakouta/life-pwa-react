@@ -73,7 +73,7 @@ export const ManufacturerAnalysis: React.FC = () => {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => `¥${value.toLocaleString()}`}
+                formatter={(value: any) => `¥${value.toLocaleString()}`}
                 contentStyle={{
                   background: '#fff',
                   border: '1px solid #e5e7eb',

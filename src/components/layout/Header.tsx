@@ -36,6 +36,15 @@ export const Header: React.FC<HeaderProps> = ({ title, currentScreen, onNavigate
   // ホーム画面以外で戻るボタンを表示
   const showBackButton = currentScreen !== 'home';
 
+  const handleAdminClick = () => {
+    const password = window.prompt(t('admin.passwordPrompt', '管理者パスワードを入力してください'));
+    if (password === 'ivykensuke') {
+      onNavigate('admin');
+    } else if (password !== null) {
+      alert(t('admin.passwordIncorrect', 'パスワードが間違っています'));
+    }
+  };
+
   return (
     <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
       {showBackButton && (
@@ -93,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({ title, currentScreen, onNavigate
           </div>
         )}
         <button
-          onClick={() => onNavigate('admin')}
+          onClick={handleAdminClick}
           style={{
             background: 'none',
             border: '1px solid white',

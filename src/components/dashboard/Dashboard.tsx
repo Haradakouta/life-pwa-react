@@ -9,7 +9,7 @@ import { QuickActions } from './QuickActions';
 import type { Screen } from '../layout/BottomNav';
 import { getUserTotalPoints } from '../../utils/mission';
 import { useAuth } from '../../hooks/useAuth';
-import { MdMonetizationOn } from 'react-icons/md';
+import { MdMonetizationOn, MdAccountBalanceWallet } from 'react-icons/md';
 import { getUserCollection } from '../../utils/collection';
 import { collectionItems } from '../../data/collection';
 import type { CollectionItem } from '../../types/collection';
@@ -17,6 +17,7 @@ import { getUserNameColor } from '../../utils/cosmetic';
 import { getUserProfile } from '../../utils/profile';
 
 const GoalsSummary = lazy(() => import('../goals/GoalsSummary').then(m => ({ default: m.GoalsSummary })));
+const CalendarView = lazy(() => import('./CalendarView').then(m => ({ default: m.CalendarView })));
 
 interface DashboardProps {
   onNavigate: (screen: Screen) => void;
@@ -38,6 +39,29 @@ const SummaryCardSkeleton: React.FC = () => (
   </div>
 );
 
+const AssetsDisplay: React.FC = () => {
+  const [total, setTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    import('../../store/useAssetStore').then(({ useAssetStore }) => {
+      const assets = useAssetStore.getState().assets;
+      const sum = assets.reduce((acc, curr) => acc + curr.amount, 0);
+      setTotal(sum);
+
+      // Subscribe to changes
+      const unsub = useAssetStore.subscribe((state) => {
+        const newSum = state.assets.reduce((acc, curr) => acc + curr.amount, 0);
+        setTotal(newSum);
+      });
+      return unsub;
+    });
+  }, []);
+
+  if (total === null) return <span>...</span>;
+  return <span>¥{total.toLocaleString()}</span>;
+};
+
+
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -46,6 +70,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [partnerItem, setPartnerItem] = useState<CollectionItem | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [nameColor, setNameColor] = useState<string | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
 
   // ポイント、パートナー、プロフィール取得
   useEffect(() => {
@@ -153,6 +178,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* Total Assets Card */}
+      <div
+        onClick={() => handleNavigate('assets')}
+        style={{
+          margin: '0 16px 16px',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          borderRadius: '16px',
+          color: 'white',
+          boxShadow: '0 4px 6px rgba(16, 185, 129, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer'
+        }}
+      >
+        <div>
+          <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <MdAccountBalanceWallet /> 総資産
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+            <AssetsDisplay />
+          </div>
+        </div>
+        <MdAccountBalanceWallet size={40} style={{ opacity: 0.2 }} />
+      </div>
+
       {/* Raid Banner */}
       <div
         onClick={() => handleNavigate('raid')}
@@ -190,12 +242,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         }} />
       </div>
 
-      <Suspense fallback={<SummaryCardSkeleton />}>
-        <SummaryCard />
-      </Suspense>
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>{t('common.loading')}</div>}>
-        <GoalsSummary onNavigate={handleNavigate} />
-      </Suspense>
+      {/* View Switcher */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        margin: '0 16px 16px',
+        background: 'rgba(0,0,0,0.05)',
+        padding: '4px',
+        borderRadius: '12px'
+      }}>
+        <button
+          onClick={() => setViewMode('summary')}
+          style={{
+            flex: 1,
+            padding: '8px',
+            borderRadius: '8px',
+            border: 'none',
+            background: viewMode === 'summary' ? 'var(--card)' : 'transparent',
+            color: viewMode === 'summary' ? 'var(--primary)' : 'var(--text-secondary)',
+            fontWeight: 600,
+            boxShadow: viewMode === 'summary' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+            transition: 'all 0.2s',
+            cursor: 'pointer'
+          }}
+        >
+          {t('dashboard.summary', 'サマリー')}
+        </button>
+        <button
+          onClick={() => setViewMode('calendar')}
+          style={{
+            flex: 1,
+            padding: '8px',
+            borderRadius: '8px',
+            border: 'none',
+            background: viewMode === 'calendar' ? 'var(--card)' : 'transparent',
+            color: viewMode === 'calendar' ? 'var(--primary)' : 'var(--text-secondary)',
+            fontWeight: 600,
+            boxShadow: viewMode === 'calendar' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+            transition: 'all 0.2s',
+            cursor: 'pointer'
+          }}
+        >
+          {t('dashboard.calendar', 'カレンダー')}
+        </button>
+      </div>
+
+      {viewMode === 'summary' ? (
+        <>
+          <Suspense fallback={<SummaryCardSkeleton />}>
+            <SummaryCard />
+          </Suspense>
+          <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>{t('common.loading')}</div>}>
+            <GoalsSummary onNavigate={handleNavigate} />
+          </Suspense>
+        </>
+      ) : (
+        <Suspense fallback={<SummaryCardSkeleton />}>
+          <CalendarView />
+        </Suspense>
+      )}
+
       <QuickActions onNavigate={handleNavigate} />
       {isPending && (
         <div className="transition-overlay">

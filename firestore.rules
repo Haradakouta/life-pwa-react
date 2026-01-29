@@ -232,6 +232,15 @@ service cloud.firestore {
       allow write: if isAuth(); // 認証済みユーザーは書き込み可能（管理者画面から設定）
     }
 
+    // お問い合わせ (New)
+    // 管理者機能が「どのユーザーでもパスワードで使える」仕様のため、
+    // 認証済みユーザー全員に対して読み書き権限を広く許可します。
+    // 本来はカスタムクレームなどで制御すべきですが、要件に従います。
+    match /inquiries/{inquiryId} {
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read, update: if isAuth();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

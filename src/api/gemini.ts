@@ -2,7 +2,7 @@
  * api/gemini.ts — Google Gemini API連携
  *
  * AIレシピ生成・健康分析・レシートOCR・カロリー計測機能を提供
- * ⚠️ 重要: gemini-2.5-proを使用（Tier 1従量制プラン）
+ * ⚠️ 重要: gemini-3-pro-previewを使用（Tier 1従量制プラン）
  */
 
 import type { RecipeDifficulty, DietaryRestriction } from '../types';
@@ -340,7 +340,7 @@ ${examples}
 在庫から使える材料を最大限活用したレシピを提案してください。
 `;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`;
 
     logRequestStats('recipe');
 
@@ -509,8 +509,8 @@ async function generateRecipeWithKey(
 ${examples}
 `.trim();
 
-    // Gemini 2.5 Pro（Tier 1従量制）を使用
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+    // Gemini 3 Pro（Tier 1従量制）を使用
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`;
 
     // リクエスト統計を記録
     logRequestStats('recipe');
@@ -536,7 +536,7 @@ ${examples}
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
         },
       }),
     });
@@ -710,7 +710,7 @@ export async function generateRecipe(
     console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
     // フォールバック: 直接API呼び出し（開発・デバッグ用）
   }
-  
+
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
@@ -857,7 +857,7 @@ export async function generateRecipeFromStock(
     console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
     // フォールバック: 直接API呼び出し（開発・デバッグ用）
   }
-  
+
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
@@ -962,8 +962,8 @@ export function isGeminiEnabled(): boolean {
  * テキスト生成（内部実装：指定されたAPIキーで試行）
  */
 async function generateTextWithKey(apiKey: string, prompt: string): Promise<string> {
-  // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-2.5-proに変更
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+  // gemini-2.0-flash-expは無料プランで利用できない可能性があるため、gemini-3-pro-previewに変更
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`;
 
   logRequestStats('recipe'); // テキスト生成もrecipeとしてカウント
 
@@ -988,7 +988,7 @@ async function generateTextWithKey(apiKey: string, prompt: string): Promise<stri
         temperature: 0.7,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
       },
     }),
   });
@@ -1042,7 +1042,7 @@ export async function generateText(prompt: string): Promise<string> {
     console.error('[Gemini] Cloud Functions呼び出しエラー、フォールバック使用', error);
     // フォールバック: 直接API呼び出し（開発・デバッグ用）
   }
-  
+
   const operatorKey = getOperatorApiKey();
   const userKey = getUserApiKey();
   const apiEnabled = isApiEnabled();
@@ -1139,7 +1139,7 @@ async function scanCalorieWithKey(apiKey: string, mealName: string, imageFile: F
 4. 必ずJSONのみを返してください（説明文は不要）
 `.trim();
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`;
 
   // リクエスト統計を記録
   logRequestStats('receipt'); // カロリー計測もreceiptとしてカウント
@@ -1171,7 +1171,7 @@ async function scanCalorieWithKey(apiKey: string, mealName: string, imageFile: F
         temperature: 0.3, // 低めにして正確性を重視
         topK: 32,
         topP: 1,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 4096,
       },
     }),
   });
@@ -1387,14 +1387,14 @@ export async function generateShoppingListWithTrend(
   summary: string;
 }> {
   const language = useSettingsStore.getState().settings.language || 'ja';
-  
+
   const generateShoppingListWithTrendFn = httpsCallable(firebaseFunctions, 'generateShoppingListWithTrend');
   const result = await generateShoppingListWithTrendFn({ trend, language });
   const data = result.data as any;
-  
+
   if (!data.success) {
     throw new Error('買い物リスト生成に失敗しました');
   }
-  
+
   return data.shoppingList;
 }

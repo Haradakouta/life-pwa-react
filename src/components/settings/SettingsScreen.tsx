@@ -4,7 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore, useIntakeStore, useExpenseStore, useStockStore } from '../../store';
-import { MdDarkMode, MdDescription, MdCode, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdKey, MdVisibility, MdVisibilityOff, MdNotifications, MdNotificationsOff, MdLanguage } from 'react-icons/md';
+import { InquiryScreen } from './InquiryScreen';
+import { getUnreadInquiryCount } from '../../utils/inquiry';
+import { MdDarkMode, MdDescription, MdSave, MdLogout, MdPerson, MdChevronRight, MdEmojiEvents, MdLocationOn, MdAssignment, MdShoppingBag, MdHealthAndSafety, MdNotifications, MdNotificationsOff, MdLanguage, MdMail } from 'react-icons/md';
 import { logout } from '../../utils/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileEditScreen } from '../profile/ProfileEditScreen';
@@ -14,6 +16,10 @@ import { DailyMissionScreen } from '../mission/DailyMissionScreen';
 import { CosmeticShopScreen } from '../cosmetic/CosmeticShopScreen';
 import { HealthSettingScreen } from './HealthSettingScreen';
 import { UpgradeButton } from '../subscription/UpgradeButton';
+import { PrivacyPolicyScreen } from './PrivacyPolicyScreen';
+import { TermsOfServiceScreen } from './TermsOfServiceScreen';
+import { FixedCostScreen } from './FixedCostScreen';
+import { MdAutorenew } from 'react-icons/md';
 
 /**
  * BMIを計算する関数
@@ -55,13 +61,18 @@ export const SettingsScreen: React.FC = () => {
   const [showDailyMission, setShowDailyMission] = useState(false);
   const [showCosmeticShop, setShowCosmeticShop] = useState(false);
   const [showHealthSetting, setShowHealthSetting] = useState(false);
-  const [apiKey, setApiKey] = useState(settings.geminiApiKey || '');
-  const [showApiKey, setShowApiKey] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTermsOfService, setShowTermsOfService] = useState(false);
+  const [showInquiry, setShowInquiry] = useState(false);
+  const [showFixedCost, setShowFixedCost] = useState(false);
+  const [unreadInquiryCount, setUnreadInquiryCount] = useState(0);
 
-  // 設定が変更されたらAPIキー入力欄を更新
   useEffect(() => {
-    setApiKey(settings.geminiApiKey || '');
-  }, [settings.geminiApiKey]);
+    if (user) {
+      getUnreadInquiryCount(user.uid).then(setUnreadInquiryCount);
+    }
+  }, [user, showInquiry]); // Re-check when closing inquiry screen
+
 
   const handleSaveSettings = () => {
     updateSettings({
@@ -70,46 +81,9 @@ export const SettingsScreen: React.FC = () => {
     alert(t('common.success'));
   };
 
-  const handleSaveApiKey = () => {
-    updateSettings({
-      geminiApiKey: apiKey.trim() || undefined,
-    });
-    alert(t('common.success'));
-  };
 
-  const handleExportCSV = () => {
-    const csvData = [
-      t('settings.export.csvHeader'),
-      ...intakes.map(
-        (intake) =>
-          `${t('settings.export.mealRecord')},${intake.name},${intake.calories},${intake.price},${intake.date}`
-      ),
-    ].join('\n');
 
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${t('settings.export.csvFilename')}${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
 
-  const handleExportJSON = () => {
-    const jsonData = {
-      intakes,
-      expenses,
-      stocks,
-      settings,
-      exportedAt: new Date().toISOString(),
-    };
-
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-      type: 'application/json',
-    });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${t('settings.export.jsonFilename')}${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-  };
 
   const handleLogout = async () => {
     if (window.confirm(t('settings.account.logoutConfirm'))) {
@@ -146,9 +120,33 @@ export const SettingsScreen: React.FC = () => {
   }
 
   // 健康情報設定画面を表示中
+  // 健康情報設定画面を表示中
   if (showHealthSetting) {
     return <HealthSettingScreen onBack={() => setShowHealthSetting(false)} />;
   }
+
+  // プライバシーポリシー画面を表示中
+  if (showPrivacyPolicy) {
+    return <PrivacyPolicyScreen onBack={() => setShowPrivacyPolicy(false)} />;
+  }
+
+  // 利用規約画面を表示中
+  if (showTermsOfService) {
+    return <TermsOfServiceScreen onBack={() => setShowTermsOfService(false)} />;
+  }
+
+  // 固定費管理画面を表示中
+  if (showFixedCost) {
+    return <FixedCostScreen onBack={() => setShowFixedCost(false)} />;
+  }
+
+  // お問い合わせ画面を表示中
+  if (showInquiry) {
+    return <InquiryScreen onBack={() => setShowInquiry(false)} />;
+  }
+
+
+
 
   return (
     <section className="screen active">
@@ -162,6 +160,51 @@ export const SettingsScreen: React.FC = () => {
           AI機能（レシート認識、食事アドバイス）を制限なく利用できます。
         </p>
         <UpgradeButton />
+      </div>
+
+      <div className="card">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdMail size={24} color="var(--primary)" />
+          お問い合わせ・サポート
+        </h3>
+        <button
+          onClick={() => setShowInquiry(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ position: 'relative', display: 'flex' }}>
+              <MdMail size={24} color="var(--primary)" />
+              {unreadInquiryCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -2,
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: 'red',
+                  border: '2px solid var(--background)'
+                }} />
+              )}
+            </div>
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              お問い合わせ
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
       </div>
 
       <div className="card">
@@ -307,6 +350,34 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
+        <h3>固定費・サブスク</h3>
+        <button
+          onClick={() => setShowFixedCost(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MdAutorenew size={24} color="#ec4899" />
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              固定費・サブスク管理
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+      </div>
+
+      <div className="card">
         <h3>{t('settings.budget.title')}</h3>
         <input
           type="number"
@@ -430,18 +501,62 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div className="card">
-        <h3>{t('settings.export.title')}</h3>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="submit" onClick={handleExportCSV} style={{ flex: 1 }}>
-            <MdDescription size={18} style={{ marginRight: '8px' }} />
-            {t('settings.export.csv')}
-          </button>
-          <button className="submit" onClick={handleExportJSON} style={{ flex: 1 }}>
-            <MdCode size={18} style={{ marginRight: '8px' }} />
-            {t('settings.export.json')}
-          </button>
-        </div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MdDescription size={24} color="var(--primary)" />
+          {t('settings.about.title', 'アプリについて')}
+        </h3>
+        <button
+          onClick={() => setShowPrivacyPolicy(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              {t('settings.privacyPolicy', 'セキュリティポリシー')}
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <button
+          onClick={() => setShowTermsOfService(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '12px 16px',
+            background: 'var(--background)',
+            border: '2px solid var(--border)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            marginBottom: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '500' }}>
+              {t('settings.termsOfService', '利用規約')}
+            </span>
+          </div>
+          <MdChevronRight size={24} color="var(--text-secondary)" />
+        </button>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '8px' }}>
+          Version 1.0.0
+        </p>
       </div>
+
+
 
       <div className="card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -506,69 +621,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="card">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MdKey size={24} color="var(--primary)" />
-          {t('settings.ai.title')}
-        </h3>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-          {t('settings.ai.description')}
-          <br />
-          <a
-            href="https://aistudio.google.com/app/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--primary)', textDecoration: 'underline' }}
-          >
-            {t('settings.ai.getKey')}
-          </a>
-        </p>
-        <div style={{ position: 'relative', marginBottom: '12px' }}>
-          <input
-            type={showApiKey ? 'text' : 'password'}
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder={t('settings.ai.placeholder')}
-            style={{
-              width: '100%',
-              padding: '12px 40px 12px 12px',
-              fontSize: '14px',
-              border: '2px solid var(--border)',
-              borderRadius: '8px',
-              background: 'var(--background)',
-              color: 'var(--text)',
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => setShowApiKey(!showApiKey)}
-            style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {showApiKey ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
-          </button>
-        </div>
-        <button className="submit" onClick={handleSaveApiKey}>
-          <MdSave size={18} style={{ marginRight: '8px' }} />
-          {t('settings.ai.save')}
-        </button>
-        {settings.geminiApiKey && (
-          <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginTop: '8px', marginBottom: '0' }}>
-            {t('settings.ai.saved')}
-          </p>
-        )}
-      </div>
+
 
       <div className="card">
         <h3>{t('settings.stats.title')}</h3>
@@ -578,6 +631,8 @@ export const SettingsScreen: React.FC = () => {
           <p>{t('settings.stats.stocks')}: {stocks.length}{t('settings.stats.items')}</p>
         </div>
       </div>
+
+
 
       <div className="card">
         <h3>{t('settings.account.title')}</h3>
@@ -596,6 +651,8 @@ export const SettingsScreen: React.FC = () => {
           {t('settings.account.logout')}
         </button>
       </div>
+
+
     </section>
   );
 };

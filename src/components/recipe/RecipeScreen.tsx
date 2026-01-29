@@ -9,7 +9,7 @@ import { FavoriteRecipes } from './FavoriteRecipes';
 import { PostCreateScreen } from '../social/PostCreateScreen';
 import type { Recipe } from '../../types';
 import type { RecipeData } from '../../types/post';
-import { MdRestaurantMenu } from 'react-icons/md';
+import { AiRecipeLoading } from '../common/AiRecipeLoading';
 
 export const RecipeScreen: React.FC = () => {
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
@@ -63,17 +63,7 @@ export const RecipeScreen: React.FC = () => {
         isLoading={isLoading}
         setIsLoading={setIsLoading}
       />
-      {isLoading && (
-        <div className="card" style={{ textAlign: 'center', padding: '32px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px', color: 'var(--primary)' }}>
-            <MdRestaurantMenu size={48} />
-          </div>
-          <div style={{ fontWeight: 600, marginBottom: '8px' }}>レシピを生成中...</div>
-          <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #666)' }}>
-            AIがレシピを考えています
-          </div>
-        </div>
-      )}
+      {isLoading && <AiRecipeLoading />}
       {currentRecipe && !isLoading && (
         <RecipeDisplay recipe={currentRecipe} onAttachToPost={handleAttachToPost} />
       )}

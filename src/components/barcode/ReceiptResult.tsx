@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useExpenseStore, useShoppingStore, useStockStore, useIntakeStore } from '../../store';
+import { useExpenseStore, useShoppingStore, useStockStore } from '../../store';
 import type { ReceiptItem, ReceiptOCRResult } from '../../api/vision';
 import { detectStockCategory } from '../../utils/stockCategoryDetector';
 import { MdDelete, MdEdit, MdAdd, MdSave, MdReceipt, MdShoppingCart, MdInventory, MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md';
@@ -18,12 +18,13 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
   const { addExpense } = useExpenseStore();
   const { addItem } = useShoppingStore();
   const { addStock } = useStockStore();
-  const { addIntake } = useIntakeStore();
   const [items, setItems] = useState<ReceiptItem[]>(result.items);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set(items.map((_, i) => i)));
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const totalAmount = items.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
   const selectedCount = selectedIndices.size;
@@ -86,44 +87,46 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
     setItems([...items, { name: name.trim(), price, quantity: 1 }]);
   };
 
-  const handleSaveToExpenses = () => {
+  const handleSaveToExpenses = async () => {
     if (items.length === 0) {
       alert(t('receipt.noItemsError'));
       return;
     }
 
-    if (!window.confirm(t('receipt.addToExpensesConfirm', { count: items.length, total: totalAmount.toLocaleString() }))) {
+    if (!window.confirm(t('receipt.addToExpensesConfirm', { count: 1, total: totalAmount.toLocaleString() }))) {
       return;
     }
 
-    const today = new Date().toISOString();
+    try {
+      setIsSaving(true);
+      const today = new Date().toISOString();
+      const storeName = result.storeName || t('receipt.defaultStoreName', 'Store');
 
-    // 各商品を支出として登録し、よく買う商品TOP5に反映するためintakesにも追加
-    items.forEach((item) => {
-      const quantity = item.quantity || 1;
-      for (let i = 0; i < quantity; i++) {
-        addExpense({
-          type: 'expense', // 支出
-          category: 'food', // デフォルトで食費
-          amount: item.price,
-          memo: item.name,
-          date: result.date || today,
-        });
-        // よく買う商品TOP5に反映するため、商品名をintakesにも追加
-        addIntake({
-          name: item.name,
-          calories: 0, // カロリー情報がない場合は0
-          price: item.price,
-          source: 'receipt', // レシート由来であることを識別
-        });
-      }
-    });
+      // 合計金額を1件の支出として登録
+      await addExpense({
+        type: 'expense',
+        category: 'food', // デフォルト
+        amount: totalAmount,
+        memo: `${storeName} (${t('receipt.total')})`,
+        date: today,
+      });
 
-    alert(t('receipt.addToExpensesSuccess'));
-    onClose();
+      // よく買う商品TOP5の集計用に、intakesにも商品名だけ記録（価格0）しておく等の処理が必要かどうか？
+      // 以前のロジックでは addIntake も呼んでいたが、ユーザー要望により「合計金額登録」優先のため、
+      // ここでは支出登録のみシンプルに行う。もしintakeも必要なら別途検討が必要だが、
+      // 「家計簿に登録」という文脈では expense が主。
+
+      alert(t('receipt.addToExpensesSuccess'));
+      onClose();
+    } catch (error) {
+      console.error('Failed to save expenses:', error);
+      alert(t('common.error'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveToShoppingList = () => {
+  const handleSaveToShoppingList = async () => {
     if (items.length === 0) {
       alert(t('receipt.noItemsError'));
       return;
@@ -133,17 +136,25 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       return;
     }
 
-    // 各商品を買い物リストに追加
-    items.forEach((item) => {
-      addItem({
-        name: item.name,
-        quantity: item.quantity || 1,
-        price: item.price,
-      });
-    });
+    try {
+      setIsSaving(true);
+      // 各商品を買い物リストに追加
+      await Promise.all(items.map(item =>
+        addItem({
+          name: item.name,
+          quantity: item.quantity || 1,
+          price: item.price,
+        })
+      ));
 
-    alert(t('receipt.addToShoppingListSuccess'));
-    onClose();
+      alert(t('receipt.addToShoppingListSuccess'));
+      onClose();
+    } catch (error) {
+      console.error('Failed to save shopping list:', error);
+      alert(t('common.error'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleToggleSelect = (index: number) => {
@@ -166,7 +177,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
     }
   };
 
-  const handleSaveToStock = () => {
+  const handleSaveToStock = async () => {
     if (selectedCount === 0) {
       alert(t('receipt.selectItemsRequired'));
       return;
@@ -176,32 +187,46 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
       return;
     }
 
-    // 7日後の日付をデフォルト賞味期限として設定
-    const daysRemaining = 7;
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + daysRemaining);
-    const expiryDateStr = expiryDate.toISOString().split('T')[0];
+    try {
+      setIsSaving(true);
+      // 7日後の日付をデフォルト賞味期限として設定
+      const daysRemaining = 7;
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + daysRemaining);
+      const expiryDateStr = expiryDate.toISOString().split('T')[0];
 
-    // 選択された商品のみを在庫に追加
-    let addedCount = 0;
-    items.forEach((item, index) => {
-      if (selectedIndices.has(index)) {
-        const quantity = item.quantity || 1;
-        for (let i = 0; i < quantity; i++) {
-          addStock({
-            name: item.name,
-            quantity: 1,
-            daysRemaining: daysRemaining,
-            price: item.price,
-            category: detectStockCategory(item.name),
-          });
-          addedCount++;
+      // 選択された商品のみを在庫に追加
+      const promises: Promise<void>[] = [];
+      let addedCount = 0;
+
+      items.forEach((item, index) => {
+        if (selectedIndices.has(index)) {
+          const quantity = item.quantity || 1;
+          for (let i = 0; i < quantity; i++) {
+            promises.push(
+              addStock({
+                name: item.name,
+                quantity: 1,
+                daysRemaining: daysRemaining,
+                price: item.price,
+                category: detectStockCategory(item.name),
+              })
+            );
+            addedCount++;
+          }
         }
-      }
-    });
+      });
 
-    alert(t('receipt.addToStockSuccess', { count: addedCount, date: expiryDateStr, days: daysRemaining }));
-    onClose();
+      await Promise.all(promises);
+
+      alert(t('receipt.addToStockSuccess', { count: addedCount, date: expiryDateStr, days: daysRemaining }));
+      onClose();
+    } catch (error) {
+      console.error('Failed to save stock:', error);
+      alert(t('common.error'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const formatAmount = (amount: number) => {
@@ -435,9 +460,9 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
         <button
           onClick={handleSaveToStock}
           className="submit"
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isSaving}
           style={{
-            opacity: selectedCount === 0 ? 0.5 : 1,
+            opacity: selectedCount === 0 || isSaving ? 0.5 : 1,
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             display: 'flex',
             alignItems: 'center',
@@ -445,6 +470,7 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
             gap: '6px',
             fontSize: '15px',
             fontWeight: 600,
+            cursor: isSaving ? 'not-allowed' : 'pointer',
           }}
         >
           <MdInventory size={20} />
@@ -454,14 +480,15 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           <button
             onClick={handleSaveToShoppingList}
             className="submit"
-            disabled={items.length === 0}
+            disabled={items.length === 0 || isSaving}
             style={{
-              opacity: items.length === 0 ? 0.5 : 1,
+              opacity: items.length === 0 || isSaving ? 0.5 : 1,
               background: '#10b981',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
+              cursor: isSaving ? 'not-allowed' : 'pointer',
             }}
           >
             <MdShoppingCart size={18} />
@@ -470,9 +497,10 @@ export const ReceiptResult: React.FC<ReceiptResultProps> = ({ result, onClose })
           <button
             onClick={handleSaveToExpenses}
             className="submit"
-            disabled={items.length === 0}
+            disabled={items.length === 0 || isSaving}
             style={{
-              opacity: items.length === 0 ? 0.5 : 1,
+              opacity: items.length === 0 || isSaving ? 0.5 : 1,
+              cursor: isSaving ? 'not-allowed' : 'pointer',
             }}
           >
             {t('receipt.addToExpenses')}

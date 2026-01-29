@@ -2,6 +2,8 @@
  * レポート生成ユーティリティ
  */
 import type { Intake, Expense } from '../types';
+import type { Asset } from '../types/asset';
+import type { FixedCost } from '../types/fixedCost';
 
 export interface MonthlyStats {
   year: number;
@@ -23,16 +25,21 @@ export interface MonthlyComparison {
   current: MonthlyStats;
   previous: MonthlyStats;
   changes: {
-    intakesCount: number; // %
-    totalCalories: number; // %
-    avgCalories: number; // %
-    totalExpenses: number; // %
+    intakesCount: number;
+    totalCalories: number;
+    avgCalories: number;
+    totalExpenses: number;
+  };
+  assets?: {
+    total: number;
+    breakdown: Record<string, number>;
+  };
+  fixedCosts?: {
+    totalMonthly: number;
+    count: number;
   };
 }
 
-/**
- * 指定月のデータをフィルター
- */
 function filterByMonth<T extends { date: string }>(
   data: T[],
   year: number,
@@ -44,9 +51,6 @@ function filterByMonth<T extends { date: string }>(
   });
 }
 
-/**
- * 月次統計を生成
- */
 export function generateMonthlyStats(
   year: number,
   month: number,
@@ -56,15 +60,14 @@ export function generateMonthlyStats(
   const monthlyIntakes = filterByMonth(intakes, year, month);
   const monthlyExpenses = filterByMonth(expenses, year, month);
 
-  // 食事統計
   const totalCalories = monthlyIntakes.reduce((sum, i) => sum + i.calories, 0);
   const totalIntakePrice = monthlyIntakes.reduce((sum, i) => sum + (i.price || 0), 0);
 
-  // 支出統計
-  const totalExpenses = monthlyExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const expenseItems = monthlyExpenses.filter(e => e.type === 'expense');
+  const totalExpenses = expenseItems.reduce((sum, e) => sum + e.amount, 0);
   const expensesByCategory: Record<string, number> = {};
 
-  monthlyExpenses.forEach((expense) => {
+  expenseItems.forEach((expense) => {
     expensesByCategory[expense.category] =
       (expensesByCategory[expense.category] || 0) + expense.amount;
   });
@@ -86,18 +89,16 @@ export function generateMonthlyStats(
   };
 }
 
-/**
- * 先月との比較データを生成
- */
 export function generateMonthlyComparison(
   currentYear: number,
   currentMonth: number,
   intakes: Intake[],
-  expenses: Expense[]
+  expenses: Expense[],
+  assets: Asset[] = [],
+  fixedCosts: FixedCost[] = []
 ): MonthlyComparison {
   const current = generateMonthlyStats(currentYear, currentMonth, intakes, expenses);
 
-  // 先月の年月を計算
   let previousYear = currentYear;
   let previousMonth = currentMonth - 1;
   if (previousMonth === 0) {
@@ -107,11 +108,23 @@ export function generateMonthlyComparison(
 
   const previous = generateMonthlyStats(previousYear, previousMonth, intakes, expenses);
 
-  // 変化率を計算（%）
   const calculateChange = (current: number, previous: number): number => {
     if (previous === 0) return current > 0 ? 100 : 0;
     return ((current - previous) / previous) * 100;
   };
+
+  // 資産統計
+  const totalAssets = assets.reduce((sum, a) => sum + a.amount, 0);
+  const assetsBreakdown: Record<string, number> = {};
+  assets.forEach(a => {
+    assetsBreakdown[a.type] = (assetsBreakdown[a.type] || 0) + a.amount;
+  });
+
+  // 固定費統計 (月額換算)
+  const fixedCostsTotal = fixedCosts.reduce((sum, fc) => {
+    if (fc.cycle === 'monthly') return sum + fc.amount;
+    return sum + Math.round(fc.amount / 12);
+  }, 0);
 
   return {
     current,
@@ -122,14 +135,38 @@ export function generateMonthlyComparison(
       avgCalories: calculateChange(current.intakes.avgCalories, previous.intakes.avgCalories),
       totalExpenses: calculateChange(current.expenses.total, previous.expenses.total),
     },
+    assets: {
+      total: totalAssets,
+      breakdown: assetsBreakdown
+    },
+    fixedCosts: {
+      totalMonthly: fixedCostsTotal,
+      count: fixedCosts.length
+    }
   };
 }
 
-/**
- * AI改善提案用のプロンプトを生成
- */
 export function generateAIPrompt(comparison: MonthlyComparison): string {
-  const { current, previous, changes } = comparison;
+  const { current, previous, changes, assets, fixedCosts } = comparison;
+
+  let assetInfo = '';
+  if (assets && assets.total > 0) {
+    assetInfo = `
+【資産状況】
+- 総資産: ¥${assets.total.toLocaleString()}
+- 現金・預金: ¥${((assets.breakdown['cash'] || 0) + (assets.breakdown['bank'] || 0)).toLocaleString()}
+- 投資・運用: ¥${((assets.breakdown['securities'] || 0) + (assets.breakdown['crypto'] || 0)).toLocaleString()}
+`;
+  }
+
+  let fixedCostInfo = '';
+  if (fixedCosts && fixedCosts.count > 0) {
+    fixedCostInfo = `
+【固定費（目安）】
+- 登録数: ${fixedCosts.count}件
+- 月額合計: ¥${fixedCosts.totalMonthly.toLocaleString()}
+`;
+  }
 
   return `以下のユーザーの月次健康・家計データを分析し、3〜5つの具体的な改善提案をしてください。
 
@@ -139,7 +176,7 @@ export function generateAIPrompt(comparison: MonthlyComparison): string {
 - 平均カロリー: ${Math.round(current.intakes.avgCalories)}kcal/食
 - 食費: ¥${current.intakes.totalPrice.toLocaleString()}
 - 総支出: ¥${current.expenses.total.toLocaleString()}
-
+${assetInfo}${fixedCostInfo}
 【先月のデータ（${previous.year}年${previous.month}月）】
 - 食事記録: ${previous.intakes.count}回
 - 総カロリー: ${previous.intakes.totalCalories.toLocaleString()}kcal
@@ -155,7 +192,7 @@ export function generateAIPrompt(comparison: MonthlyComparison): string {
 【お願い】
 1. データの傾向を簡潔に分析してください
 2. 健康面での改善提案を2〜3点
-3. 家計面での改善提案を1〜2点
+3. 家計・資産形成面での改善提案を1〜2点（固定費の見直しや資産運用についても触れてください）
 4. 具体的で実行可能なアドバイスをお願いします
 5. 日本語で、親しみやすくわかりやすい表現で回答してください`;
 }

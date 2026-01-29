@@ -12,3 +12,5 @@ export * from './badge';
 export * from './goal';
 export * from './exercise';
 export * from './subscription';
+export * from './fixedCost';
+export * from './asset';

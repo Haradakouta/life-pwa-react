@@ -3,36 +3,51 @@
  */
 import { useState, useEffect } from 'react';
 import { MdAutoAwesome, MdTrendingUp, MdTrendingDown, MdArrowForward } from 'react-icons/md';
-import { useIntakeStore, useExpenseStore } from '../../store';
+import { useIntakeStore, useExpenseStore, useAiSuggestionStore, useAssetStore, useFixedCostStore } from '../../store';
 import { generateMonthlyComparison, generateAIPrompt } from '../../utils/reportGenerator';
 import type { MonthlyComparison } from '../../utils/reportGenerator';
 import { generateText } from '../../api/gemini';
 import { ProGate } from '../subscription/ProGate';
+import { GalileoLoadingScreen } from '../common/GalileoLoadingScreen';
 
 export function MonthlyReport() {
   const { intakes } = useIntakeStore();
   const { expenses } = useExpenseStore();
+  const { assets } = useAssetStore();
+  const { fixedCosts } = useFixedCostStore();
+  const {
+    saveSuggestion,
+    getSuggestion,
+    checkRateLimit,
+    updateLastGeneratedAt
+  } = useAiSuggestionStore();
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [comparison, setComparison] = useState<MonthlyComparison | null>(null);
-  const [aiSuggestions, setAiSuggestions] = useState<string>('');
   const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
-    const comp = generateMonthlyComparison(year, month, intakes, expenses);
+    const comp = generateMonthlyComparison(year, month, intakes, expenses, assets, fixedCosts);
     setComparison(comp);
-  }, [year, month, intakes, expenses]);
+  }, [year, month, intakes, expenses, assets, fixedCosts]);
 
   const handleGenerateAISuggestions = async () => {
     if (!comparison) return;
+
+    if (!checkRateLimit()) {
+      alert('AI改善提案の生成は10分に1回のみ可能です。しばらく経ってからお試しください。');
+      return;
+    }
 
     setLoadingAI(true);
     try {
       const prompt = generateAIPrompt(comparison);
       const result = await generateText(prompt);
-      setAiSuggestions(result);
+
+      saveSuggestion(year, month, result);
+      updateLastGeneratedAt();
     } catch (error) {
       console.error('AI提案生成エラー:', error);
       alert('AI提案の生成に失敗しました');
@@ -48,7 +63,6 @@ export function MonthlyReport() {
     } else {
       setMonth(month - 1);
     }
-    setAiSuggestions(''); // AIの提案をクリア
   };
 
   const handleNextMonth = () => {
@@ -58,8 +72,9 @@ export function MonthlyReport() {
     } else {
       setMonth(month + 1);
     }
-    setAiSuggestions(''); // AIの提案をクリア
   };
+
+  const currentSuggestion = getSuggestion(year, month);
 
   const renderChange = (value: number) => {
     if (value === 0) return <span className="change-neutral">±0%</span>;
@@ -178,7 +193,7 @@ export function MonthlyReport() {
             AI改善提案
           </h4>
 
-          {!aiSuggestions ? (
+          {!currentSuggestion ? (
             <ProGate
               featureName="AI改善提案"
               description="月次データに基づいたAIアドバイス機能はプレミアムプラン限定です。"
@@ -195,14 +210,14 @@ export function MonthlyReport() {
             </ProGate>
           ) : (
             <div className="ai-suggestions">
-              <div className="suggestions-content">{aiSuggestions}</div>
+              <div className="suggestions-content">{currentSuggestion}</div>
               <button
                 className="submit"
                 onClick={handleGenerateAISuggestions}
                 disabled={loadingAI}
                 style={{ marginTop: '12px' }}
               >
-                再生成
+                再生成（情報を更新）
               </button>
             </div>
           )}
@@ -214,6 +229,11 @@ export function MonthlyReport() {
           )}
         </div>
       </div>
+      <GalileoLoadingScreen
+        isVisible={loadingAI}
+        title="AI提案を作成中..."
+        subtitle="あなたの支出と栄養データを分析しています..."
+      />
     </div>
   );
 }

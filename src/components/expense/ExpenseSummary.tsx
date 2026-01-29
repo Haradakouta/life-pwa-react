@@ -64,7 +64,7 @@ export const ExpenseSummary: React.FC = () => {
   }, [selectedYear, selectedMonth, monthlyExpenses, getTotalByCategory]);
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
-  
+
   const totalIncome = monthlyExpenses
     .filter((expense) => expense.type === 'income')
     .reduce((sum, expense) => sum + expense.amount, 0);
@@ -161,7 +161,7 @@ export const ExpenseSummary: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => `¥${formatAmount(value)}`}
+                    formatter={(value: any) => `¥${formatAmount(value)}`}
                     contentStyle={{
                       background: 'var(--card)',
                       border: '1px solid var(--border)',
